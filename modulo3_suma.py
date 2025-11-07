@@ -1,128 +1,109 @@
 import tkinter as tk
 from tkinter import ttk
-import numpy as np
+import matrix_model
 
-np.set_printoptions(suppress=True)
 
-error_label = None
+class SumaScreen(ttk.Frame):
+    """Pantalla de suma matricial.
 
-def crear_suma(ventana):
-    def guardar_valores():
-        filas_valor = entry_filas.get()
-        columnas_valor = entry_columnas.get()
+    Esta clase es responsable únicamente de la interfaz y delega toda la
+    lógica de parseo/validación y cálculo al módulo `matrix_model`.
+    """
 
-        if not filas_valor.isdigit() or not columnas_valor.isdigit():
-            error_label.config(text="Error: Ingrese valores numéricos para las filas y columnas.")
-            return
+    def __init__(self, parent, show_frame_callback=None):
+        super().__init__(parent, style="TFrame")
+        self.parent = parent
+        self.show_frame = show_frame_callback
 
-        filas_valor = int(filas_valor)
-        columnas_valor = int(columnas_valor)
+        # Widgets: dimensiones y matrices en formato CSV (entrada simple)
+        label_suma = ttk.Label(self, text="Operación: Suma", font=("Bold", 15))
+        label_suma.grid(row=0, column=0, columnspan=4, pady=20)
 
-        matriz_A = obtener_matriz(entry_matriz_a, filas_valor, columnas_valor)
-        matriz_B = obtener_matriz(entry_matriz_b, filas_valor, columnas_valor)
+        ttk.Label(self, text="n°Filas:").grid(row=1, column=0, pady=5, sticky="w")
+        self.entry_filas = ttk.Entry(self, width=5)
+        self.entry_filas.grid(row=2, column=0, pady=5, padx=5)
 
-        if matriz_A is not None and matriz_B is not None:
-            resultado = suma_matrices(matriz_A, matriz_B)
-            if resultado is not None:
-                mostrar_resultado(resultado)
-            else:
-                error_label.config(text="Error: Las matrices no pueden sumarse debido a sus dimensiones.")
+        ttk.Label(self, text="n°Columnas:").grid(row=1, column=1, pady=5, sticky="w")
+        self.entry_columnas = ttk.Entry(self, width=5)
+        self.entry_columnas.grid(row=2, column=1, pady=5, padx=5)
 
-    def obtener_matriz(entry_matriz, filas, columnas):
-        matriz = []
-        entrada_texto = entry_matriz.get()
-        valores = entrada_texto.split(',')
+        ttk.Label(self, text="Matriz A (CSV):").grid(row=3, column=0, pady=5, sticky="w")
+        self.entry_matriz_a = ttk.Entry(self, width=40)
+        self.entry_matriz_a.grid(row=4, column=0, columnspan=2, pady=5, padx=5)
 
-        if len(valores) != columnas * filas:
-            error_label.config(text=f"Error: Ingrese {filas * columnas} valores para la matriz.")
-            return None
+        ttk.Label(self, text="Matriz B (CSV):").grid(row=3, column=2, pady=5, sticky="w")
+        self.entry_matriz_b = ttk.Entry(self, width=40)
+        self.entry_matriz_b.grid(row=4, column=2, columnspan=2, pady=5, padx=5)
 
-        for i in range(filas):
-            fila = []
-            for j in range(columnas):
-                try:
-                    valor = int(valores[i * columnas + j])
-                    fila.append(valor)
-                except ValueError:
-                    error_label.config(text="Error: Ingrese valores numéricos para la matriz.")
-                    return None
-            matriz.append(fila)
-        return matriz
+        # Error label único y centralizado
+        self.error_label = ttk.Label(self, text="", foreground="red")
+        self.error_label.grid(row=5, column=0, columnspan=4, pady=10, sticky="ew")
 
-    def mostrar_resultado(resultado):
-        ventana_resultado = tk.Toplevel(ventana)
+        # Botones
+        self.boton_calcular = ttk.Button(self, text="Calcular Suma", command=self.calcular_suma)
+        self.boton_calcular.grid(row=6, column=0, columnspan=2, pady=15)
+
+        self.boton_reset = ttk.Button(self, text="Resetear Entradas", command=self.reset_entries)
+        self.boton_reset.grid(row=6, column=2, columnspan=2, pady=15)
+
+    def reset_entries(self):
+        self.entry_filas.delete(0, tk.END)
+        self.entry_columnas.delete(0, tk.END)
+        self.entry_matriz_a.delete(0, tk.END)
+        self.entry_matriz_b.delete(0, tk.END)
+        self.error_label.config(text="")
+
+    def calcular_suma(self):
+        """Controlador que parsea entradas, delega en matrix_model y muestra resultado."""
+        # Limpiar errores previos
+        self.error_label.config(text="")
+
+        try:
+            # 1) Obtener dimensiones
+            filas = int(self.entry_filas.get())
+            columnas = int(self.entry_columnas.get())
+
+            # 2) Parsear matrices vía el modelo
+            text_a = self.entry_matriz_a.get()
+            text_b = self.entry_matriz_b.get()
+
+            A = matrix_model.parse_matrix(text_a, filas, columnas)
+            B = matrix_model.parse_matrix(text_b, filas, columnas)
+
+            # 3) Calcular suma con el modelo
+            R = matrix_model.safe_add(A, B)
+
+            # 4) Mostrar resultado en una ventana tipo Treeview
+            self._mostrar_resultado(R)
+
+        except ValueError as e:
+            # Mensajes claros procedentes del modelo
+            self.error_label.config(text=str(e))
+
+    def _mostrar_resultado(self, resultado):
+        ventana_resultado = tk.Toplevel(self.parent)
         ventana_resultado.title("Resultado de la Suma")
 
-        frame_resultado = tk.Frame(ventana_resultado, width=550, height=550)
-        frame_resultado.pack()
+        frame_resultado = ttk.Frame(ventana_resultado)
+        frame_resultado.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
         label_resultado = ttk.Label(frame_resultado, text="Resultado de la Suma", font=("Bold", 15))
-        label_resultado.grid(row=0, column=0, columnspan=len(resultado[0]) * 2, pady=20)
-    
-        # Crear el Treeview para mostrar el resultado en formato tabular
+        label_resultado.grid(row=0, column=0, columnspan=resultado.shape[1], pady=10)
+
         treeview = ttk.Treeview(frame_resultado)
-        treeview.grid(row=1, column=0, columnspan=len(resultado[0]) * 2, padx=10)
-
-        # Configurar las columnas del Treeview
-        columnas = [f"Columna {i+1}" for i in range(len(resultado[0]))]
-        treeview["columns"] = columnas
+        cols = [f"C{i+1}" for i in range(resultado.shape[1])]
+        treeview["columns"] = cols
         treeview.heading("#0", text="Fila")
-        for i, columna in enumerate(columnas):
-            treeview.heading(columna, text=columna)
+        for c in cols:
+            treeview.heading(c, text=c)
 
-        # Mostrar el resultado de la multiplicación en el Treeview
-        for i, fila in enumerate(resultado):
+        for i, fila in enumerate(resultado.tolist()):
             treeview.insert("", "end", text=f"Fila {i+1}", values=tuple(fila))
 
-    if not hasattr(crear_suma, "frame_suma"):
-        frame_suma = ttk.Frame(ventana, style="TFrame", width=550, height=550)
-        frame_suma.pack()
+        treeview.grid(row=1, column=0, sticky="nsew", padx=5, pady=5)
 
-        label_suma = ttk.Label(frame_suma, text="Operacion: Suma", font=("Bold", 15))
-        label_suma.grid(row=0, column=1, columnspan=3, pady=20)
 
-        label_filas = ttk.Label(frame_suma, text="n°Filas:")
-        label_filas.grid(row=1, column=1, pady=10)
-        entry_filas = ttk.Entry(frame_suma, width=5)
-        entry_filas.grid(row=2, column=1, pady=10, padx=20)
+def crear_suma(parent):
+    """Factory para mantener compatibilidad con la main (que espera una función)."""
+    return SumaScreen(parent)
 
-        label_columnas = ttk.Label(frame_suma, text="n°Columnas:")
-        label_columnas.grid(row=1, column=3, pady=10)
-        entry_columnas = ttk.Entry(frame_suma, width=5)
-        entry_columnas.grid(row=2, column=3, pady=10, padx=20)
-
-        label_matriz_a = ttk.Label(frame_suma, text="Matriz A:")
-        label_matriz_a.grid(row=3, column=1, pady=10)
-        entry_matriz_a = ttk.Entry(frame_suma, width=25)
-        entry_matriz_a.grid(row=4, column=1, pady=10, padx=20)
-
-        label_matriz_b = ttk.Label(frame_suma, text="Matriz B:")
-        label_matriz_b.grid(row=3, column=3, pady=10)
-        entry_matriz_b = ttk.Entry(frame_suma, width=25)
-        entry_matriz_b.grid(row=4, column=3, pady=10, padx=20)
-
-        error_label = ttk.Label(frame_suma, text="")
-        error_label.grid(row=6, column=1, columnspan=3, pady=10)
-        
-        boton_guardar = ttk.Button(frame_suma, text="Calcular Suma", command=guardar_valores)
-        boton_guardar.grid(row=5, column=1, columnspan=3, pady=20)
-
-        def reset_entries():
-            entry_filas.delete(0, 'end')
-            entry_columnas.delete(0, 'end')
-            entry_matriz_a.delete(0, 'end')
-            entry_matriz_b.delete(0, 'end')
-            if error_label is not None:
-                error_label.config(text="")  # Reset error label
-
-        boton_reset = ttk.Button(frame_suma, text="Resetear Entradas", command=reset_entries)
-        boton_reset.grid(row=5, column=4, columnspan=3, pady=20)
-
-        crear_suma.frame_suma = frame_suma
-
-    return crear_suma.frame_suma
-
-def suma_matrices(matriz_A, matriz_B):
-    return [[a + b for a, b in zip(fila_A, fila_B)] for fila_A, fila_B in zip(matriz_A, matriz_B)]
-
-frame_actual = None
