@@ -1,23 +1,25 @@
-"""
-matrix_model.py
 
-Módulo de lógica pura para operaciones matriciales usando NumPy.
-Contiene funciones para parsear cadenas a matrices, sumar matrices, calcular
-inversa y determinante con validaciones y mensajes de error claros.
+"""matrix_model.py
 
-Este módulo no tiene dependencias de GUI y lanza ValueError con mensajes
-legibles en caso de error — ideal para que la capa de vista los capture
-y los muestre al usuario.
+Lógica pura para operaciones matriciales usando NumPy.
+
+Este módulo levanta excepciones de dominio definidas en `exceptions.py`.
+Todas las salidas numéricas usan np.float64 y las entradas son validadas.
 """
+
 from typing import Any
 import numpy as np
+
+from exceptions import InvalidMatrixError, NumericError, MatrixModelError
 
 __all__ = [
     "parse_matrix",
     "safe_add",
+    "safe_subtract",
     "safe_dot",
     "safe_inv",
     "safe_det",
+    "safe_transpose",
 ]
 
 
@@ -44,21 +46,21 @@ def parse_matrix(text: str, rows: int, cols: int, dtype=np.float64) -> np.ndarra
         Array de forma (rows, cols) con los valores convertidos.
     """
     if not isinstance(rows, int) or not isinstance(cols, int) or rows <= 0 or cols <= 0:
-        raise ValueError("rows y cols deben ser enteros positivos.")
+        raise InvalidMatrixError("rows y cols deben ser enteros positivos.")
 
     if text is None:
-        raise ValueError("Texto de entrada vacío.")
+        raise InvalidMatrixError("Texto de entrada vacío.")
 
     # 1) Tokenizar y limpiar
     tokens = [tok.strip() for tok in text.split(',')]
 
     # Detectar valores vacíos explícitos (ej: ",," o ", ")
     if any(tok == "" for tok in tokens):
-        raise ValueError("Se encontraron valores vacíos en la entrada. Asegúrese de separar valores con comas.")
+        raise InvalidMatrixError("Se encontraron valores vacíos en la entrada. Asegúrese de separar valores con comas.")
 
     expected = rows * cols
     if len(tokens) != expected:
-        raise ValueError(f"Se esperaban {expected} valores (rows*cols={expected}), pero se recibieron {len(tokens)}.")
+        raise InvalidMatrixError(f"Se esperaban {expected} valores (rows*cols={expected}), pero se recibieron {len(tokens)}.")
 
     # 2) Conversión a números usando fromiter (rápido y seguro)
     try:
@@ -66,13 +68,13 @@ def parse_matrix(text: str, rows: int, cols: int, dtype=np.float64) -> np.ndarra
         # asegurar consistencia numérica entre operaciones.
         arr = np.fromiter((float(t) for t in tokens), dtype=dtype, count=len(tokens))
     except ValueError as exc:
-        raise ValueError("Error al convertir los valores a número. Asegúrese de usar sólo valores numéricos.") from exc
+        raise InvalidMatrixError("Error al convertir los valores a número. Asegúrese de usar sólo valores numéricos.") from exc
 
     # 3) Reshape
     try:
         arr = arr.reshape((rows, cols))
     except Exception as exc:
-        raise ValueError("Los valores no pueden redimensionarse a las dimensiones solicitadas.") from exc
+        raise InvalidMatrixError("Los valores no pueden redimensionarse a las dimensiones solicitadas.") from exc
 
     return arr
 
@@ -83,11 +85,11 @@ def safe_add(A: Any, B: Any) -> np.ndarray:
     Lanza ValueError si las formas (shapes) de las matrices son incompatibles.
     """
     # Normalizamos a float64 para consistencia numérica
-    A_np = np.asarray(A, dtype=np.float64)
-    B_np = np.asarray(B, dtype=np.float64)
+    A_np = np.ascontiguousarray(A, dtype=np.float64)
+    B_np = np.ascontiguousarray(B, dtype=np.float64)
 
     if A_np.shape != B_np.shape:
-        raise ValueError(f"Shapes incompatibles para suma: A{A_np.shape} vs B{B_np.shape}.")
+        raise InvalidMatrixError(f"Shapes incompatibles para suma: A{A_np.shape} vs B{B_np.shape}.")
 
     return np.add(A_np, B_np)
 
@@ -97,11 +99,11 @@ def safe_subtract(A: Any, B: Any) -> np.ndarray:
     Resta la matriz B de la matriz A (A - B) utilizando NumPy.
     Verifica shapes para compatibilidad y lanza ValueError si son incompatibles.
     """
-    A_np = np.asarray(A, dtype=np.float64)
-    B_np = np.asarray(B, dtype=np.float64)
+    A_np = np.ascontiguousarray(A, dtype=np.float64)
+    B_np = np.ascontiguousarray(B, dtype=np.float64)
 
     if A_np.shape != B_np.shape:
-        raise ValueError(f"Shapes incompatibles para resta: A{A_np.shape} vs B{B_np.shape}.")
+        raise InvalidMatrixError(f"Shapes incompatibles para resta: A{A_np.shape} vs B{B_np.shape}.")
 
     return np.subtract(A_np, B_np)
 
@@ -112,7 +114,7 @@ def safe_inv(A: Any) -> np.ndarray:
     Lanza ValueError si la matriz no es cuadrada o si es singular/mal condicionada.
     """
     # Convertimos a float64 para mayor robustez numérica
-    A_np = np.asarray(A, dtype=np.float64)
+    A_np = np.ascontiguousarray(A, dtype=np.float64)
 
     if A_np.ndim != 2 or A_np.shape[0] != A_np.shape[1]:
         raise ValueError(f"La matriz debe ser cuadrada para calcular la inversa (shape={A_np.shape}).")
@@ -122,7 +124,7 @@ def safe_inv(A: Any) -> np.ndarray:
         cond = np.linalg.cond(A_np)
     except Exception:
         # Si no se puede calcular la condición, tratarlo como no invertible
-        raise ValueError("No se pudo evaluar la condición de la matriz; es posible que sea singular o inválida.")
+        raise NumericError("No se pudo evaluar la condición de la matriz; es posible que sea singular o inválida.")
 
     # Umbral práctico para detectar matrices mal condicionadas.
     # La heurística anterior (1/eps) produce valores extremadamente grandes
@@ -132,13 +134,13 @@ def safe_inv(A: Any) -> np.ndarray:
     # numéricos reales sin ser excesivamente restrictivo.
     threshold = 1e12
     if not np.isfinite(cond) or cond > threshold:
-        raise ValueError(f"La matriz está mal condicionada o es singular (condición={cond:.3e}). No es segura para invertir.")
+        raise NumericError(f"La matriz está mal condicionada o es singular (condición={cond:.3e}). No es segura para invertir.")
 
     try:
         inv = np.linalg.inv(A_np)
         return inv
     except np.linalg.LinAlgError as exc:
-        raise ValueError("La matriz es singular y no tiene inversa.") from exc
+        raise NumericError("La matriz es singular y no tiene inversa.") from exc
 
 
 def safe_det(A: Any) -> float:
@@ -146,12 +148,15 @@ def safe_det(A: Any) -> float:
     Calcula el determinante de A (np.linalg.det).
     Lanza ValueError si la matriz no es cuadrada.
     """
-    A_np = np.asarray(A, dtype=float)
+    A_np = np.ascontiguousarray(A, dtype=np.float64)
 
     if A_np.ndim != 2 or A_np.shape[0] != A_np.shape[1]:
-        raise ValueError(f"La matriz debe ser cuadrada para calcular el determinante (shape={A_np.shape}).")
+        raise InvalidMatrixError(f"La matriz debe ser cuadrada para calcular el determinante (shape={A_np.shape}).")
 
-    return float(np.linalg.det(A_np))
+    try:
+        return float(np.linalg.det(A_np))
+    except Exception as exc:
+        raise NumericError("Error al calcular el determinante.") from exc
 
 
 def safe_dot(A: Any, B: Any) -> np.ndarray:
@@ -159,16 +164,27 @@ def safe_dot(A: Any, B: Any) -> np.ndarray:
     Realiza la multiplicación matricial A @ B (np.matmul) validando shapes.
     Lanza ValueError si las dimensiones no son compatibles para la multiplicación.
     """
-    A_np = np.asarray(A)
-    B_np = np.asarray(B)
+    A_np = np.ascontiguousarray(A, dtype=np.float64)
+    B_np = np.ascontiguousarray(B, dtype=np.float64)
 
     if A_np.ndim != 2 or B_np.ndim != 2:
-        raise ValueError(f"Ambos operandos deben ser matrices 2D. Got shapes: A{A_np.shape}, B{B_np.shape}")
+        raise InvalidMatrixError(f"Ambos operandos deben ser matrices 2D. Got shapes: A{A_np.shape}, B{B_np.shape}")
 
     if A_np.shape[1] != B_np.shape[0]:
-        raise ValueError(f"Shapes incompatibles para multiplicación: A{A_np.shape} x B{B_np.shape}. Requiera A.columns == B.rows.")
+        raise InvalidMatrixError(f"Shapes incompatibles para multiplicación: A{A_np.shape} x B{B_np.shape}. Requiera A.columns == B.rows.")
 
     try:
         return np.matmul(A_np, B_np)
     except Exception as exc:
-        raise ValueError("Error al multiplicar las matrices.") from exc
+        raise NumericError("Error al multiplicar las matrices.") from exc
+
+
+def safe_transpose(A: Any) -> np.ndarray:
+    """Return the transpose of A as a contiguous np.float64 2D array.
+
+    Raises InvalidMatrixError if input is not 2D.
+    """
+    A_np = np.ascontiguousarray(A, dtype=np.float64)
+    if A_np.ndim != 2:
+        raise InvalidMatrixError(f"El operando debe ser una matriz 2D (shape={A_np.shape}).")
+    return A_np.T

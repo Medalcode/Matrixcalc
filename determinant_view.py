@@ -8,6 +8,7 @@ import numpy as np
 import matrix_model
 from matrix_editor import MatrixEditor
 from result_viewer import MatrixResultViewer
+from exceptions import MatrixModelError
 
 
 class DeterminanteScreen(ttk.Frame):
@@ -87,8 +88,13 @@ class DeterminanteScreen(ttk.Frame):
             invertible = not np.isclose(det, 0.0)
             ttk.Label(frame, text=("Invertible" if invertible else "No invertible"), foreground=("green" if invertible else "red")).pack()
 
-        except ValueError as e:
+        except MatrixModelError as e:
             self.error_label.config(text=str(e))
+        except Exception:
+            import logging
+
+            logging.exception("Unexpected error in calcular_determinante")
+            self.error_label.config(text="Error inesperado. Revise logs.")
 
 
 def crear_determinante(parent):

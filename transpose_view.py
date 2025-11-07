@@ -7,6 +7,7 @@ from tkinter import ttk
 import numpy as np
 import matrix_model
 from matrix_editor import MatrixEditor
+from exceptions import MatrixModelError
 from result_viewer import MatrixResultViewer
 
 
@@ -82,8 +83,13 @@ class TraspuestaScreen(ttk.Frame):
             viewer.pack(fill=tk.BOTH, expand=True)
             viewer.show_matrix(T)
 
-        except ValueError as e:
+        except MatrixModelError as e:
             self.error_label.config(text=str(e))
+        except Exception:
+            import logging
+
+            logging.exception("Unexpected error in calcular_traspuesta")
+            self.error_label.config(text="Error inesperado. Revise logs.")
 
 
 def crear_traspuesta(parent):
