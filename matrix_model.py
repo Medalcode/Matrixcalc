@@ -15,6 +15,7 @@ import numpy as np
 __all__ = [
     "parse_matrix",
     "safe_add",
+    "safe_dot",
     "safe_inv",
     "safe_det",
 ]
@@ -130,3 +131,23 @@ def safe_det(A: Any) -> float:
         raise ValueError(f"La matriz debe ser cuadrada para calcular el determinante (shape={A_np.shape}).")
 
     return float(np.linalg.det(A_np))
+
+
+def safe_dot(A: Any, B: Any) -> np.ndarray:
+    """
+    Realiza la multiplicación matricial A @ B (np.matmul) validando shapes.
+    Lanza ValueError si las dimensiones no son compatibles para la multiplicación.
+    """
+    A_np = np.asarray(A)
+    B_np = np.asarray(B)
+
+    if A_np.ndim != 2 or B_np.ndim != 2:
+        raise ValueError(f"Ambos operandos deben ser matrices 2D. Got shapes: A{A_np.shape}, B{B_np.shape}")
+
+    if A_np.shape[1] != B_np.shape[0]:
+        raise ValueError(f"Shapes incompatibles para multiplicación: A{A_np.shape} x B{B_np.shape}. Requiera A.columns == B.rows.")
+
+    try:
+        return np.matmul(A_np, B_np)
+    except Exception as exc:
+        raise ValueError("Error al multiplicar las matrices.") from exc

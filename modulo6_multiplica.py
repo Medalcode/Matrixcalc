@@ -1,167 +1,151 @@
 import tkinter as tk
-from tkinter import ttk 
-import numpy as np
-import tkinter as tk
 from tkinter import ttk
+import matrix_model
+from matrix_editor import MatrixEditor
 
-def crear_multiplica(ventana):
-    error_label = None  # Define the error_label variable outside the function
 
-    def guardar_valores():
-        nonlocal error_label  # Use the nonlocal keyword to access the error_label variable
+class MultiplicaScreen(ttk.Frame):
+    """Pantalla de multiplicación matricial que usa MatrixEditor y matrix_model.
 
-        # Obtener los valores de las entradas y guardarlos en las variables
+    Reemplaza la lógica procedural previa por una clase con un único error_label
+    y delega parsing/validación/cálculo a matrix_model.
+    """
+
+    def __init__(self, parent, show_frame_callback=None):
+        super().__init__(parent, style="TFrame")
+        self.parent = parent
+        self.show_frame = show_frame_callback
+
+        label = ttk.Label(self, text="Operación: Multiplicación", font=("Bold", 15))
+        label.grid(row=0, column=0, columnspan=4, pady=20)
+
+        # Dimensiones para A
+        ttk.Label(self, text="Filas A:").grid(row=1, column=0, pady=5, sticky="w")
+        self.entry_filas_A = ttk.Entry(self, width=5)
+        self.entry_filas_A.grid(row=2, column=0, pady=5, padx=5)
+
+        ttk.Label(self, text="Columnas A:").grid(row=1, column=1, pady=5, sticky="w")
+        self.entry_columnas_A = ttk.Entry(self, width=5)
+        self.entry_columnas_A.grid(row=2, column=1, pady=5, padx=5)
+
+        # Dimensiones para B
+        ttk.Label(self, text="Filas B:").grid(row=1, column=2, pady=5, sticky="w")
+        self.entry_filas_B = ttk.Entry(self, width=5)
+        self.entry_filas_B.grid(row=2, column=2, pady=5, padx=5)
+
+        ttk.Label(self, text="Columnas B:").grid(row=1, column=3, pady=5, sticky="w")
+        self.entry_columnas_B = ttk.Entry(self, width=5)
+        self.entry_columnas_B.grid(row=2, column=3, pady=5, padx=5)
+
+        # MatrixEditor para A y B
+        ttk.Label(self, text="Matriz A:").grid(row=3, column=0, pady=5, sticky="w")
+        self.editor_A = MatrixEditor(self, rows=3, cols=3)
+        self.editor_A.grid(row=4, column=0, columnspan=2, pady=5, padx=5, sticky="nsew")
+
+        ttk.Label(self, text="Matriz B:").grid(row=3, column=2, pady=5, sticky="w")
+        self.editor_B = MatrixEditor(self, rows=3, cols=3)
+        self.editor_B.grid(row=4, column=2, columnspan=2, pady=5, padx=5, sticky="nsew")
+
+        # Error label centralizado
+        self.error_label = ttk.Label(self, text="", foreground="red")
+        self.error_label.grid(row=5, column=0, columnspan=4, pady=10, sticky="ew")
+
+        # Bind para actualizar dimensiones cuando cambian
+        self.entry_filas_A.bind("<FocusOut>", lambda e: self._on_dim_change_A())
+        self.entry_columnas_A.bind("<FocusOut>", lambda e: self._on_dim_change_A())
+        self.entry_filas_B.bind("<FocusOut>", lambda e: self._on_dim_change_B())
+        self.entry_columnas_B.bind("<FocusOut>", lambda e: self._on_dim_change_B())
+
+        # Botones
+        self.boton_calcular = ttk.Button(self, text="Calcular Multiplicación", command=self.calcular_multiplicacion)
+        self.boton_calcular.grid(row=6, column=0, columnspan=2, pady=15)
+
+        self.boton_reset = ttk.Button(self, text="Resetear Entradas", command=self.reset_entries)
+        self.boton_reset.grid(row=6, column=2, columnspan=2, pady=15)
+
+    def _on_dim_change_A(self):
         try:
-            filas_A = int(entry_filas_A.get())
-            columnas_A = int(entry_columnas_A.get())
-            filas_B = int(entry_filas_B.get())
-            columnas_B = int(entry_columnas_B.get())
-        except ValueError:
-            error_label = ttk.Label(frame_multiplicacion, text="Error: Ingrese valores numéricos para las filas y columnas.")
-            error_label.grid(row=8, column=1, columnspan=3, pady=10)
+            r = int(self.entry_filas_A.get())
+            c = int(self.entry_columnas_A.get())
+        except Exception:
             return
+        if r > 0 and c > 0:
+            self.editor_A.set_dimensions(r, c)
 
-        # Obtener las matrices A y B
-        matriz_A = obtener_matriz(entry_matriz_A, filas_A, columnas_A)
-        matriz_B = obtener_matriz(entry_matriz_B, filas_B, columnas_B)
-
-        # Check if matrices are valid
-        if matriz_A is None or matriz_B is None:
-            error_label = ttk.Label(frame_multiplicacion, text="Error: Las matrices no son válidas.")
-            error_label.grid(row=8, column=1, columnspan=3, pady=10)
+    def _on_dim_change_B(self):
+        try:
+            r = int(self.entry_filas_B.get())
+            c = int(self.entry_columnas_B.get())
+        except Exception:
             return
+        if r > 0 and c > 0:
+            self.editor_B.set_dimensions(r, c)
 
-        if matriz_A is not None and matriz_B is not None:
-            # Realizar la multiplicación de matrices o cualquier otra operación que desees
-            resultado = multiplicar_matrices(matriz_A, matriz_B)
-            if resultado is not None:
-                # Mostrar el resultado en la interfaz gráfica
-                mostrar_resultado(resultado)
-            else:
-                error_label = ttk.Label(frame_multiplicacion, text="Error: Las matrices no pueden multiplicarse debido a sus dimensiones.")
-                error_label.grid(row=6, column=1, columnspan=3, pady=10)
+    def reset_entries(self):
+        # Limpiar dimensiones
+        self.entry_filas_A.delete(0, tk.END)
+        self.entry_columnas_A.delete(0, tk.END)
+        self.entry_filas_B.delete(0, tk.END)
+        self.entry_columnas_B.delete(0, tk.END)
 
-    def obtener_matriz(entry_matriz, filas, columnas):
-        nonlocal error_label  # Use the nonlocal keyword to access the error_label variable
+        # Limpiar celdas de los editores
+        for r in range(self.editor_A.rows):
+            for c in range(self.editor_A.cols):
+                self.editor_A.entries[r][c].delete(0, tk.END)
+        for r in range(self.editor_B.rows):
+            for c in range(self.editor_B.cols):
+                self.editor_B.entries[r][c].delete(0, tk.END)
 
-        matriz = []
-        entrada_texto = entry_matriz.get()
-        valores = entrada_texto.split(',')
+        self.error_label.config(text="")
 
-        # Validar que el número de valores ingresados sea igual a las columnas
-        if len(valores) != columnas * filas:
-            error_label = ttk.Label(frame_multiplicacion, text=f"Error: Ingrese {filas * columnas} valores para la matriz.")
-            error_label.grid(row=8, column=1, columnspan=3, pady=10)
-            return None
+    def calcular_multiplicacion(self):
+        self.error_label.config(text="")
+        try:
+            # Leer dimensiones
+            rA = int(self.entry_filas_A.get())
+            cA = int(self.entry_columnas_A.get())
+            rB = int(self.entry_filas_B.get())
+            cB = int(self.entry_columnas_B.get())
 
-        for i in range(filas):
-            fila = []
-            for j in range(columnas):
-                try:
-                    valor = int(valores[i * columnas + j])
-                    fila.append(valor)
-                except ValueError:
-                    error_label = ttk.Label(frame_multiplicacion, text="Error: Ingrese valores numéricos para la matriz.")
-                    error_label.grid(row=8, column=1, columnspan=3, pady=10)
-                    return None
-            matriz.append(fila)
-        return matriz
+            # Obtener CSV desde los editores
+            text_a = self.editor_A.get_matrix_text()
+            text_b = self.editor_B.get_matrix_text()
 
+            # Delegar parseo al modelo
+            A = matrix_model.parse_matrix(text_a, rA, cA)
+            B = matrix_model.parse_matrix(text_b, rB, cB)
 
-    def mostrar_resultado(resultado):
-        # Crear una nueva ventana para mostrar el resultado de la multiplicación
-        ventana_resultado = tk.Toplevel(ventana)
+            # Delegar multiplicación al modelo
+            R = matrix_model.safe_dot(A, B)
+
+            # Mostrar resultado
+            self._mostrar_resultado(R)
+
+        except ValueError as e:
+            self.error_label.config(text=str(e))
+
+    def _mostrar_resultado(self, resultado):
+        ventana_resultado = tk.Toplevel(self.parent)
         ventana_resultado.title("Resultado de la Multiplicación")
 
-        # Crear un frame para el resultado de la multiplicación
-        frame_resultado = tk.Frame(ventana_resultado, width=400, height=550)
-        frame_resultado.pack()
+        frame_resultado = ttk.Frame(ventana_resultado)
+        frame_resultado.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-        # Etiqueta para el resultado de la multiplicación
         label_resultado = ttk.Label(frame_resultado, text="Resultado de la Multiplicación", font=("Bold", 15))
-        label_resultado.grid(row=0, column=0, columnspan=len(resultado[0]) * 2, pady=20)
+        label_resultado.grid(row=0, column=0, columnspan=resultado.shape[1], pady=10)
 
-        # Crear el Treeview para mostrar el resultado en formato tabular
         treeview = ttk.Treeview(frame_resultado)
-        treeview.grid(row=1, column=0, columnspan=len(resultado[0]) * 2, padx=10)
-
-        # Configurar las columnas del Treeview
-        columnas = [f"Columna {i+1}" for i in range(len(resultado[0]))]
-        treeview["columns"] = columnas
+        cols = [f"C{i+1}" for i in range(resultado.shape[1])]
+        treeview["columns"] = cols
         treeview.heading("#0", text="Fila")
-        for i, columna in enumerate(columnas):
-            treeview.heading(columna, text=columna)
+        for c in cols:
+            treeview.heading(c, text=c)
 
-        # Mostrar el resultado de la multiplicación en el Treeview
-        for i, fila in enumerate(resultado):
+        for i, fila in enumerate(resultado.tolist()):
             treeview.insert("", "end", text=f"Fila {i+1}", values=tuple(fila))
 
-    frame_multiplicacion = ttk.Frame(ventana, style="TFrame", width=550, height=550)    
-    frame_multiplicacion.pack()
+        treeview.grid(row=1, column=0, sticky="nsew", padx=5, pady=5)
 
-    label_multiplicacion = ttk.Label(frame_multiplicacion, text="Operacion: Multiplicación", font=("Bold", 15))
-    label_multiplicacion.grid(row=0, column=1, columnspan=3, pady=20)
 
-    # Etiqueta y entrada para la cantidad de filas de A
-    label_filas_A = ttk.Label(frame_multiplicacion, text="Filas A:")
-    label_filas_A.grid(row=1, column=1, pady=10)
-    entry_filas_A = ttk.Entry(frame_multiplicacion, width=5)
-    entry_filas_A.grid(row=2, column=1, pady=10, padx=20)
-
-    # Etiqueta y entrada para la cantidad de columnas de A
-    label_columnas_A = ttk.Label(frame_multiplicacion, text="Columnas A:")
-    label_columnas_A.grid(row=1, column=3, pady=10)
-    entry_columnas_A = ttk.Entry(frame_multiplicacion, width=5)
-    entry_columnas_A.grid(row=2, column=3, pady=10, padx=20)
-
-    # Etiqueta y entrada para la cantidad de filas de B
-    label_filas_B = ttk.Label(frame_multiplicacion, text="Filas B:")
-    label_filas_B.grid(row=3, column=1, pady=10)
-    entry_filas_B = ttk.Entry(frame_multiplicacion, width=5)
-    entry_filas_B.grid(row=4, column=1, pady=10, padx=20)
-
-    # Etiqueta y entrada para la cantidad de columnas de B
-    label_columnas_B = ttk.Label(frame_multiplicacion, text="Columnas B:")
-    label_columnas_B.grid(row=3, column=3, pady=10)
-    entry_columnas_B = ttk.Entry(frame_multiplicacion, width=5)
-    entry_columnas_B.grid(row=4, column=3, pady=10, padx=20)
-
-    # Etiqueta y entrada de la matriz A
-    label_matriz_A = ttk.Label(frame_multiplicacion, text="Matriz A:")
-    label_matriz_A.grid(row=5, column=1, pady=10)
-    entry_matriz_A = ttk.Entry(frame_multiplicacion, width=25)
-    entry_matriz_A.grid(row=6, column=1, pady=10, padx=20)
-
-    # Etiqueta y entrada de la matriz B
-    label_matriz_B = ttk.Label(frame_multiplicacion, text="Matriz B:")
-    label_matriz_B.grid(row=5, column=3, pady=10)
-    entry_matriz_B = ttk.Entry(frame_multiplicacion, width=25)
-    entry_matriz_B.grid(row=6, column=3, pady=10, padx=20)
-
-    # Botón para guardar los valores
-    boton_guardar = ttk.Button(frame_multiplicacion, text="Calcular Multiplicación", command=guardar_valores)
-    boton_guardar.grid(row=7, column=1, columnspan=3, pady=20)
-
-    def reset_entries():
-        nonlocal error_label  # Use the nonlocal keyword to access the error_label variable
-        error_label.config(text="")
-        entry_filas_A.delete(0, 'end')
-        entry_columnas_A.delete(0, 'end')
-        entry_filas_B.delete(0, 'end')
-        entry_columnas_B.delete(0, 'end')
-        entry_matriz_A.delete(0, 'end')
-        entry_matriz_B.delete(0, 'end')
-
-    ## S3.9 - Este Botón resetea las entradas
-    boton_reset = ttk.Button(frame_multiplicacion, text="Resetear Entradas", command=reset_entries)
-    boton_reset.grid(row=7, column=4, columnspan=3, pady=20)
-
-    return frame_multiplicacion
-
-# Función ficticia para la multiplicación de matrices (reemplázala con tu propia implementación)
-def multiplicar_matrices(matriz_A, matriz_B):
-    # Utiliza numpy para realizar la multiplicación de matrices
-    resultado_np = np.dot(matriz_A, matriz_B)
-    # Convierte el resultado de numpy a una lista de listas
-    resultado = resultado_np.tolist()
-    return resultado
+def crear_multiplica(parent):
+    return MultiplicaScreen(parent)
