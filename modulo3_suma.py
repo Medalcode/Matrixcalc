@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import matrix_model
 from matrix_editor import MatrixEditor
+from result_viewer import MatrixResultViewer
 
 
 class SumaScreen(ttk.Frame):
@@ -39,6 +40,9 @@ class SumaScreen(ttk.Frame):
         # Error label único y centralizado
         self.error_label = ttk.Label(self, text="", foreground="red")
         self.error_label.grid(row=5, column=0, columnspan=4, pady=10, sticky="ew")
+        # Viewer para resultados
+        self.result_viewer = MatrixResultViewer(self)
+        self.result_viewer.grid(row=7, column=0, columnspan=4, sticky="nsew", padx=5, pady=5)
 
         # Conectar cambios de dimensiones: cuando se pierda el foco en los campos de dimensión
         self.entry_filas.bind("<FocusOut>", lambda e: self._on_dim_change())
@@ -95,12 +99,17 @@ class SumaScreen(ttk.Frame):
             # 3) Calcular suma con el modelo
             R = matrix_model.safe_add(A, B)
 
-            # 4) Mostrar resultado en una ventana tipo Treeview
-            self._mostrar_resultado(R)
+            # 4) Mostrar resultado mediante el viewer
+            self.result_viewer.show_matrix(R)
 
         except ValueError as e:
             # Mensajes claros procedentes del modelo
             self.error_label.config(text=str(e))
+            # limpiar viewer en caso de error
+            try:
+                self.result_viewer.clear_viewer()
+            except Exception:
+                pass
 
     def _mostrar_resultado(self, resultado):
         ventana_resultado = tk.Toplevel(self.parent)

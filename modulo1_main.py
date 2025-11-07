@@ -9,6 +9,7 @@ from modulo5_inversa import crear_inversa
 from modulo6_multiplica import crear_multiplica
 from modulo7_traspuesta import crear_traspuesta
 from modulo8_determina import crear_determinante
+from result_viewer import MatrixResultViewer
 
 def cambiar_tema(tema):
     style = ttk.Style()
@@ -23,20 +24,26 @@ def abrir_frame(crear_frame):
     frame_actual.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
 def mostrar_resultado(resultado):
+    """Función de compatibilidad que muestra una matriz usando MatrixResultViewer.
+
+    Recomendación: las pantallas deben usar su propio viewer (MatrixResultViewer)
+    para presentar resultados; esta función es un stub que utiliza el mismo
+    componente para presentaciones rápidas desde el main si fuera necesario.
+    """
     ventana_resultado = tk.Toplevel(ventana)
     ventana_resultado.title("Resultado de la Operación")
 
-    frame_resultado = ttk.Frame(ventana, style="TFrame", width=550, height=550)
-    frame_resultado.pack()
+    frame_resultado = ttk.Frame(ventana_resultado, style="TFrame", width=550, height=550)
+    frame_resultado.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-    label_resultado = ttk.Label(frame_resultado, text="Resultado de la Operación", font=("Bold", 15))
-    label_resultado.grid(row=0, column=0, columnspan=len(resultado[0]) * 2, pady=20)
-
-    for i, fila in enumerate(resultado):
-        for j, valor in enumerate(fila):
-            label_valor = ttk.Label(frame_resultado, text=str(valor))
-            label_valor.grid(row=i + 1, column=j * 2, padx=5)
-        ttk.Label(frame_resultado, text="|").grid(row=i + 1, column=len(fila) * 2 - 1)
+    viewer = MatrixResultViewer(frame_resultado)
+    viewer.pack(fill=tk.BOTH, expand=True)
+    try:
+        viewer.show_matrix(resultado)
+    except Exception as e:
+        # Si no es una matriz 2D, mostrar fallback simple
+        lbl = ttk.Label(frame_resultado, text=str(resultado))
+        lbl.pack()
 
 def mostrar_ventana_ayuda():
     global ventana_ayuda
