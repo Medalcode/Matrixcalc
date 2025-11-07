@@ -1,8 +1,9 @@
-"""Compatibility shim: re-export `crear_home` from `home_view`.
+"""Legacy module removed.
 
-Kept for backwards compatibility with legacy import paths. Use `home_view.py`
-for the implementation.
+This repository removed the legacy `modulo2_home.py` shim during refactor.
+Use `home_view.crear_home` instead. Importing this module raises ImportError to
+make the breaking change explicit.
 """
 
-from home_view import crear_home
+raise ImportError("modulo2_home has been removed. Use 'home_view.crear_home' instead.")
 

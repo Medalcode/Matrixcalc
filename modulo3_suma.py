@@ -1,9 +1,10 @@
-"""Compatibility shim: re-export `crear_suma` from `sum_view`.
+"""Legacy module removed.
 
-This maintains the historical import path `modulo3_suma` while delegating
-to the modern implementation in `sum_view.py`.
+This repository removed the legacy `modulo3_suma.py` shim during refactor.
+Use `sum_view.crear_suma` instead. Importing this module raises ImportError to
+make the breaking change explicit.
 """
 
-from sum_view import crear_suma
+raise ImportError("modulo3_suma has been removed. Use 'sum_view.crear_suma' instead.")
 
 
