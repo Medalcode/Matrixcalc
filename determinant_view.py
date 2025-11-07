@@ -7,6 +7,7 @@ from tkinter import ttk
 import numpy as np
 import matrix_model
 from matrix_editor import MatrixEditor
+from result_viewer import MatrixResultViewer
 
 
 class DeterminanteScreen(ttk.Frame):
@@ -72,13 +73,17 @@ class DeterminanteScreen(ttk.Frame):
             A = matrix_model.parse_matrix(text_a, filas, columnas)
 
             det = matrix_model.safe_det(A)
-
-            # Mostrar resultado en nueva ventana
             ventana_resultado = tk.Toplevel(self.parent)
             ventana_resultado.title("Determinante")
             frame = ttk.Frame(ventana_resultado)
-            frame.pack(padx=10, pady=10)
-            ttk.Label(frame, text=f"Determinante: {det}", font=("Bold", 12)).pack()
+            frame.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+            # Mostrar determinante usando MatrixResultViewer como 1x1 matrix
+            viewer = MatrixResultViewer(frame)
+            viewer.pack(fill=tk.BOTH, expand=True)
+            import numpy as _np
+            viewer.show_matrix(_np.array([[det]]))
+
             invertible = not np.isclose(det, 0.0)
             ttk.Label(frame, text=("Invertible" if invertible else "No invertible"), foreground=("green" if invertible else "red")).pack()
 

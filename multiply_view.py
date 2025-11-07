@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import ttk
 import matrix_model
 from matrix_editor import MatrixEditor
+from result_viewer import MatrixResultViewer
 
 
 class MultiplicaScreen(ttk.Frame):
@@ -131,20 +132,10 @@ class MultiplicaScreen(ttk.Frame):
         frame_resultado = ttk.Frame(ventana_resultado)
         frame_resultado.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-        label_resultado = ttk.Label(frame_resultado, text="Resultado de la Multiplicación", font=("Bold", 15))
-        label_resultado.grid(row=0, column=0, columnspan=resultado.shape[1], pady=10)
-
-        treeview = ttk.Treeview(frame_resultado)
-        cols = [f"C{i+1}" for i in range(resultado.shape[1])]
-        treeview["columns"] = cols
-        treeview.heading("#0", text="Fila")
-        for c in cols:
-            treeview.heading(c, text=c)
-
-        for i, fila in enumerate(resultado.tolist()):
-            treeview.insert("", "end", text=f"Fila {i+1}", values=tuple(fila))
-
-        treeview.grid(row=1, column=0, sticky="nsew", padx=5, pady=5)
+        # Usar MatrixResultViewer para mostrar el resultado de forma consistente
+        viewer = MatrixResultViewer(frame_resultado)
+        viewer.pack(fill=tk.BOTH, expand=True)
+        viewer.show_matrix(resultado)
 
 
 def crear_multiplica(parent):

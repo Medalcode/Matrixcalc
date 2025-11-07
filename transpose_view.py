@@ -7,6 +7,7 @@ from tkinter import ttk
 import numpy as np
 import matrix_model
 from matrix_editor import MatrixEditor
+from result_viewer import MatrixResultViewer
 
 
 class TraspuestaScreen(ttk.Frame):
@@ -72,22 +73,14 @@ class TraspuestaScreen(ttk.Frame):
 
             # Usar numpy transpose sobre el ndarray
             T = np.transpose(A)
-
-            # Mostrar resultado en ventana
             ventana_resultado = tk.Toplevel(self.parent)
             ventana_resultado.title("Traspuesta")
             frame = ttk.Frame(ventana_resultado)
             frame.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-            treeview = ttk.Treeview(frame)
-            cols = [f"C{i+1}" for i in range(T.shape[1])]
-            treeview["columns"] = cols
-            treeview.heading("#0", text="Fila")
-            for c in cols:
-                treeview.heading(c, text=c)
-            for i, fila in enumerate(T.tolist()):
-                treeview.insert("", "end", text=f"Fila {i+1}", values=tuple(fila))
-            treeview.pack(fill=tk.BOTH, expand=True)
+            viewer = MatrixResultViewer(frame)
+            viewer.pack(fill=tk.BOTH, expand=True)
+            viewer.show_matrix(T)
 
         except ValueError as e:
             self.error_label.config(text=str(e))
