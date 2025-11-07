@@ -1,6 +1,8 @@
-"""Compatibility shim: re-export `crear_multiplica` from `multiply_view`.
+"""Legacy module removed.
 
-This preserves the historical import path while delegating to `multiply_view.py`.
+This repository removed the legacy `modulo6_multiplica.py` shim during refactor.
+Use `multiply_view.crear_multiplica` instead. Importing this module raises ImportError
+to make the breaking change explicit.
 """
 
-from multiply_view import crear_multiplica
+raise ImportError("modulo6_multiplica has been removed. Use 'multiply_view.crear_multiplica' instead.")

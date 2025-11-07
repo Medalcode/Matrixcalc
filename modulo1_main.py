@@ -1,14 +1,12 @@
-"""Compatibility shim: re-export MatrixCalcApp from `gui_main`.
+"""Legacy module removed.
 
-This module is kept to avoid breaking external imports that reference the
-historical name `modulo1_main`. It simply re-exports the canonical
-application class from `gui_main`.
+This repository removed the legacy `modulo1_main.py` implementation during a
+refactor that renamed modules to descriptive `*_view.py` names and a single
+`gui_main.py` entrypoint. Importing this module will raise ImportError to
+make the breaking change explicit.
+
+Use `gui_main.MatrixCalcApp` as the entrypoint.
 """
 
-from gui_main import MatrixCalcApp
-
-
-if __name__ == "__main__":
-    app = MatrixCalcApp()
-    app.mainloop()
+raise ImportError("modulo1_main has been removed. Use 'gui_main.MatrixCalcApp' instead.")
 

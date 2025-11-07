@@ -1,7 +1,8 @@
-"""Compatibility shim: re-export `crear_inversa` from `inverse_view`.
+"""Legacy module removed.
 
-This preserves the legacy import path while delegating to the modern
-implementation in `inverse_view.py`.
+This repository removed the legacy `modulo5_inversa.py` shim during refactor.
+Use `inverse_view.crear_inversa` instead. Importing this module raises ImportError
+to make the breaking change explicit.
 """
 
-from inverse_view import crear_inversa
+raise ImportError("modulo5_inversa has been removed. Use 'inverse_view.crear_inversa' instead.")
