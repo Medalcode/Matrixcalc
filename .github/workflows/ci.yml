@@ -33,10 +33,12 @@ jobs:
 
       - name: Lint with flake8
         run: |
+          # Run flake8 and fail the job on style errors. flake8 is installed via requirements-dev.txt.
           if command -v flake8 >/dev/null 2>&1; then
-            flake8 . || true
+            flake8 .
           else
             echo "flake8 not installed"
+            exit 1
           fi
 
       - name: Run tests
