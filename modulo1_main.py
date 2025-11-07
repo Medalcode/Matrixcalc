@@ -1,7 +1,8 @@
-"""Backward-compatibility shim for the renamed GUI entrypoint.
+"""Compatibility shim: re-export MatrixCalcApp from `gui_main`.
 
-This module preserves the old module name `modulo1_main` for any external
-scripts that still import it. It re-exports MatrixCalcApp from `gui_main`.
+This module is kept to avoid breaking external imports that reference the
+historical name `modulo1_main`. It simply re-exports the canonical
+application class from `gui_main`.
 """
 
 from gui_main import MatrixCalcApp

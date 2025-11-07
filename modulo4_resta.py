@@ -34,7 +34,11 @@ class RestaScreen(ttk.Frame):
         self.entry_columnas = ttk.Entry(self, width=5)
         self.entry_columnas.grid(row=1, column=3, sticky="w", padx=5)
         self.entry_columnas.insert(0, str(default_cols))
-"""Compatibility shim: re-export crear_resta from subtract_view.py."""
+"""Compatibility shim: re-export `crear_resta` from `subtract_view`.
+
+This file preserves the legacy import path while delegating to
+`subtract_view.py` for the implementation.
+"""
 
 from subtract_view import crear_resta
 
