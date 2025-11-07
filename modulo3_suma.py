@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import matrix_model
+from matrix_editor import MatrixEditor
 
 
 class SumaScreen(ttk.Frame):
@@ -26,18 +27,22 @@ class SumaScreen(ttk.Frame):
         ttk.Label(self, text="n°Columnas:").grid(row=1, column=1, pady=5, sticky="w")
         self.entry_columnas = ttk.Entry(self, width=5)
         self.entry_columnas.grid(row=2, column=1, pady=5, padx=5)
+        # MatrixEditor widgets (visual grid editors)
+        ttk.Label(self, text="Matriz A:").grid(row=3, column=0, pady=5, sticky="w")
+        self.editor_A = MatrixEditor(self, rows=3, cols=3)
+        self.editor_A.grid(row=4, column=0, columnspan=2, pady=5, padx=5, sticky="nsew")
 
-        ttk.Label(self, text="Matriz A (CSV):").grid(row=3, column=0, pady=5, sticky="w")
-        self.entry_matriz_a = ttk.Entry(self, width=40)
-        self.entry_matriz_a.grid(row=4, column=0, columnspan=2, pady=5, padx=5)
-
-        ttk.Label(self, text="Matriz B (CSV):").grid(row=3, column=2, pady=5, sticky="w")
-        self.entry_matriz_b = ttk.Entry(self, width=40)
-        self.entry_matriz_b.grid(row=4, column=2, columnspan=2, pady=5, padx=5)
+        ttk.Label(self, text="Matriz B:").grid(row=3, column=2, pady=5, sticky="w")
+        self.editor_B = MatrixEditor(self, rows=3, cols=3)
+        self.editor_B.grid(row=4, column=2, columnspan=2, pady=5, padx=5, sticky="nsew")
 
         # Error label único y centralizado
         self.error_label = ttk.Label(self, text="", foreground="red")
         self.error_label.grid(row=5, column=0, columnspan=4, pady=10, sticky="ew")
+
+        # Conectar cambios de dimensiones: cuando se pierda el foco en los campos de dimensión
+        self.entry_filas.bind("<FocusOut>", lambda e: self._on_dim_change())
+        self.entry_columnas.bind("<FocusOut>", lambda e: self._on_dim_change())
 
         # Botones
         self.boton_calcular = ttk.Button(self, text="Calcular Suma", command=self.calcular_suma)
@@ -49,9 +54,26 @@ class SumaScreen(ttk.Frame):
     def reset_entries(self):
         self.entry_filas.delete(0, tk.END)
         self.entry_columnas.delete(0, tk.END)
-        self.entry_matriz_a.delete(0, tk.END)
-        self.entry_matriz_b.delete(0, tk.END)
+        # Limpiar celdas en los MatrixEditor
+        for r in range(self.editor_A.rows):
+            for c in range(self.editor_A.cols):
+                self.editor_A.entries[r][c].delete(0, tk.END)
+        for r in range(self.editor_B.rows):
+            for c in range(self.editor_B.cols):
+                self.editor_B.entries[r][c].delete(0, tk.END)
         self.error_label.config(text="")
+
+    def _on_dim_change(self):
+        """Leer dimensiones y redibujar los MatrixEditor cuando cambien."""
+        try:
+            filas = int(self.entry_filas.get())
+            columnas = int(self.entry_columnas.get())
+        except Exception:
+            return
+
+        if filas > 0 and columnas > 0:
+            self.editor_A.set_dimensions(filas, columnas)
+            self.editor_B.set_dimensions(filas, columnas)
 
     def calcular_suma(self):
         """Controlador que parsea entradas, delega en matrix_model y muestra resultado."""
@@ -63,9 +85,9 @@ class SumaScreen(ttk.Frame):
             filas = int(self.entry_filas.get())
             columnas = int(self.entry_columnas.get())
 
-            # 2) Parsear matrices vía el modelo
-            text_a = self.entry_matriz_a.get()
-            text_b = self.entry_matriz_b.get()
+            # 2) Obtener CSV desde los MatrixEditor
+            text_a = self.editor_A.get_matrix_text()
+            text_b = self.editor_B.get_matrix_text()
 
             A = matrix_model.parse_matrix(text_a, filas, columnas)
             B = matrix_model.parse_matrix(text_b, filas, columnas)
