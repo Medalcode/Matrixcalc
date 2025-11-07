@@ -21,7 +21,7 @@ __all__ = [
 ]
 
 
-def parse_matrix(text: str, rows: int, cols: int, dtype=float) -> np.ndarray:
+def parse_matrix(text: str, rows: int, cols: int, dtype=np.float64) -> np.ndarray:
     """
     Parsea una cadena CSV de valores y la convierte a un np.ndarray de dimensiones
     (rows, cols). Lanza ValueError si el formato es incorrecto o si el número
@@ -62,7 +62,8 @@ def parse_matrix(text: str, rows: int, cols: int, dtype=float) -> np.ndarray:
 
     # 2) Conversión a números usando fromiter (rápido y seguro)
     try:
-        # Usamos float() como conversor porque dtype puede ser un tipo Python o numpy dtype
+        # Usamos float() como conversor y dtype por defecto es np.float64 para
+        # asegurar consistencia numérica entre operaciones.
         arr = np.fromiter((float(t) for t in tokens), dtype=dtype, count=len(tokens))
     except ValueError as exc:
         raise ValueError("Error al convertir los valores a número. Asegúrese de usar sólo valores numéricos.") from exc
@@ -81,8 +82,9 @@ def safe_add(A: Any, B: Any) -> np.ndarray:
     Suma dos matrices A y B utilizando np.add.
     Lanza ValueError si las formas (shapes) de las matrices son incompatibles.
     """
-    A_np = np.asarray(A)
-    B_np = np.asarray(B)
+    # Normalizamos a float64 para consistencia numérica
+    A_np = np.asarray(A, dtype=np.float64)
+    B_np = np.asarray(B, dtype=np.float64)
 
     if A_np.shape != B_np.shape:
         raise ValueError(f"Shapes incompatibles para suma: A{A_np.shape} vs B{B_np.shape}.")
@@ -95,8 +97,8 @@ def safe_subtract(A: Any, B: Any) -> np.ndarray:
     Resta la matriz B de la matriz A (A - B) utilizando NumPy.
     Verifica shapes para compatibilidad y lanza ValueError si son incompatibles.
     """
-    A_np = np.asarray(A)
-    B_np = np.asarray(B)
+    A_np = np.asarray(A, dtype=np.float64)
+    B_np = np.asarray(B, dtype=np.float64)
 
     if A_np.shape != B_np.shape:
         raise ValueError(f"Shapes incompatibles para resta: A{A_np.shape} vs B{B_np.shape}.")
@@ -109,7 +111,8 @@ def safe_inv(A: Any) -> np.ndarray:
     Calcula la inversa de A de forma segura.
     Lanza ValueError si la matriz no es cuadrada o si es singular/mal condicionada.
     """
-    A_np = np.asarray(A, dtype=float)
+    # Convertimos a float64 para mayor robustez numérica
+    A_np = np.asarray(A, dtype=np.float64)
 
     if A_np.ndim != 2 or A_np.shape[0] != A_np.shape[1]:
         raise ValueError(f"La matriz debe ser cuadrada para calcular la inversa (shape={A_np.shape}).")
@@ -121,9 +124,13 @@ def safe_inv(A: Any) -> np.ndarray:
         # Si no se puede calcular la condición, tratarlo como no invertible
         raise ValueError("No se pudo evaluar la condición de la matriz; es posible que sea singular o inválida.")
 
-    # Umbral: si la condición es mayor que 1/eps es indicativo de mal condicionamiento
-    eps = np.finfo(A_np.dtype).eps
-    threshold = 1.0 / eps
+    # Umbral práctico para detectar matrices mal condicionadas.
+    # La heurística anterior (1/eps) produce valores extremadamente grandes
+    # (orden 1e16 para float64). Para la mayoría de aplicaciones numéricas
+    # consideramos una matriz mal condicionada si su número de condición supera
+    # 1e12 — este umbral es una elección pragmática que detecta problemas
+    # numéricos reales sin ser excesivamente restrictivo.
+    threshold = 1e12
     if not np.isfinite(cond) or cond > threshold:
         raise ValueError(f"La matriz está mal condicionada o es singular (condición={cond:.3e}). No es segura para invertir.")
 
