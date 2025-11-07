@@ -81,6 +81,13 @@ def test_safe_det_non_square():
         mm.safe_det(A)
 
 
+def test_safe_transpose():
+    A = np.array([[1.0, 2.0], [3.0, 4.0]])
+    T = mm.safe_transpose(A)
+    assert T.shape == (2, 2)
+    assert np.allclose(T, np.array([[1.0, 3.0], [2.0, 4.0]]))
+
+
 def test_safe_inv_ill_conditioned_and_non_square():
     # Non-square
     A = np.ones((3, 2))

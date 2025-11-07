@@ -8,6 +8,7 @@ from tkinter import ttk
 import matrix_model
 from matrix_editor import MatrixEditor
 from result_viewer import MatrixResultViewer
+from exceptions import MatrixModelError
 
 
 class SumaScreen(ttk.Frame):
@@ -107,7 +108,7 @@ class SumaScreen(ttk.Frame):
             # 4) Mostrar resultado mediante el viewer
             self.result_viewer.show_matrix(R)
 
-        except ValueError as e:
+        except MatrixModelError as e:
             # Mensajes claros procedentes del modelo
             self.error_label.config(text=str(e))
             # limpiar viewer en caso de error

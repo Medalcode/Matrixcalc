@@ -7,6 +7,7 @@ from tkinter import ttk
 import matrix_model
 from matrix_editor import MatrixEditor
 from result_viewer import MatrixResultViewer
+from exceptions import MatrixModelError
 
 
 class InversaScreen(ttk.Frame):
@@ -81,8 +82,13 @@ class InversaScreen(ttk.Frame):
 
             self._mostrar_resultado(R)
 
-        except ValueError as e:
+        except MatrixModelError as e:
             self.error_label.config(text=str(e))
+        except Exception:
+            import logging
+
+            logging.exception("Unexpected error in calcular_inversa")
+            self.error_label.config(text="Error inesperado. Revise logs.")
 
     def _mostrar_resultado(self, resultado):
         ventana_resultado = tk.Toplevel(self.parent)

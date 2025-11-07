@@ -9,6 +9,7 @@ from tkinter import ttk
 import matrix_model as mm
 from matrix_editor import MatrixEditor
 from result_viewer import MatrixResultViewer
+from exceptions import MatrixModelError
 
 
 class RestaScreen(ttk.Frame):
@@ -105,12 +106,16 @@ class RestaScreen(ttk.Frame):
             A = mm.parse_matrix(txtA, rows, cols)
             B = mm.parse_matrix(txtB, rows, cols)
             R = mm.safe_subtract(A, B)
-        except ValueError as exc:
+        except MatrixModelError as exc:
             self.error_label.config(text=str(exc))
             self.result_viewer.clear_viewer()
             return
         except Exception as exc:
-            self.error_label.config(text=f"Error inesperado: {exc}")
+            # Unexpected errors should be logged; show generic message
+            import logging
+
+            logging.exception("Unexpected error in calcular_resta")
+            self.error_label.config(text="Error inesperado. Revise logs.")
             self.result_viewer.clear_viewer()
             return
 
