@@ -1,130 +1,149 @@
 import tkinter as tk
 from tkinter import ttk
-import numpy as np
 
-error_label = None  # Define error_label in a wider scope
+import matrix_model as mm
+from matrix_editor import MatrixEditor
+from result_viewer import MatrixResultViewer
 
-def crear_resta(ventana):
-    def guardar_valores():
-        filas_valor = entry_filas.get()
-        columnas_valor = entry_columnas.get()
-        
-        if error_label is not None:
-            error_label.config(text="")  # Reset error label
-        
-        if not filas_valor.isdigit() or not columnas_valor.isdigit():
-            if not filas_valor.isdigit() or not columnas_valor.isdigit():
-                if error_label is not None:
-                    error_label.config(text="Error: Ingrese valores numéricos para las filas y columnas.")
-                return
-            else:
-                if error_label is not None:
-                    error_label.config(text="Error: Las matrices no pueden restarse debido a sus dimensiones.")
 
-        filas_valor = int(filas_valor)
-        columnas_valor = int(columnas_valor)
+class RestaScreen(ttk.Frame):
+    """Pantalla para restar dos matrices usando MatrixEditor y matrix_model.
 
-        matriz_A = obtener_matriz(entry_matriz_a, filas_valor, columnas_valor)
-        matriz_B = obtener_matriz(entry_matriz_b, filas_valor, columnas_valor)
+    Provee entradas para filas/columnas, dos MatrixEditor (A y B), y un
+    MatrixResultViewer para mostrar el resultado.
+    """
 
-        if matriz_A is not None and matriz_B is not None:
-            resultado = resta_matrices(matriz_A, matriz_B)
-            if resultado is not None:
-                mostrar_resultado(resultado)
-            else:
-                if error_label is not None:
-                    error_label.config(text="Error: Las matrices no pueden restarse debido a sus dimensiones.")
-    
-    def obtener_matriz(entry_matriz, filas, columnas):
-        matriz = []
-        entrada_texto = entry_matriz.get()
-        valores = entrada_texto.split(',')
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
 
-        if len(valores) != columnas * filas:
-            if error_label is not None:
-                error_label.config(text=f"Error: Ingrese {filas * columnas} valores para la matriz.")
-            return None
+        # Dimensiones por defecto
+        default_rows = 2
+        default_cols = 2
 
-        for i in range(filas):
-            fila = []
-            for j in range(columnas):
-                try:
-                    valor = int(valores[i * columnas + j])
-                    fila.append(valor)
-                except ValueError:
-                    if error_label is not None:
-                        error_label.config(text="Error: Ingrese valores numéricos para la matriz.")
-                    return None
-            matriz.append(fila)
-        return matriz
-    
+        # Encabezado
+        label_resta = ttk.Label(self, text="Operación: Resta", font=("Bold", 15))
+        label_resta.grid(row=0, column=0, columnspan=4, pady=10)
 
-    def mostrar_resultado(resultado):
-        ventana_resultado = tk.Toplevel(ventana)
-        ventana_resultado.title("Resultado de la Resta")
+        # Dimensiones
+        ttk.Label(self, text="n°Filas:").grid(row=1, column=0, sticky="w", padx=5)
+        self.entry_filas = ttk.Entry(self, width=5)
+        self.entry_filas.grid(row=1, column=1, sticky="w", padx=5)
+        self.entry_filas.insert(0, str(default_rows))
 
-        frame_resultado = ttk.Frame(ventana_resultado, width=440, height=600)
-        frame_resultado.pack()
+        ttk.Label(self, text="n°Columnas:").grid(row=1, column=2, sticky="w", padx=5)
+        self.entry_columnas = ttk.Entry(self, width=5)
+        self.entry_columnas.grid(row=1, column=3, sticky="w", padx=5)
+        self.entry_columnas.insert(0, str(default_cols))
 
-        label_resultado = ttk.Label(frame_resultado, text="Resultado de la Resta", font=("Bold", 15))
-        label_resultado.grid(row=0, column=0, columnspan=len(resultado[0]) * 2, pady=20)
+        # Botón para aplicar dimensiones
+        self.btn_apply_dim = ttk.Button(self, text="Aplicar dimensiones", command=self._apply_dimensions)
+        self.btn_apply_dim.grid(row=2, column=0, columnspan=4, pady=5)
 
-        treeview = ttk.Treeview(frame_resultado)
-        treeview["columns"] = tuple(range(len(resultado[0])))
+        # MatrixEditors
+        ttk.Label(self, text="Matriz A:").grid(row=3, column=0, columnspan=2, sticky="w", padx=5)
+        ttk.Label(self, text="Matriz B:").grid(row=3, column=2, columnspan=2, sticky="w", padx=5)
 
-        for i, fila in enumerate(resultado):
-            treeview.insert("", "end", text=f"Fila {i+1}", values=tuple(fila))
+        self.editor_A = MatrixEditor(self, rows=default_rows, cols=default_cols)
+        self.editor_A.grid(row=4, column=0, columnspan=2, padx=5, pady=5, sticky="nsew")
 
-        for i, columna in enumerate(range(len(resultado[0]))):
-            treeview.heading(columna, text=f"Columna {i+1}")
+        self.editor_B = MatrixEditor(self, rows=default_rows, cols=default_cols)
+        self.editor_B.grid(row=4, column=2, columnspan=2, padx=5, pady=5, sticky="nsew")
 
-        treeview.grid(row=1, column=0, columnspan=len(resultado[0]), pady=10, padx=20)
+        # Result viewer
+        ttk.Label(self, text="Resultado:").grid(row=5, column=0, columnspan=4, sticky="w", padx=5)
+        self.result_viewer = MatrixResultViewer(self)
+        self.result_viewer.grid(row=6, column=0, columnspan=4, padx=5, pady=5, sticky="nsew")
 
-    frame_resta = ttk.Frame(ventana, style="TFrame", width=550, height=550)
-    frame_resta.pack()
-    label_resta = ttk.Label(frame_resta, text="Operacion: Resta", font=("Bold", 15))
-    label_resta.grid(row=0, column=1, columnspan=3, pady=20)
+        # Error label
+        self.error_label = ttk.Label(self, text="", foreground="red")
+        self.error_label.grid(row=7, column=0, columnspan=4, pady=5)
 
-    label_filas = ttk.Label(frame_resta, text="n°Filas:")
-    label_filas.grid(row=1, column=1, pady=10)
-    entry_filas = ttk.Entry(frame_resta, width=5)
-    entry_filas.grid(row=2, column=1, pady=10, padx=20)
+        # Buttons
+        self.btn_calcular = ttk.Button(self, text="Calcular Resta", command=self.calcular_resta)
+        self.btn_calcular.grid(row=8, column=0, columnspan=2, pady=10)
 
-    label_columnas = ttk.Label(frame_resta, text="n°Columnas:")
-    label_columnas.grid(row=1, column=3, pady=10)
-    entry_columnas = ttk.Entry(frame_resta, width=5)
-    entry_columnas.grid(row=2, column=3, pady=10, padx=20)
+        self.btn_reset = ttk.Button(self, text="Resetear Entradas", command=self.reset_entries)
+        self.btn_reset.grid(row=8, column=2, columnspan=2, pady=10)
 
-    label_matriz_a = ttk.Label(frame_resta, text="Matriz A:")
-    label_matriz_a.grid(row=3, column=1, pady=10)
-    entry_matriz_a = ttk.Entry(frame_resta, width=25)
-    entry_matriz_a.grid(row=4, column=1, pady=10, padx=20)
+        # Layout stretch
+        for i in range(4):
+            self.grid_columnconfigure(i, weight=1)
+        self.grid_rowconfigure(6, weight=1)
 
-    label_matriz_b = ttk.Label(frame_resta, text="Matriz B:")
-    label_matriz_b.grid(row=3, column=3, pady=10)
-    entry_matriz_b = ttk.Entry(frame_resta, width=25)
-    entry_matriz_b.grid(row=4, column=3, pady=10, padx=20)
+    def _apply_dimensions(self):
+        """Aplica las dimensiones ingresadas a ambos MatrixEditor."""
+        try:
+            rows = int(self.entry_filas.get())
+            cols = int(self.entry_columnas.get())
+            if rows <= 0 or cols <= 0:
+                raise ValueError()
+        except Exception:
+            self.error_label.config(text="Ingrese filas y columnas válidas (enteros positivos).")
+            return
 
-    error_label = ttk.Label(frame_resta, text="", foreground="red")
-    error_label.grid(row=5, column=1, columnspan=3, pady=10)
+        self.error_label.config(text="")
+        self.editor_A.set_dimensions(rows, cols)
+        self.editor_B.set_dimensions(rows, cols)
 
-    boton_guardar = ttk.Button(frame_resta, text="Calcular Resta", command=guardar_valores)
-    boton_guardar.grid(row=5, column=1, columnspan=3, pady=20)
+    def calcular_resta(self):
+        """Lee los textos de los editores, delega parse y resta al modelo y muestra resultado."""
+        # Limpiar error previo
+        self.error_label.config(text="")
 
-    def reset_entries():
-        entry_filas.delete(0, 'end')
-        entry_columnas.delete(0, 'end')
-        entry_matriz_a.delete(0, 'end')
-        entry_matriz_b.delete(0, 'end')
-        if error_label is not None:
-            error_label.config(text="")  # Reset error label
+        try:
+            rows = int(self.entry_filas.get())
+            cols = int(self.entry_columnas.get())
+            if rows <= 0 or cols <= 0:
+                raise ValueError("Filas y columnas deben ser enteros positivos.")
+        except ValueError as exc:
+            self.error_label.config(text=str(exc) or "Dimensiones inválidas.")
+            self.result_viewer.clear_viewer()
+            return
 
-    boton_reset = ttk.Button(frame_resta, text="Resetear Entradas", command=reset_entries)
-    boton_reset.grid(row=5, column=4, columnspan=3, pady=20)
+        txtA = self.editor_A.get_matrix_text()
+        txtB = self.editor_B.get_matrix_text()
 
-    return frame_resta
+        try:
+            A = mm.parse_matrix(txtA, rows, cols)
+            B = mm.parse_matrix(txtB, rows, cols)
+            R = mm.safe_subtract(A, B)
+        except ValueError as exc:
+            # Mensajes amigables del modelo
+            self.error_label.config(text=str(exc))
+            self.result_viewer.clear_viewer()
+            return
+        except Exception as exc:
+            self.error_label.config(text=f"Error inesperado: {exc}")
+            self.result_viewer.clear_viewer()
+            return
 
-def resta_matrices(matriz_A, matriz_B):
-    return [[a - b for a, b in zip(fila_A, fila_B)] for fila_A, fila_B in zip(matriz_A, matriz_B)]
+        # Mostrar resultado
+        try:
+            self.result_viewer.show_matrix(R)
+        except Exception as exc:
+            self.error_label.config(text=f"Error mostrando resultado: {exc}")
 
-frame_actual = None
+    def reset_entries(self):
+        """Limpia todas las entradas y el visor de resultados."""
+        # Limpiar dimensiones
+        self.entry_filas.delete(0, 'end')
+        self.entry_columnas.delete(0, 'end')
+
+        # Limpiar matrices
+        for editor in (self.editor_A, self.editor_B):
+            for r in range(editor.rows):
+                for c in range(editor.cols):
+                    try:
+                        editor.entries[r][c].delete(0, 'end')
+                    except Exception:
+                        pass
+
+        # Limpiar viewer y error
+        self.result_viewer.clear_viewer()
+        self.error_label.config(text="")
+
+
+def crear_resta(parent):
+    """Factory compatibilidad: devuelve una instancia de RestaScreen."""
+    return RestaScreen(parent)
+
