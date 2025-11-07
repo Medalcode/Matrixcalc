@@ -18,11 +18,14 @@ def crear_home(ventana):
         image = Image.open(image_path)
         image = image.resize((200, 200))
         photo = ImageTk.PhotoImage(image)
-        label = tk.Label(frame_home, image=photo)
+        label = tk.Label(frame_home, image=photo, bg="white")
         label.image = photo
         label.pack()
     else:
-        print("Error: 'logo.jpg' file not found.")
-    label.pack()
+        # If the image is missing, show a harmless placeholder label instead
+        # of raising an exception. This makes the UI robust when resources
+        # are not bundled with the repo (e.g., running from source).
+        label = tk.Label(frame_home, text="[logo not found]", bg="white")
+        label.pack()
 
     return frame_home
