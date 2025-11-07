@@ -90,6 +90,20 @@ def safe_add(A: Any, B: Any) -> np.ndarray:
     return np.add(A_np, B_np)
 
 
+def safe_subtract(A: Any, B: Any) -> np.ndarray:
+    """
+    Resta la matriz B de la matriz A (A - B) utilizando NumPy.
+    Verifica shapes para compatibilidad y lanza ValueError si son incompatibles.
+    """
+    A_np = np.asarray(A)
+    B_np = np.asarray(B)
+
+    if A_np.shape != B_np.shape:
+        raise ValueError(f"Shapes incompatibles para resta: A{A_np.shape} vs B{B_np.shape}.")
+
+    return np.subtract(A_np, B_np)
+
+
 def safe_inv(A: Any) -> np.ndarray:
     """
     Calcula la inversa de A de forma segura.
