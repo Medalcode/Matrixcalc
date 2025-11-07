@@ -1,119 +1,106 @@
 import tkinter as tk
 from tkinter import ttk
-import numpy as np
-import fractions
-def crear_inversa(ventana):
-    def guardar_valores():
+import matrix_model
+from matrix_editor import MatrixEditor
+
+
+class InversaScreen(ttk.Frame):
+    """Pantalla para calcular la inversa de una matriz usando matrix_model.safe_inv."""
+
+    def __init__(self, parent, show_frame_callback=None):
+        super().__init__(parent, style="TFrame")
+        self.parent = parent
+        self.show_frame = show_frame_callback
+
+        label = ttk.Label(self, text="Operación: Inversa", font=("Bold", 15))
+        label.grid(row=0, column=0, columnspan=3, pady=20)
+
+        # Dimensiones
+        ttk.Label(self, text="Filas:").grid(row=1, column=0, pady=5, sticky="w")
+        self.entry_filas = ttk.Entry(self, width=5)
+        self.entry_filas.grid(row=2, column=0, pady=5, padx=5)
+
+        ttk.Label(self, text="Columnas:").grid(row=1, column=1, pady=5, sticky="w")
+        self.entry_columnas = ttk.Entry(self, width=5)
+        self.entry_columnas.grid(row=2, column=1, pady=5, padx=5)
+
+        # MatrixEditor (una sola matriz)
+        ttk.Label(self, text="Matriz A:").grid(row=3, column=0, pady=5, sticky="w")
+        self.editor_A = MatrixEditor(self, rows=3, cols=3)
+        self.editor_A.grid(row=4, column=0, columnspan=3, pady=5, padx=5, sticky="nsew")
+
+        # Error label centralizado
+        self.error_label = ttk.Label(self, text="", foreground="red")
+        self.error_label.grid(row=5, column=0, columnspan=3, pady=10, sticky="ew")
+
+        # Bind para actualizar dimensiones
+        self.entry_filas.bind("<FocusOut>", lambda e: self._on_dim_change())
+        self.entry_columnas.bind("<FocusOut>", lambda e: self._on_dim_change())
+
+        # Botones
+        self.boton_calcular = ttk.Button(self, text="Calcular Inversa", command=self.calcular_inversa)
+        self.boton_calcular.grid(row=6, column=0, columnspan=1, pady=15)
+
+        self.boton_reset = ttk.Button(self, text="Resetear Entradas", command=self.reset_entries)
+        self.boton_reset.grid(row=6, column=1, columnspan=2, pady=15)
+
+    def _on_dim_change(self):
         try:
-            filas = int(entry_filas.get())
-            columnas = int(entry_columnas.get())
-        except ValueError:
-            mostrar_error("Error: Ingrese valores numéricos para filas y columnas.")
+            r = int(self.entry_filas.get())
+            c = int(self.entry_columnas.get())
+        except Exception:
             return
+        if r > 0 and c > 0:
+            self.editor_A.set_dimensions(r, c)
 
-        matriz = obtener_matriz(entry_matriz, filas, columnas)
+    def reset_entries(self):
+        self.entry_filas.delete(0, tk.END)
+        self.entry_columnas.delete(0, tk.END)
+        # limpiar editor
+        for r in range(self.editor_A.rows):
+            for c in range(self.editor_A.cols):
+                self.editor_A.entries[r][c].delete(0, tk.END)
+        self.error_label.config(text="")
 
-        if matriz is not None:
-            resultado_inversa = obtener_inversa(matriz)
+    def calcular_inversa(self):
+        self.error_label.config(text="")
+        try:
+            filas = int(self.entry_filas.get())
+            columnas = int(self.entry_columnas.get())
 
-            if resultado_inversa is not None:
-                mostrar_resultado(resultado_inversa)
-            else:
-                mostrar_error("Error: La matriz no es invertible.")
+            text_a = self.editor_A.get_matrix_text()
+            A = matrix_model.parse_matrix(text_a, filas, columnas)
 
-    def obtener_matriz(entry_matriz, filas, columnas):
-        matriz = []
-        entrada_texto = entry_matriz.get()
-        valores = entrada_texto.split(',')
+            # Delegar la validación y el cálculo al modelo
+            R = matrix_model.safe_inv(A)
 
-        if len(valores) != columnas * filas:
-            mostrar_error(f"Error: Ingrese {filas * columnas} valores para la matriz.")
-            return None
+            self._mostrar_resultado(R)
 
-        for i in range(filas):
-            fila = []
-            for j in range(columnas):
-                try:
-                    valor = fractions.Fraction(valores[i * columnas + j])
-                    fila.append(valor)
-                except ValueError:
-                    mostrar_error("Error: Ingrese valores numéricos para la matriz.")
-                    return None
-            matriz.append(fila)
-        return matriz
+        except ValueError as e:
+            self.error_label.config(text=str(e))
 
-    def mostrar_resultado(resultado):
-        ventana_resultado = tk.Toplevel(ventana)
-        ventana_resultado.title("Resultado de la Operación")
+    def _mostrar_resultado(self, resultado):
+        ventana_resultado = tk.Toplevel(self.parent)
+        ventana_resultado.title("Resultado de la Inversa")
 
-        frame_resultado = tk.Frame(ventana_resultado, width=400, height=550)
-        frame_resultado.pack()
-     
-        label_resultado = ttk.Label(frame_resultado, text="Resultado de la Operación", font=("Bold", 15))
-        label_resultado.grid(row=0, column=0, columnspan=len(resultado[0]) * 2, pady=20)
+        frame_resultado = ttk.Frame(ventana_resultado)
+        frame_resultado.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-       # Crear el Treeview para mostrar el resultado en formato tabular
+        label_resultado = ttk.Label(frame_resultado, text="Resultado de la Inversa", font=("Bold", 15))
+        label_resultado.grid(row=0, column=0, columnspan=resultado.shape[1], pady=10)
+
         treeview = ttk.Treeview(frame_resultado)
-        treeview.grid(row=1, column=0, columnspan=len(resultado[0]) * 2, padx=10)
-
-        # Configurar las columnas del Treeview
-        columnas = [f"Columna {i+1}" for i in range(len(resultado[0]))]
-        treeview["columns"] = columnas
+        cols = [f"C{i+1}" for i in range(resultado.shape[1])]
+        treeview["columns"] = cols
         treeview.heading("#0", text="Fila")
-        for i, columna in enumerate(columnas):
-            treeview.heading(columna, text=columna)
+        for c in cols:
+            treeview.heading(c, text=c)
 
-        # Mostrar el resultado de la multiplicación en el Treeview
-        for i, fila in enumerate(resultado):
+        for i, fila in enumerate(resultado.tolist()):
             treeview.insert("", "end", text=f"Fila {i+1}", values=tuple(fila))
 
-    def obtener_inversa(matriz):
-        try:
-            matriz_np = np.array(matriz, dtype=float)
-            matriz_inversa_np = np.linalg.inv(matriz_np)
-            matriz_inversa = matriz_inversa_np.tolist()
-            return matriz_inversa
-        except np.linalg.LinAlgError:
-            mostrar_error("Error: La matriz no es invertible.")
-            return None
+        treeview.grid(row=1, column=0, sticky="nsew", padx=5, pady=5)
 
-    def mostrar_error(mensaje):
-        error_label.config(text=mensaje)
 
-    frame_inversa = ttk.Frame(ventana, style="TFrame", width=550, height=550)
-    frame_inversa.pack(expand=True, fill=tk.BOTH)
-
-    label_inversa = ttk.Label(frame_inversa, text="Operación: Inversa", font=("Bold", 15))
-    label_inversa.grid(row=0, column=2, columnspan=1, pady=20, sticky='n')
-
-    label_filas = ttk.Label(frame_inversa, text="Filas:")
-    label_filas.grid(row=1, column=1, pady=10, sticky='n')
-    entry_filas = ttk.Entry(frame_inversa, width=5)
-    entry_filas.grid(row=2, column=1, pady=10, padx=20, sticky='n')
-
-    label_columnas = ttk.Label(frame_inversa, text="Columnas:")
-    label_columnas.grid(row=1, column=3, pady=10, sticky='n')
-    entry_columnas = ttk.Entry(frame_inversa, width=5)
-    entry_columnas.grid(row=2, column=3, pady=10, padx=20, sticky='n')
-
-    label_matriz = ttk.Label(frame_inversa, text="Matriz:")
-    label_matriz.grid(row=3, column=2, pady=10, columnspan=1, sticky='n')
-    entry_matriz = ttk.Entry(frame_inversa, width=25)
-    entry_matriz.grid(row=4, column=2, columnspan=1, pady=10, sticky='n')
-
-    error_label = ttk.Label(frame_inversa)
-    error_label.grid(row=6, column=2, pady=10, sticky='n')
-
-    boton_guardar = ttk.Button(frame_inversa, text="Calcular Inversa", command=guardar_valores)
-    boton_guardar.grid(row=5, column=2, columnspan=1, pady=20, sticky='n')
-
-    def reset_entries():
-        entry_filas.delete(0, 'end')
-        entry_columnas.delete(0, 'end')
-        entry_matriz.delete(0, 'end')
-        error_label.config(text="")
-
-    boton_reset = ttk.Button(frame_inversa, text="Resetear Entradas", command=reset_entries)
-    boton_reset.grid(row=5, column=4, columnspan=3, pady=20)
-
-    return frame_inversa
+def crear_inversa(parent):
+    return InversaScreen(parent)
