@@ -4,6 +4,8 @@ import numpy as np
 import matrix_model
 from matrix_editor import MatrixEditor
 
+from exceptions import MatrixModelError
+
 
 class TraspuestaScreen(ttk.Frame):
     """Pantalla para calcular la traspuesta de una matriz usando MatrixEditor."""
