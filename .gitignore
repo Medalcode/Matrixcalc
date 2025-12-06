@@ -1,56 +1,44 @@
+# Environment
+.env
+.env.development
+.env.production
+.env.local
+.env.*.local
+frontend/.env
+frontend/.env.production
+
+# Database
+*.sqlite3
+*.db
+
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-
-# Virtual environments
 venv/
+.venv/
 env/
-ENV/
 
-# Django
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-/staticfiles/
-/media/
-
-# Coverage
-.coverage
-coverage.xml
-htmlcov/
-.tox/
-.pytest_cache/
-
-# IDEs
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Backups
-*.bak
-*.old
-*.tmp
+# Backup
 backups/
+*.bak
 
-# Environment
-.env
-.env.local
-.env.*.local
+# Migrations
+calculator/migrations/*.py
+!calculator/migrations/__init__.py
 
-# Build artifacts
-dist/
-build/
-*.egg-info/
-
-# Local Netlify folder
-.netlify
+# Media
+media/
+staticfiles/
