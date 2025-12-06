@@ -9,8 +9,9 @@ import time
 from datetime import timedelta
 
 import numpy as np
+from django.conf import settings
 from django.db.models import Avg, Count
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django_ratelimit.decorators import ratelimit
@@ -427,3 +428,13 @@ def calculate_qr(request):
 def calculate_cholesky(request):
     """Calcula descomposición Cholesky."""
     return _perform_matrix_operation("CHOLESKY", request.data.get("matrix_id"))
+
+
+@api_view(["GET"])
+def health_check(request):
+    """Health check endpoint for monitoring."""
+    return JsonResponse({
+        "status": "ok",
+        "version": "3.1.0",
+        "auth_enabled": "rest_framework.authtoken" in settings.INSTALLED_APPS,
+    })

@@ -3,6 +3,7 @@ URLs para la app calculator.
 """
 
 from django.urls import include, path
+from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.routers import DefaultRouter
 
 from calculator import views
@@ -14,6 +15,10 @@ router.register(r"operations-history", views.OperationViewSet, basename="operati
 
 # URLs de operaciones y stats
 urlpatterns = [
+    # Auth
+    path("auth/token/", obtain_auth_token, name="api-token"),
+    # Health
+    path("health/", views.health_check, name="health-check"),
     # Operaciones matriciales (deben ir ANTES del router para no ser capturadas)
     path("operations/sum/", views.sum_matrices, name="sum-matrices"),
     path("operations/subtract/", views.subtract_matrices, name="subtract-matrices"),
