@@ -8,10 +8,6 @@ services:
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/health/
     envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: matrixcalc-db
-          property: connectionString
       - key: SECRET_KEY
         generateValue: true
       - key: ALLOWED_HOSTS
@@ -20,11 +16,3 @@ services:
         value: 'False'
       - key: RUN_SCHEDULER
         value: 'False'
-
-databases:
-  - name: matrixcalc-db
-    plan: free
-    region: oregon
-    databaseName: matrixcalc
-    user: matrixcalc
-    ipAllowList: []

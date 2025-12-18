@@ -95,19 +95,15 @@ docker-compose up --build
 - Frontend (Vite dev server): `http://localhost:5173`
 - API (Django): `http://localhost:8000/api/`
 
-### Deploy en Render (unificado, un solo servicio)
-
-La forma más simple de desplegar:
+### Deploy en Render (unificado, sin dependencias externas)
 
 1. Crea una cuenta en https://render.com (conecta GitHub)
-2. Ve a **Blueprint** > **New Blueprint Instance**
-3. Conecta el repo `Medalcode/Matrixcalc`
-4. Render lee `render.yaml` y crea:
-   - El servicio web (Docker con Vue + Django)
-   - La base de datos PostgreSQL
-5. Render asigna automáticamente una URL como `https://matrixcalc.onrender.com`
+2. **New Blueprint** → conecta `Medalcode/Matrixcalc`
+3. Render lee `render.yaml` y crea el web service con Docker
+4. Usa SQLite por defecto — sin base de datos externa necesaria
+5. Obtienes una URL como `https://matrixcalc.onrender.com`
 
-El `render.yaml` ya está configurado en el repo con health check, variables de entorno y base de datos incluida.
+Para agregar PostgreSQL persistente más adelante, solo define `DATABASE_URL` en las env vars de Render apuntando a Neon o Supabase.
 
 *_💡 Tip para Desarrolladores:_* Existe un `Makefile` preconfigurado en la raíz del proyecto para tareas recurrentes. Simplemente ejecuta `make help` para ver comandos ágiles como `make test`, `make down` o `make setup`.
 

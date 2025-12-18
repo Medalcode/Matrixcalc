@@ -107,9 +107,9 @@ DATABASES = {
     )
 }
 
-# Critical Fallback: Use SQLite in Cloud Run if no DATABASE_URL is provided
-# This ensures the app starts even without a external DB connection
-if os.environ.get("K_SERVICE") and not os.environ.get("DATABASE_URL"):
+# Fallback: Use SQLite if no DATABASE_URL is provided
+# This ensures the app starts without external DB (Render, dev, etc.)
+if not os.environ.get("DATABASE_URL"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
