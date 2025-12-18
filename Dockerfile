@@ -27,4 +27,4 @@ ENV DEBUG=False
 
 EXPOSE 8080
 
-CMD exec gunicorn --bind :$PORT --workers 2 --threads 4 --timeout 60 matrixcalc_web.wsgi:application
+CMD python manage.py migrate --noinput && exec gunicorn --bind :$PORT --workers 2 --threads 4 --timeout 120 matrixcalc_web.wsgi:application

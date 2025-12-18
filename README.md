@@ -8,7 +8,7 @@
 ![Vue](https://img.shields.io/badge/vue-3.5-green)
 ![TypeScript](https://img.shields.io/badge/typescript-5.9-blue)
 ![Docker](https://img.shields.io/badge/docker-ready-blue)
-![Cloud Run](https://img.shields.io/badge/deployment-google%20cloud%20run-blueviolet)
+[![Deploy](https://img.shields.io/badge/deploy-Render-46E3B7)](https://render.com)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Version](https://img.shields.io/badge/version-3.1.0-orange)
 ![Single Service](https://img.shields.io/badge/architecture-single%20service-success)
@@ -61,7 +61,7 @@ El proyecto sigue una arquitectura de **Monolito Desacoplado** ("Decoupled Monol
 
 ### Infraestructura (DevOps)
 - **Docker multi-stage:** Un solo `Dockerfile` que build ea el frontend Vue y lo sirve junto al backend Django.
-- **Google Cloud Run:** Despliegue unificado, autoescalado a cero, HTTPS automático.
+- **Render:** Despliegue unificado via Docker + PostgreSQL gratis. Autoescalado a cero.
 - **WhiteNoise:** Servir archivos estáticos y SPA desde el mismo proceso de Django, sin nginx ni CORS.
 
 ---
@@ -95,14 +95,19 @@ docker-compose up --build
 - Frontend (Vite dev server): `http://localhost:5173`
 - API (Django): `http://localhost:8000/api/`
 
-### Deploy unificado (Cloud Run)
+### Deploy en Render (unificado, un solo servicio)
 
-```bash
-docker build -t matrixcalc .
-docker run -p 8080:8080 -e DATABASE_URL=... matrixcalc
-```
+La forma más simple de desplegar:
 
-Un solo contenedor sirve frontend Vue compilado + API Django en el mismo puerto.
+1. Crea una cuenta en https://render.com (conecta GitHub)
+2. Ve a **Blueprint** > **New Blueprint Instance**
+3. Conecta el repo `Medalcode/Matrixcalc`
+4. Render lee `render.yaml` y crea:
+   - El servicio web (Docker con Vue + Django)
+   - La base de datos PostgreSQL
+5. Render asigna automáticamente una URL como `https://matrixcalc.onrender.com`
+
+El `render.yaml` ya está configurado en el repo con health check, variables de entorno y base de datos incluida.
 
 *_💡 Tip para Desarrolladores:_* Existe un `Makefile` preconfigurado en la raíz del proyecto para tareas recurrentes. Simplemente ejecuta `make help` para ver comandos ágiles como `make test`, `make down` o `make setup`.
 
