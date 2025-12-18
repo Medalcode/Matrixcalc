@@ -12,7 +12,7 @@ urlpatterns = [
 
 # Catch-all for SPA routes (serves Vue frontend)
 urlpatterns += [
-    re_path(r"^(?!api/|admin/|static/).*$", spa_view, name="spa"),
+    re_path(r"^(?!/?(api/|admin/|static/)).*$", spa_view, name="spa"),
 ]
 
 if settings.DEBUG:
