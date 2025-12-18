@@ -159,6 +159,9 @@ STATICFILES_DIRS = [
 ]
 
 # WhiteNoise configuration for static files in production
+WHITENOISE_ROOT = BASE_DIR / "frontend" / "dist"
+WHITENOISE_INDEX_FILE = True
+
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -200,12 +203,11 @@ REST_FRAMEWORK = {
 }
 
 # CORS Configuration
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOWED_ORIGINS = [
-    "https://matrixcalc-frontend-541716295092.us-central1.run.app",
-    "https://matrixcalc-advanced.netlify.app",
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 if not CORS_ALLOW_ALL_ORIGINS:
@@ -229,8 +231,8 @@ CORS_ALLOW_HEADERS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://matrixcalc-frontend-541716295092.us-central1.run.app",
-    "https://matrixcalc-advanced.netlify.app",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 # Logging Configuration

@@ -11,6 +11,7 @@
 ![Cloud Run](https://img.shields.io/badge/deployment-google%20cloud%20run-blueviolet)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Version](https://img.shields.io/badge/version-3.1.0-orange)
+![Single Service](https://img.shields.io/badge/architecture-single%20service-success)
 
 **The Cloud-Native Linear Algebra Workspace.**
 
@@ -59,8 +60,9 @@ El proyecto sigue una arquitectura de **Monolito Desacoplado** ("Decoupled Monol
 - **Tailwind CSS:** Asegura consistencia visual, iteración muy rápida del diseño UI/UX sin cargar CSS residual e innecesario, manteniendo un aspecto pulido "Math-First".
 
 ### Infraestructura (DevOps)
-- **Docker & Docker Compose:** Entorno de despliegue contenerizado tanto del backend, front y de la base de datos de manera uniforme usando builds multi-etapa para reducción de pesos de imágenes.
-- **Google Cloud Run & Cloud Build:** Orientación total hacia un despliegue "Serverless" y pipelines de CI/CD automatizadas (autoescalado desde y a cero sin infraestructura a gestionar).
+- **Docker multi-stage:** Un solo `Dockerfile` que build ea el frontend Vue y lo sirve junto al backend Django.
+- **Google Cloud Run:** Despliegue unificado, autoescalado a cero, HTTPS automático.
+- **WhiteNoise:** Servir archivos estáticos y SPA desde el mismo proceso de Django, sin nginx ni CORS.
 
 ---
 
@@ -81,30 +83,26 @@ MatrixCalc está compuesto dividiendo responsabilidades estrictas, implementando
 - [Docker](https://www.docker.com/) y [Docker Compose](https://docs.docker.com/compose/) instalados en tu máquina.
 - Git.
 
-### Entorno de Desarrollo Rápido
+### Desarrollo local (backend + frontend separados)
 
-1. **Clonar el repositorio:**
-   ```bash
-   git clone https://github.com/medalcode/MatrixCalc.git
-   cd MatrixCalc
-   ```
+```bash
+git clone https://github.com/medalcode/MatrixCalc.git
+cd MatrixCalc
+cp .env.example .env
+docker-compose up --build
+```
 
-2. **Configurar las variables de entorno:**
-   Usa el archivo base preparado para levantar los servicios elementales.
-   ```bash
-   cp .env.example .env
-   ```
+- Frontend (Vite dev server): `http://localhost:5173`
+- API (Django): `http://localhost:8000/api/`
 
-3. **Desplegar toda la pila local:**
-   Docker Compose se encargará de configurar la base de datos, descargar todas las dependencias y levantar tanto la API de Python como el servidor en vivo de Vue y el gestor asíncrono.
-   ```bash
-   docker-compose up --build
-   ```
+### Deploy unificado (Cloud Run)
 
-4. **Acceso a la aplicación:**
-   Una vez que los contenedores estén corriendo saludables:
-   - **Interfaz en el navegador:** `http://localhost:5173`
-   - **Acceso API y Backend:** `http://localhost:8000/api/`
+```bash
+docker build -t matrixcalc .
+docker run -p 8080:8080 -e DATABASE_URL=... matrixcalc
+```
+
+Un solo contenedor sirve frontend Vue compilado + API Django en el mismo puerto.
 
 *_💡 Tip para Desarrolladores:_* Existe un `Makefile` preconfigurado en la raíz del proyecto para tareas recurrentes. Simplemente ejecuta `make help` para ver comandos ágiles como `make test`, `make down` o `make setup`.
 

@@ -1,23 +1,30 @@
-FROM python:3.11-slim
+# Stage 1: Build Vue frontend
+FROM node:20-slim AS frontend-builder
+WORKDIR /app/frontend
+COPY frontend/ .
+RUN npm ci && npm run build-only
 
+# Stage 2: Python Django backend
+FROM python:3.13-slim
 WORKDIR /app
 
-# Instalar dependencias del sistema necesarias
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copiar requirements e instalar
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar el resto del código
 COPY . .
 
-# Variables de entorno por defecto
+COPY --from=frontend-builder /app/frontend/dist frontend/dist/
+
+RUN python manage.py collectstatic --noinput
+
 ENV PORT=8080
 ENV PYTHONUNBUFFERED=1
+ENV DEBUG=False
 
-# Ejecutar migraciones y luego gunicorn
-CMD sh -c "python manage.py migrate && gunicorn --bind 0.0.0.0:8080 matrixcalc_web.wsgi:application"
+EXPOSE 8080
+
+CMD exec gunicorn --bind :$PORT --workers 2 --threads 4 --timeout 60 matrixcalc_web.wsgi:application
