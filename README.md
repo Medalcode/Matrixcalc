@@ -4,12 +4,13 @@
 ![Python](https://img.shields.io/badge/python-3.14-blue)
 ![Coverage](https://img.shields.io/badge/coverage-99%25-brightgreen)
 ![Tests](https://img.shields.io/badge/tests-158%20passed-green)
+[![CI](https://github.com/Medalcode/Matrixcalc/actions/workflows/ci.yml/badge.svg)](https://github.com/Medalcode/Matrixcalc/actions/workflows/ci.yml)
 ![Vue](https://img.shields.io/badge/vue-3.5-green)
 ![TypeScript](https://img.shields.io/badge/typescript-5.9-blue)
 ![Docker](https://img.shields.io/badge/docker-ready-blue)
 ![Cloud Run](https://img.shields.io/badge/deployment-google%20cloud%20run-blueviolet)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Version](https://img.shields.io/badge/version-3.0-orange)
+![Version](https://img.shields.io/badge/version-3.1.0-orange)
 
 **The Cloud-Native Linear Algebra Workspace.**
 
@@ -47,6 +48,9 @@ El proyecto sigue una arquitectura de **Monolito Desacoplado** ("Decoupled Monol
 - **NumPy:** El estándar definitivo de la industria para computación científica. Garantiza precisión total (*64-bit precision*) y manejo veloz de algoritmos matriciales.
 - **Celery & Redis:** Para procesamiento asíncrono y de mensajería (escalabilidad de cálculos altamente intensivos sin bloquear requests HTTP).
 - **PostgreSQL / SQLite:** Almacenamiento optimizado y serialización eficiente de objetos JSON para guardar el estado matricial de las sesiones matemáticas.
+- **Authentication:** DRF TokenAuthentication (opcional, `AllowAny` por defecto) + endpoint `/api/auth/token/`
+- **Health Check:** Endpoint `/api/health/` para monitoreo de disponibilidad
+- **CI/CD:** GitHub Actions (flake8 linting + pytest, matrix 3.10/3.11)
 - **Test Coverage: 99%** (158 tests, pytest + coverage.py)
 
 ### Frontend (Interfaz de Usuario)
