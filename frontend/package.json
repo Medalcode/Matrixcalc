@@ -19,6 +19,7 @@
     "autoprefixer": "^10.4.23",
     "axios": "^1.13.2",
     "chart.js": "^4.5.1",
+    "pinia": "^3.0.4",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "vue": "^3.5.25",
