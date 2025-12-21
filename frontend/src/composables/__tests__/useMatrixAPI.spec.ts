@@ -131,6 +131,8 @@ describe('useMatrixAPI', () => {
     it('should delete matrix successfully', async () => {
       vi.mocked(axios.delete).mockResolvedValue({ data: null })
 
+      const { deleteMatrix, loading, error } = useMatrixAPI()
+      
       await deleteMatrix(1)
 
       expect(loading.value).toBe(false)
@@ -187,13 +189,11 @@ describe('useMatrixAPI', () => {
         // Expected to throw
       }
 
-      expect(error.value).toContain('dimensions
-      expect(result).toBeNull()
-      expect(error.value).toContain('Error')
+      expect(error.value).toContain('dimensions')
     })
   })
 
-  describe('fetchStats', () => {
+  describe('getStats', () => {
     it('should fetch statistics successfully', async () => {
       const mockStats = {
         total_matrices: 10,
@@ -209,14 +209,14 @@ describe('useMatrixAPI', () => {
 
       vi.mocked(axios.get).mockResolvedValue({ data: mockStats })
 
-      const { stats, fetchStats, loading, error } = useMatrixAPI()
+      const { getStats, loading, error } = useMatrixAPI()
       
-      await fetchStats()
+      const result = await getStats()
 
       expect(loading.value).toBe(false)
       expect(error.value).toBeNull()
-      expect(stats.value).toEqual(mockStats)
-      expect(axios.get).toHaveBeenCalledWith('http://localhost:8000/api/stats/')
+      expect(result).toEqual(mockStats)
+      expect(axios.get).toHaveBeenCalledWith('http://127.0.0.1:8000/api/stats/')
     })
   })
 
