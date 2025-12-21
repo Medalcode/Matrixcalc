@@ -1,14 +1,14 @@
 <template>
   <div class="bg-white rounded-lg shadow p-6">
     <div class="mb-6">
-      <h3 class="text-lg font-medium text-gray-900">Dashboard de Estadísticas</h3>
+      <h3 class="text-lg font-medium text-gray-900">{{ t('stats.title') }}</h3>
       <p class="text-sm text-gray-500">Visualización de métricas del sistema</p>
     </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-12">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-      <p class="mt-2 text-sm text-gray-500">Cargando estadísticas...</p>
+      <p class="mt-2 text-sm text-gray-500">{{ t('stats.loading') }}</p>
     </div>
 
     <!-- Error State -->
@@ -20,7 +20,7 @@
     <div v-else-if="stats" class="space-y-6">
       <!-- Operations by Type - Pie Chart -->
       <div>
-        <h4 class="text-sm font-medium text-gray-900 mb-4">Operaciones por Tipo</h4>
+        <h4 class="text-sm font-medium text-gray-900 mb-4">{{ t('stats.charts.distribution') }}</h4>
         <div class="h-64 flex items-center justify-center">
           <Pie v-if="pieChartData" :data="pieChartData" :options="pieChartOptions" />
           <p v-else class="text-gray-400 text-sm">No hay datos suficientes</p>
@@ -29,7 +29,7 @@
 
       <!-- Operations Timeline - Line Chart -->
       <div>
-        <h4 class="text-sm font-medium text-gray-900 mb-4">Timeline de Operaciones (Últimos 30 días)</h4>
+        <h4 class="text-sm font-medium text-gray-900 mb-4">{{ t('stats.charts.timeline') }}</h4>
         <div class="h-64">
           <Line v-if="lineChartData" :data="lineChartData" :options="lineChartOptions" />
           <p v-else class="text-center text-gray-400 text-sm py-20">No hay datos de timeline</p>
@@ -38,7 +38,7 @@
 
       <!-- Average Execution Time by Operation -->
       <div>
-        <h4 class="text-sm font-medium text-gray-900 mb-4">Tiempo Promedio de Ejecución</h4>
+        <h4 class="text-sm font-medium text-gray-900 mb-4">{{ t('stats.charts.avgTime') }}</h4>
         <div class="h-64">
           <Bar v-if="barChartData" :data="barChartData" :options="barChartOptions" />
           <p v-else class="text-center text-gray-400 text-sm py-20">No hay datos disponibles</p>
@@ -52,6 +52,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useStatsStore } from '@/stores/statsStore'
 import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
 import {
   Chart as ChartJS,
   Title,
@@ -81,11 +82,16 @@ ChartJS.register(
   BarElement
 )
 
+const { t } = useI18n()
 const statsStore = useStatsStore()
 const { stats } = storeToRefs(statsStore)
 
 const loading = ref(false)
 const error = ref<string | null>(null)
+
+const getOperationName = (type: OperationType): string => {
+  return t(`stats.operationTypes.${type}`)
+}
 
 const operationColors: Record<OperationType, string> = {
   'SUM': '#3b82f6',
@@ -96,20 +102,11 @@ const operationColors: Record<OperationType, string> = {
   'TRANSPOSE': '#ec4899'
 }
 
-const operationNames: Record<OperationType, string> = {
-  'SUM': 'Suma',
-  'SUBTRACT': 'Resta',
-  'MULTIPLY': 'Multiplicación',
-  'INVERSE': 'Inversa',
-  'DETERMINANT': 'Determinante',
-  'TRANSPOSE': 'Transpuesta'
-}
-
 // Pie Chart Data
 const pieChartData = computed(() => {
   if (!stats.value || !stats.value.operations_by_type.length) return null
 
-  const labels = stats.value.operations_by_type.map(op => operationNames[op.operation_type])
+  const labels = stats.value.operations_by_type.map(op => getOperationName(op.operation_type))
   const data = stats.value.operations_by_type.map(op => op.count)
   const backgroundColor = stats.value.operations_by_type.map(op => operationColors[op.operation_type])
 
@@ -198,7 +195,7 @@ const lineChartOptions: ChartOptions<'line'> = {
 const barChartData = computed(() => {
   if (!stats.value || !stats.value.operations_by_type.length) return null
 
-  const labels = stats.value.operations_by_type.map(op => operationNames[op.operation_type])
+  const labels = stats.value.operations_by_type.map(op => getOperationName(op.operation_type))
   const data = stats.value.operations_by_type.map(op => op.avg_time)
   const backgroundColor = stats.value.operations_by_type.map(op => operationColors[op.operation_type])
 

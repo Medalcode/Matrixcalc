@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-50 py-6">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">Estadísticas del Sistema</h1>
+        <h1 class="text-3xl font-bold text-gray-900">{{ t('stats.title') }}</h1>
         <p class="mt-2 text-sm text-gray-600">
           Métricas y análisis de operaciones matriciales
         </p>
@@ -10,12 +10,12 @@
 
       <!-- Loading State -->
       <div v-if="loading" class="bg-white shadow rounded-lg p-6">
-        <p class="text-gray-500 text-center">Cargando estadísticas...</p>
+        <p class="text-gray-500 text-center">{{ t('stats.loading') }}</p>
       </div>
 
       <!-- Error State -->
       <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p class="text-red-800">Error: {{ error }}</p>
+        <p class="text-red-800">{{ t('common.error') }}: {{ error }}</p>
       </div>
 
       <!-- Stats Grid -->
@@ -32,7 +32,7 @@
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">Total Matrices</dt>
+                    <dt class="text-sm font-medium text-gray-500 truncate">{{ t('stats.cards.totalMatrices') }}</dt>
                     <dd class="text-lg font-medium text-gray-900">{{ stats.total_matrices }}</dd>
                   </dl>
                 </div>
@@ -50,7 +50,7 @@
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">Total Operaciones</dt>
+                    <dt class="text-sm font-medium text-gray-500 truncate">{{ t('stats.cards.totalOperations') }}</dt>
                     <dd class="text-lg font-medium text-gray-900">{{ stats.total_operations }}</dd>
                   </dl>
                 </div>
@@ -68,8 +68,8 @@
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">Tiempo Promedio</dt>
-                    <dd class="text-lg font-medium text-gray-900">{{ stats.average_execution_time_ms.toFixed(2) }}ms</dd>
+                    <dt class="text-sm font-medium text-gray-500 truncate">{{ t('stats.cards.avgTime') }}</dt>
+                    <dd class="text-lg font-medium text-gray-900">{{ stats.average_execution_time_ms.toFixed(2) }}{{ t('common.ms') }}</dd>
                   </dl>
                 </div>
               </div>
@@ -86,8 +86,8 @@
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="text-sm font-medium text-gray-500 truncate">Almacenamiento</dt>
-                    <dd class="text-lg font-medium text-gray-900">{{ stats.storage_mb.toFixed(2) }} MB</dd>
+                    <dt class="text-sm font-medium text-gray-500 truncate">{{ t('stats.cards.storage') }}</dt>
+                    <dd class="text-lg font-medium text-gray-900">{{ stats.storage_mb.toFixed(2) }} {{ t('common.mb') }}</dd>
                   </dl>
                 </div>
               </div>
@@ -97,7 +97,7 @@
 
         <!-- Operations by Type -->
         <div class="bg-white shadow rounded-lg p-6">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Operaciones por Tipo</h3>
+          <h3 class="text-lg font-medium text-gray-900 mb-4">{{ t('stats.operationTypes.title') }}</h3>
           <div class="space-y-3">
             <div v-for="item in stats.operations_by_type" :key="item.operation_type" class="flex items-center justify-between">
               <div class="flex-1">
@@ -123,7 +123,7 @@
       <!-- Empty State -->
       <div v-else class="bg-white shadow rounded-lg p-6">
         <p class="text-gray-500 text-center py-12">
-          No hay datos estadísticos disponibles
+          {{ t('stats.noData') }}
         </p>
       </div>
 
@@ -139,9 +139,11 @@
 import { ref, onMounted } from 'vue'
 import { useStatsStore } from '@/stores/statsStore'
 import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
 import DashboardStats from '@/components/DashboardStats.vue'
 import type { OperationType } from '@/types/matrix'
 
+const { t } = useI18n()
 const statsStore = useStatsStore()
 const { stats } = storeToRefs(statsStore)
 const loading = ref(false)
@@ -159,14 +161,6 @@ onMounted(async () => {
 })
 
 function getOperationName(type: OperationType): string {
-  const names: Record<OperationType, string> = {
-    'SUM': 'Suma',
-    'SUBTRACT': 'Resta',
-    'MULTIPLY': 'Multiplicación',
-    'INVERSE': 'Inversa',
-    'DETERMINANT': 'Determinante',
-    'TRANSPOSE': 'Transpuesta'
-  }
-  return names[type] || type
+  return t(`stats.operationTypes.${type}`)
 }
 </script>
