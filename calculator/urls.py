@@ -9,20 +9,20 @@ from calculator import views
 # Router para ViewSets
 router = DefaultRouter()
 router.register(r'matrices', views.MatrixViewSet, basename='matrix')
-router.register(r'operations', views.OperationViewSet, basename='operation')
+router.register(r'operations-history', views.OperationViewSet, basename='operation')
 
 # URLs de operaciones y stats
 urlpatterns = [
-    # ViewSets
-    path('', include(router.urls)),
-    
-    # Operaciones matriciales
+    # Operaciones matriciales (deben ir ANTES del router para no ser capturadas)
     path('operations/sum/', views.sum_matrices, name='sum-matrices'),
     path('operations/subtract/', views.subtract_matrices, name='subtract-matrices'),
     path('operations/multiply/', views.multiply_matrices, name='multiply-matrices'),
     path('operations/inverse/', views.inverse_matrix, name='inverse-matrix'),
     path('operations/determinant/', views.determinant_matrix, name='determinant-matrix'),
     path('operations/transpose/', views.transpose_matrix, name='transpose-matrix'),
+    
+    # ViewSets
+    path('', include(router.urls)),
     
     # Estadísticas
     path('stats/', views.stats_view, name='stats'),

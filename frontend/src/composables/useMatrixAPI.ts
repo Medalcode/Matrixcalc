@@ -140,7 +140,7 @@ export function useMatrixAPI() {
     loading.value = true
     error.value = null
     try {
-      const response = await axios.get<PaginatedResponse<Operation>>(`${API_BASE_URL}/operations/`)
+      const response = await axios.get<PaginatedResponse<Operation>>(`${API_BASE_URL}/operations-history/`)
       return response.data
     } catch (err) {
       error.value = handleError(err)

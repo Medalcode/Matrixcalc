@@ -1,88 +1,364 @@
-# matrixcalc
-matrix calculator
+# 🧮 MatrixCalc Web
 
-## Breaking changes (renames)
+<div align="center">
 
-This repository refactored the original procedural modules (`moduloX_*.py`) to
-Pythonic, descriptive view modules and a single GUI entrypoint. The following
-changes were applied:
+![Python](https://img.shields.io/badge/Python-3.11-blue.svg)
+![Django](https://img.shields.io/badge/Django-4.2-green.svg)
+![Vue.js](https://img.shields.io/badge/Vue.js-3.5-brightgreen.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-- `gui_main.py` is the new canonical entrypoint (replaces `modulo1_main.py`).
-- View modules were renamed to `*_view.py` (for example `sum_view.py`, `multiply_view.py`, etc.).
+**Calculadora de matrices profesional con API REST y frontend moderno**
 
-All legacy `moduloX_*.py` compatibility shims were removed in this refactor. If
-you relied on the old import paths, update imports to the new module names.
+[Características](#-características) • [Demo](#-demo) • [Instalación](#-instalación) • [Documentación](#-documentación) • [Contribuir](#-contribuir)
 
-## Migration / Breaking changes (detailed)
+</div>
 
-If your code or scripts imported the legacy `moduloN_*` modules, update them to
-use the new modules. Below is a mapping of the old module names to the new
-locations plus short examples to help migrate.
+---
 
-Mapping
+## 📋 Índice
 
-- `modulo1_main.py` -> `gui_main.MatrixCalcApp`
-- `modulo2_home.py` -> `home_view.crear_home`
-- `modulo3_suma.py` -> `sum_view.crear_suma`
-- `modulo4_resta.py` -> `subtract_view.crear_resta`
-- `modulo5_inversa.py` -> `inverse_view.crear_inversa`
-- `modulo6_multiplica.py` -> `multiply_view.crear_multiplica`
-- `modulo7_traspuesta.py` -> `transpose_view.crear_traspuesta`
-- `modulo8_determina.py` -> `determinant_view.crear_determinante`
+- [Características](#-características)
+- [Arquitectura](#️-arquitectura)
+- [Instalación](#-instalación)
+  - [Con Docker (Recomendado)](#con-docker-recomendado)
+  - [Desarrollo Local](#desarrollo-local)
+- [Uso](#-uso)
+- [API REST](#-api-rest)
+- [Tecnologías](#️-tecnologías)
+- [Documentación](#-documentación)
+- [Contribuir](#-contribuir)
+- [Licencia](#-licencia)
+- [Versiones](#-versiones)
 
-Quick examples
+---
 
-1) Old import (legacy):
+## ✨ Características
 
-```python
-# antiguo
-from modulo3_suma import main as suma_main
+### 🔢 Operaciones Matriciales
+- **Suma** - Adición de matrices de mismas dimensiones
+- **Resta** - Sustracción de matrices de mismas dimensiones
+- **Multiplicación** - Producto matricial con validación dimensional
+- **Inversa** - Cálculo de matriz inversa (matrices cuadradas no singulares)
+- **Determinante** - Cálculo del determinante (matrices cuadradas)
+- **Transpuesta** - Transposición de matrices de cualquier dimensión
 
-# ...use suma_main() ...
+### 💾 Gestión de Datos
+- **CRUD completo** - Crear, leer, actualizar y eliminar matrices
+- **Persistencia** - Almacenamiento en PostgreSQL/SQLite
+- **Backup/Restore** - Exportación e importación en JSON/CSV
+- **Historial** - Registro completo de operaciones realizadas
+- **Limpieza automática** - Eliminación de datos antiguos configurable
+
+### 📊 Estadísticas y Visualización
+- **Dashboard interactivo** - Gráficos con Chart.js
+- **Métricas en tiempo real** - Total de matrices, operaciones, tiempos de ejecución
+- **Análisis temporal** - Timeline de operaciones de últimos 30 días
+- **Distribución** - Operaciones por tipo con porcentajes
+
+### 🛡️ Seguridad y Rendimiento
+- **Rate Limiting** - Protección contra abuso de API (100 req/hora)
+- **Validaciones** - Límites de dimensión y valores numéricos
+- **Manejo de errores** - Excepciones personalizadas con mensajes claros
+- **Optimización** - Índices de base de datos, caché de queries
+- **CORS configurado** - Seguridad para peticiones cross-origin
+
+### 🎨 Interfaz Moderna
+- **Responsive** - Diseño adaptable mobile-first con Tailwind CSS
+- **TypeScript** - Tipos estrictos para mayor robustez
+- **Componentes reutilizables** - Arquitectura modular Vue 3
+- **UX optimizada** - Feedback visual, validaciones en tiempo real
+- **Dark Mode Ready** - Preparado para tema oscuro
+
+---
+
+## 🏗️ Arquitectura
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     CLIENTE (Navegador)                      │
+│                                                              │
+│  ┌────────────────────────────────────────────────────┐    │
+│  │           Vue.js 3 SPA (TypeScript)                │    │
+│  │                                                     │    │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌───────────┐ │    │
+│  │  │  Components │  │   Stores    │  │  Router   │ │    │
+│  │  │   (Views)   │  │   (Pinia)   │  │ (Vue Router)│ │    │
+│  │  └─────────────┘  └─────────────┘  └───────────┘ │    │
+│  │                                                     │    │
+│  │  ┌─────────────────────────────────────────────┐  │    │
+│  │  │       Composables (useMatrixAPI)            │  │    │
+│  │  └─────────────────────────────────────────────┘  │    │
+│  └────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            │ HTTP/HTTPS (Axios)
+                            │
+┌─────────────────────────────────────────────────────────────┐
+│                    BACKEND (Servidor)                        │
+│                                                              │
+│  ┌────────────────────────────────────────────────────┐    │
+│  │              Django 4.2 REST API                   │    │
+│  │                                                     │    │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌─────────┐ │    │
+│  │  │   ViewSets   │  │ Serializers  │  │  URLs   │ │    │
+│  │  │   (CRUD)     │  │ (Validation) │  │(Routes) │ │    │
+│  │  └──────────────┘  └──────────────┘  └─────────┘ │    │
+│  │                                                     │    │
+│  │  ┌──────────────────────────────────────────────┐ │    │
+│  │  │         Business Logic (Utils)               │ │    │
+│  │  │  • matrix_model.py (NumPy calculations)      │ │    │
+│  │  │  • exceptions.py (Custom errors)             │ │    │
+│  │  │  • scheduler.py (Cleanup tasks)              │ │    │
+│  │  └──────────────────────────────────────────────┘ │    │
+│  │                                                     │    │
+│  │  ┌─────────────┐  ┌──────────────────────────┐   │    │
+│  │  │   Models    │  │  Management Commands     │   │    │
+│  │  │ (ORM)       │  │  • export_backup         │   │    │
+│  │  │             │  │  • import_backup         │   │    │
+│  │  │             │  │  • cleanup_old_data      │   │    │
+│  │  └─────────────┘  └──────────────────────────┘   │    │
+│  └────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            │ ORM (Django)
+                            │
+┌─────────────────────────────────────────────────────────────┐
+│                  BASE DE DATOS (PostgreSQL)                  │
+│                                                              │
+│  ┌────────────────┐          ┌────────────────┐            │
+│  │  calculator_   │          │  calculator_   │            │
+│  │    matrix      │ ◄─────── │   operation    │            │
+│  │                │   FK     │                │            │
+│  │  • id          │          │  • id          │            │
+│  │  • name        │          │  • operation_  │            │
+│  │  • rows        │          │    type        │            │
+│  │  • cols        │          │  • matrix_a    │            │
+│  │  • data (JSON) │          │  • matrix_b    │            │
+│  │  • created_at  │          │  • result      │            │
+│  │  • updated_at  │          │  • execution_  │            │
+│  │                │          │    time        │            │
+│  │  Índices:      │          │  • created_at  │            │
+│  │  - created_at  │          │                │            │
+│  │  - updated_at  │          │  Índices:      │            │
+│  └────────────────┘          │  - operation_  │            │
+│                              │    type        │            │
+│                              │  - created_at  │            │
+│                              │  - matrix_a    │            │
+│                              │  - result      │            │
+│                              └────────────────┘            │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-2) New import (recommended):
+### 🔄 Flujo de Datos
 
-```python
-# nuevo
-from sum_view import crear_suma
+1. **Cliente → Backend**: Usuario interactúa con Vue.js → Axios envía petición HTTP → Django recibe en ViewSet
+2. **Backend → Lógica**: ViewSet valida con Serializer → Llama a utils/matrix_model.py (NumPy) → Guarda en DB
+3. **Backend → Cliente**: Serializa respuesta → Retorna JSON → Pinia actualiza estado → Vue re-renderiza
 
-# call the new view factory or integrate with MatrixCalcApp
-crear_suma()
+---
+
+## 🚀 Instalación
+
+### Con Docker (Recomendado)
+
+**Requisitos**: Docker 20.10+ y Docker Compose 2.0+
+
+```bash
+# 1. Clonar repositorio
+git clone https://github.com/tuusuario/Matrixcalc.git
+cd Matrixcalc
+
+# 2. Setup completo automático
+make setup
+
+# O manualmente:
+cp .env.example .env
+docker-compose build
+docker-compose up -d
 ```
 
-Entrypoint example
+**Acceder a la aplicación:**
+- 🌐 **Frontend**: http://localhost:3000
+- 🔌 **API Backend**: http://localhost:8000/api
+- 🔧 **Admin Django**: http://localhost:8000/admin (admin/admin123)
 
-Previously some users started the GUI via `modulo1_main.py`. Use the new
-entrypoint instead:
+📖 Ver [DOCKER.md](./DOCKER.md) para documentación completa de Docker
 
-```python
-from gui_main import MatrixCalcApp
+### Desarrollo Local
 
-app = MatrixCalcApp()
-app.mainloop()
+#### Backend (Django)
+
+```bash
+# 1. Crear y activar entorno virtual
+python3.11 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# 2. Instalar dependencias
+pip install -r requirements-web.txt
+
+# 3. Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tu configuración
+
+# 4. Ejecutar migraciones
+python manage.py migrate
+
+# 5. Crear superusuario
+python manage.py createsuperuser
+
+# 6. Iniciar servidor de desarrollo
+python manage.py runserver
 ```
 
-Notes and recommendations
+Backend disponible en: http://127.0.0.1:8000
 
-- The numeric and GUI logic were moved to `matrix_model.py` (numeric core) and
-	`*_view.py` modules (GUI screens). Removing the legacy files reduces
-	maintenance burden and avoids duplication.
-- If you maintain external projects that import the old names, consider either
-	updating those projects or creating a small compatibility package/branch that
-	provides shims.
-- Unit tests cover the numeric model and were run after the refactor; they
-	passed (see `test_model.py`).
+#### Frontend (Vue.js)
 
-## Numeric policy
+```bash
+cd frontend
 
-All numerical parsing and operations are centralized in `matrix_model.py`.
-Key decisions:
+# 1. Instalar dependencias
+npm install
 
-- Input parsing uses `np.float64` for consistency across operations.
-- `safe_inv` rejects matrices whose condition number exceeds `1e12` to avoid
-	returning numerically unstable inverses. This threshold is documented in
-	`matrix_model.py` and tested in the unit tests (`test_model.py`).
+# 2. Configurar variables de entorno
+cp .env.example .env
+# VITE_API_URL=http://127.0.0.1:8000/api
 
-If you need to change the numeric policy (for example a different threshold or
-dtype), update `matrix_model.py` and extend tests accordingly.
+# 3. Iniciar servidor de desarrollo
+npm run dev
+```
+
+Frontend disponible en: http://localhost:5173
+
+---
+
+## 💻 Uso
+
+### Interfaz Web
+
+1. **Crear Matriz**
+   - Ir a "Calculadora" → pestaña "Editor"
+   - Especificar nombre y dimensiones
+   - Rellenar valores manualmente o usar rellenos rápidos
+   - Guardar
+
+2. **Realizar Operación**
+   - Pestaña "Operaciones"
+   - Seleccionar matriz(ces) de los dropdowns
+   - Elegir operación (suma, resta, multiplicación, etc.)
+   - Ver resultado en pantalla
+
+3. **Ver Estadísticas**
+   - Ir a "Estadísticas"
+   - Ver métricas generales y gráficos interactivos
+
+4. **Backup/Restore**
+   - Pestaña "Backup"
+   - Exportar: descarga JSON con todas las matrices
+   - Importar: subir archivo CSV con formato específico
+
+### API REST
+
+Ver documentación completa en [docs/API.md](./docs/API.md)
+
+**Ejemplo: Crear matriz**
+```bash
+curl -X POST http://localhost:8000/api/matrices/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Matriz A",
+    "rows": 2,
+    "cols": 2,
+    "data": [[1, 2], [3, 4]]
+  }'
+```
+
+**Ejemplo: Sumar matrices**
+```bash
+curl -X POST http://localhost:8000/api/operations/sum/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "matrix_a_id": 1,
+    "matrix_b_id": 2
+  }'
+```
+
+---
+
+## 🛠️ Tecnologías
+
+### Backend
+- **Django 4.2** - Framework web Python
+- **Django REST Framework** - API REST toolkit
+- **PostgreSQL 15** - Base de datos relacional
+- **NumPy** - Cálculos matriciales eficientes
+- **Gunicorn** - Servidor WSGI para producción
+- **APScheduler** - Tareas programadas (limpieza)
+
+### Frontend
+- **Vue.js 3.5** - Framework JavaScript progresivo
+- **TypeScript 5.7** - Superset tipado de JavaScript
+- **Pinia** - State management
+- **Vue Router** - Enrutamiento SPA
+- **Tailwind CSS 4** - Framework CSS utility-first
+- **Chart.js + vue-chartjs** - Visualización de datos
+- **Axios** - Cliente HTTP
+
+### DevOps
+- **Docker + Docker Compose** - Contenedorización
+- **Nginx** - Servidor web y proxy reverso
+- **GitHub Actions** - CI/CD (futuro)
+
+---
+
+## 📚 Documentación
+
+- 📖 [DOCKER.md](./DOCKER.md) - Guía completa de Docker
+- 🔌 [docs/API.md](./docs/API.md) - Documentación de API REST
+- 🤝 [CONTRIBUTING.md](./CONTRIBUTING.md) - Guía de contribución
+- 🗺️ [docs/ROADMAP.md](./docs/ROADMAP.md) - Hoja de ruta del proyecto
+
+---
+
+## 🤝 Contribuir
+
+¡Las contribuciones son bienvenidas! Por favor lee [CONTRIBUTING.md](./CONTRIBUTING.md) para detalles sobre:
+- Código de conducta
+- Proceso de pull requests
+- Estándares de código
+- Flujo de desarrollo
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver [LICENSE](./LICENSE) para más detalles.
+
+---
+
+## 📌 Versiones
+
+### v2.0 - Django Web Migration (Actual)
+- ✅ Migración completa de Tkinter a Django + Vue.js
+- ✅ API REST con Django REST Framework
+- ✅ Frontend moderno con Vue 3 + TypeScript
+- ✅ Dashboard con estadísticas y gráficos
+- ✅ Docker Compose con PostgreSQL
+- ✅ Sistema de backup/restore
+- ✅ Rate limiting y seguridad
+
+### v1.0 - Tkinter Desktop (Legacy)
+- GUI de escritorio con Tkinter
+- Operaciones matriciales básicas
+- Disponible en tag `v1.0-tkinter-desktop`
+
+---
+
+<div align="center">
+
+**Desarrollado con ❤️ usando Django y Vue.js**
+
+[⬆ Volver arriba](#-matrixcalc-web)
+
+</div>
