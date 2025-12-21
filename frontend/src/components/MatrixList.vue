@@ -3,7 +3,7 @@
     <div class="p-6 border-b border-gray-200">
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-lg font-medium text-gray-900">Matrices Guardadas</h3>
+          <h3 class="text-lg font-medium text-gray-900">{{ t('calculator.matrixList.title') }}</h3>
           <p class="text-sm text-gray-500">{{ totalCount }} matrices en total</p>
         </div>
         <button
@@ -11,7 +11,7 @@
           :disabled="loading"
           class="px-3 py-2 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
         >
-          {{ loading ? 'Cargando...' : 'Actualizar' }}
+          {{ loading ? t('common.loading') : 'Actualizar' }}
         </button>
       </div>
     </div>
@@ -19,13 +19,13 @@
     <!-- Loading State -->
     <div v-if="loading && matrices.length === 0" class="p-8 text-center">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-      <p class="mt-2 text-sm text-gray-500">Cargando matrices...</p>
+      <p class="mt-2 text-sm text-gray-500">{{ t('common.loading') }}</p>
     </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="p-6">
       <div class="bg-red-50 border border-red-200 rounded-md p-4">
-        <p class="text-sm text-red-800">{{ error }}</p>
+        <p class="text-sm text-red-800">{{ t('common.error') }}: {{ error }}</p>
       </div>
     </div>
 
@@ -34,7 +34,7 @@
       <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
       </svg>
-      <p class="mt-2 text-sm text-gray-500">No hay matrices guardadas</p>
+      <p class="mt-2 text-sm text-gray-500">{{ t('calculator.matrixList.empty') }}</p>
       <p class="text-xs text-gray-400">Crea una nueva matriz para comenzar</p>
     </div>
 
@@ -149,7 +149,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useMatrixStore } from '@/stores/matrixStore'
+
+const { t } = useI18n()
 import { storeToRefs } from 'pinia'
 import type { Matrix } from '@/types/matrix'
 

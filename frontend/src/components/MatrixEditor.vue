@@ -1,23 +1,23 @@
 <template>
   <div class="bg-white rounded-lg shadow p-6">
     <div class="mb-4">
-      <h3 class="text-lg font-medium text-gray-900">Editor de Matriz</h3>
+      <h3 class="text-lg font-medium text-gray-900">{{ t('calculator.editor.title') }}</h3>
       <p class="text-sm text-gray-500">Crea o edita una matriz</p>
     </div>
 
     <!-- Matrix Name and Dimensions -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('calculator.editor.name') }}</label>
         <input
           v-model="matrixName"
           type="text"
           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-          placeholder="Ej: Matriz A"
+          :placeholder="t('calculator.editor.namePlaceholder')"
         />
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Filas</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('calculator.editor.rows') }}</label>
         <input
           v-model.number="rows"
           type="number"
@@ -28,7 +28,7 @@
         />
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Columnas</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('calculator.editor.cols') }}</label>
         <input
           v-model.number="cols"
           type="number"
@@ -66,26 +66,26 @@
         @click="fillZeros"
         class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
       >
-        Llenar con 0
+        {{ t('calculator.editor.actions.fillZeros') }}
       </button>
       <button
         @click="fillOnes"
         class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
       >
-        Llenar con 1
+        {{ t('calculator.editor.actions.fillOnes') }}
       </button>
       <button
         @click="fillIdentity"
         :disabled="rows !== cols"
         class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Matriz Identidad
+        {{ t('calculator.editor.actions.fillIdentity') }}
       </button>
       <button
         @click="fillRandom"
         class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
       >
-        Aleatorio (0-10)
+        {{ t('calculator.editor.actions.fillRandom') }}
       </button>
     </div>
 
@@ -96,14 +96,14 @@
         :disabled="loading || !isValidMatrix"
         class="flex-1 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {{ loading ? 'Guardando...' : editMode ? 'Actualizar' : 'Guardar' }}
+        {{ loading ? t('common.loading') : editMode ? 'Actualizar' : t('calculator.editor.actions.save') }}
       </button>
       <button
         v-if="editMode"
         @click="cancelEdit"
         class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
       >
-        Cancelar
+        {{ t('calculator.editor.actions.cancel') }}
       </button>
       <button
         v-else
@@ -128,7 +128,10 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useMatrixStore } from '@/stores/matrixStore'
+
+const { t } = useI18n()
 import type { Matrix } from '@/types/matrix'
 
 const props = defineProps<{
