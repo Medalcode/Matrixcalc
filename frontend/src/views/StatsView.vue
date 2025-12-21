@@ -126,6 +126,11 @@
           No hay datos estadísticos disponibles
         </p>
       </div>
+
+      <!-- Dashboard Charts -->
+      <div class="mt-6">
+        <DashboardStats />
+      </div>
     </div>
   </div>
 </template>
@@ -134,6 +139,7 @@
 import { ref, onMounted } from 'vue'
 import { useStatsStore } from '@/stores/statsStore'
 import { storeToRefs } from 'pinia'
+import DashboardStats from '@/components/DashboardStats.vue'
 import type { OperationType } from '@/types/matrix'
 
 const statsStore = useStatsStore()
