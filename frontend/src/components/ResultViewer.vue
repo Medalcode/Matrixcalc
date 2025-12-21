@@ -110,8 +110,11 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useMatrixStore } from '@/stores/matrixStore'
 import type { Matrix, Operation, OperationType } from '@/types/matrix'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   matrix?: Matrix

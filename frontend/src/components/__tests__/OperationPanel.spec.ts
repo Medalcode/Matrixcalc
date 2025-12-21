@@ -74,7 +74,7 @@ describe('OperationPanel', () => {
       }
     })
 
-    expect(wrapper.text()).toContain('Operaciones Binarias')
+    expect(wrapper.text()).toContain('Operaciones con dos matrices')
     expect(wrapper.text()).toContain('Suma')
     expect(wrapper.text()).toContain('Resta')
     expect(wrapper.text()).toContain('Multiplicación')
@@ -87,7 +87,7 @@ describe('OperationPanel', () => {
       }
     })
 
-    expect(wrapper.text()).toContain('Operaciones Unarias')
+    expect(wrapper.text()).toContain('Operaciones con una matriz')
     expect(wrapper.text()).toContain('Inversa')
     expect(wrapper.text()).toContain('Determinante')
     expect(wrapper.text()).toContain('Transpuesta')

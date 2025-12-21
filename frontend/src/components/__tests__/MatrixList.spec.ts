@@ -62,7 +62,7 @@ describe('MatrixList', () => {
     expect(wrapper.text()).toContain('Matrix A')
     expect(wrapper.text()).toContain('Matrix B')
     expect(wrapper.text()).toContain('2×2')
-    expect(wrapper.text()).toContain('3x3')
+    expect(wrapper.text()).toContain('3×3')
   })
 
   it('shows loading state', async () => {

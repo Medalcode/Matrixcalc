@@ -121,8 +121,9 @@ describe('MatrixEditor', () => {
       }
     })
 
-    const saveButton = wrapper.find('button[type="submit"]')
-    expect(saveButton.attributes('disabled')).toBeDefined()
+    const buttons = wrapper.findAll('button')
+    const saveButton = buttons.find(btn => btn.text().includes('Guardar'))
+    expect(saveButton?.attributes('disabled')).toBeDefined()
   })
 
   it('emits save event with matrix data', async () => {
@@ -136,8 +137,11 @@ describe('MatrixEditor', () => {
     await wrapper.findAll('input[type="number"]')[0].setValue('2')
     await wrapper.findAll('input[type="number"]')[1].setValue('2')
 
-    const form = wrapper.find('form')
-    await form.trigger('submit.prevent')
+    const buttons = wrapper.findAll('button')
+    const saveButton = buttons.find(btn => btn.text().includes('Guardar'))
+    if (saveButton) {
+      await saveButton.trigger('click')
+    }
 
     expect(wrapper.emitted('save')).toBeTruthy()
   })

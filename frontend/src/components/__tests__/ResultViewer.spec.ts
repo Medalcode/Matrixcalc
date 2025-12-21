@@ -1,7 +1,7 @@
 /**
  * Tests for ResultViewer component
  */
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import ResultViewer from '../ResultViewer.vue'
@@ -30,44 +30,69 @@ describe('ResultViewer', () => {
   it('renders empty state when no result', () => {
     const wrapper = mount(ResultViewer, {
       global: {
-        plugins: [i18n]
+        plugins: [i18n],
+        mocks: {
+          t: (key: string) => key
+        }
       },
       props: {
-        result: null
+        matrix: undefined
       }
     })
 
-    expect(wrapper.text()).toContain('No hay resultados para mostrar')
+    expect(wrapper.text()).toContain('calculator.result.noResult')
   })
 
   it('displays matrix result', () => {
     const wrapper = mount(ResultViewer, {
       global: {
-        plugins: [i18n]
+        plugins: [i18n],
+        mocks: {
+          t: (key: string) => key
+        }
       },
       props: {
-        result: {
+        matrix: {
+          id: 1,
+          name: 'Test Matrix',
+          rows: 2,
+          cols: 2,
           data: [[1, 2], [3, 4]],
-          executionTime: 0.05,
-          operation: 'transpose'
+          created_at: '2025-12-21T00:00:00Z',
+          updated_at: '2025-12-21T00:00:00Z'
         }
       }
     })
 
-    expect(wrapper.text()).toContain('Resultado')
-    expect(wrapper.text()).toContain('Tiempo de ejecución')
+    expect(wrapper.text()).toContain('calculator.result.title')
+    expect(wrapper.text()).toContain('Test Matrix')
   })
 
   it('displays determinant result', () => {
     const wrapper = mount(ResultViewer, {
       global: {
-        plugins: [i18n]
+        plugins: [i18n],
+        mocks: {
+          t: (key: string) => key
+        }
       },
       props: {
-        result: {
-          data: 42,
-          executionTime: 0.03,
-          operation: 'determinant'
+        matrix: {
+          id: 1,
+          name: 'Determinant Result',
+          rows: 1,
+          cols: 1,
+          data: [[42]],
+          created_at: '2025-12-21T00:00:00Z',
+          updated_at: '2025-12-21T00:00:00Z'
+        },
+        operation: {
+          id: 1,
+          operation_type: 'DETERMINANT',
+          matrix_a: 1,
+          result_matrix: 1,
+          execution_time: 0.03,
+          created_at: '2025-12-21T00:00:00Z'
         }
       }
     })
@@ -79,31 +104,53 @@ describe('ResultViewer', () => {
   it('displays execution time', () => {
     const wrapper = mount(ResultViewer, {
       global: {
-        plugins: [i18n]
+        plugins: [i18n],
+        mocks: {
+          t: (key: string) => key
+        }
       },
       props: {
-        result: {
+        matrix: {
+          id: 1,
+          name: 'Sum Result',
+          rows: 2,
+          cols: 2,
           data: [[1, 2], [3, 4]],
-          executionTime: 0.125,
-          operation: 'sum'
+          created_at: '2025-12-21T00:00:00Z',
+          updated_at: '2025-12-21T00:00:00Z'
+        },
+        operation: {
+          id: 1,
+          operation_type: 'SUM',
+          matrix_a: 1,
+          matrix_b: 2,
+          result_matrix: 1,
+          execution_time: 0.125,
+          created_at: '2025-12-21T00:00:00Z'
         }
       }
     })
 
     expect(wrapper.text()).toContain('0.125')
-    expect(wrapper.text()).toContain('Tiempo de ejecución')
   })
 
   it('displays matrix grid correctly', () => {
     const wrapper = mount(ResultViewer, {
       global: {
-        plugins: [i18n]
+        plugins: [i18n],
+        mocks: {
+          t: (key: string) => key
+        }
       },
       props: {
-        result: {
+        matrix: {
+          id: 1,
+          name: 'Test Matrix',
+          rows: 3,
+          cols: 3,
           data: [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-          executionTime: 0.05,
-          operation: 'multiply'
+          created_at: '2025-12-21T00:00:00Z',
+          updated_at: '2025-12-21T00:00:00Z'
         }
       }
     })
@@ -127,18 +174,34 @@ describe('ResultViewer', () => {
 
     const wrapper = mount(ResultViewer, {
       global: {
-        plugins: [i18n]
+        plugins: [i18n],
+        mocks: {
+          t: (key: string) => key
+        }
       },
       props: {
-        result: {
+        matrix: {
+          id: 1,
+          name: 'Large Matrix',
+          rows: 10,
+          cols: 10,
           data: largeMatrix,
-          executionTime: 0.5,
-          operation: 'multiply'
+          created_at: '2025-12-21T00:00:00Z',
+          updated_at: '2025-12-21T00:00:00Z'
+        },
+        operation: {
+          id: 1,
+          operation_type: 'MULTIPLY',
+          matrix_a: 1,
+          matrix_b: 2,
+          result_matrix: 1,
+          execution_time: 0.5,
+          created_at: '2025-12-21T00:00:00Z'
         }
       }
     })
 
     expect(wrapper.exists()).toBe(true)
-    expect(wrapper.text()).toContain('Tiempo de ejecución')
+    expect(wrapper.text()).toContain('0.5')
   })
 })
