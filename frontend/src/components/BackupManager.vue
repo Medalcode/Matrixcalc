@@ -1,13 +1,13 @@
 <template>
   <div class="bg-white rounded-lg shadow p-6">
     <div class="mb-6">
-      <h3 class="text-lg font-medium text-gray-900">Gestor de Backups</h3>
+      <h3 class="text-lg font-medium text-gray-900">{{ t('calculator.backup.title') }}</h3>
       <p class="text-sm text-gray-500">Importa y exporta tus matrices</p>
     </div>
 
     <!-- Export Section -->
     <div class="mb-6 p-4 border border-gray-200 rounded-lg">
-      <h4 class="text-sm font-medium text-gray-900 mb-3">Exportar Backup</h4>
+      <h4 class="text-sm font-medium text-gray-900 mb-3">{{ t('calculator.backup.export.title') }}</h4>
       <p class="text-sm text-gray-600 mb-4">
         Descarga todas tus matrices en formato JSON
       </p>
@@ -16,13 +16,13 @@
         :disabled="exporting"
         class="w-full px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
       >
-        {{ exporting ? 'Exportando...' : 'Descargar Backup' }}
+        {{ exporting ? t('common.loading') : t('calculator.backup.export.all') }}
       </button>
     </div>
 
     <!-- Import Section -->
     <div class="mb-6 p-4 border border-gray-200 rounded-lg">
-      <h4 class="text-sm font-medium text-gray-900 mb-3">Importar CSV</h4>
+      <h4 class="text-sm font-medium text-gray-900 mb-3">{{ t('calculator.backup.import.csv') }}</h4>
       <p class="text-sm text-gray-600 mb-4">
         Carga una matriz desde un archivo CSV
       </p>
@@ -58,7 +58,7 @@
           :disabled="!selectedFile || !importName.trim() || importing"
           class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {{ importing ? 'Importando...' : 'Importar Matriz' }}
+          {{ importing ? t('common.loading') : 'Importar Matriz' }}
         </button>
       </div>
     </div>
@@ -93,7 +93,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useMatrixStore } from '@/stores/matrixStore'
+
+const { t } = useI18n()
 import type { Matrix } from '@/types/matrix'
 
 const emit = defineEmits<{

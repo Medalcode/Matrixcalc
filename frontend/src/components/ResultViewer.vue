@@ -2,7 +2,7 @@
   <div class="bg-white rounded-lg shadow p-6">
     <div class="mb-4 flex items-center justify-between">
       <div>
-        <h3 class="text-lg font-medium text-gray-900">Resultado</h3>
+        <h3 class="text-lg font-medium text-gray-900">{{ t('calculator.result.title') }}</h3>
         <p class="text-sm text-gray-500" v-if="matrix">{{ matrix.name }}</p>
       </div>
       <button
@@ -17,7 +17,7 @@
     </div>
 
     <div v-if="!matrix" class="text-center py-12 text-gray-500">
-      No hay resultados para mostrar
+      {{ t('calculator.result.noResult') }}
     </div>
 
     <div v-else>
@@ -29,8 +29,8 @@
             <span class="ml-2 font-medium">{{ matrix.rows }} × {{ matrix.cols }}</span>
           </div>
           <div v-if="operation">
-            <span class="text-gray-500">Tiempo de ejecución:</span>
-            <span class="ml-2 font-medium">{{ operation.execution_time_ms }}ms</span>
+            <span class="text-gray-500">{{ t('calculator.result.executionTime') }}:</span>
+            <span class="ml-2 font-medium">{{ operation.execution_time_ms }}{{ t('common.ms') }}</span>
           </div>
         </div>
       </div>
