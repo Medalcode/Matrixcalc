@@ -1,0 +1,39 @@
+
+> frontend@0.0.0 test:coverage
+> vitest run --coverage
+
+
+[1m[46m RUN [49m[22m [36mv4.0.16 [39m[90m/home/medalcode/Documentos/GitHub/Matrixcalc/frontend[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [32m✓[39m src/composables/__tests__/useMatrixAPI.spec.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/HelloWorld.spec.ts [2m([22m[2m1 test[22m[2m)[22m[32m 27[2mms[22m[39m
+ [31m❯[39m src/components/__tests__/ResultViewer.spec.ts [2m([22m[2m6 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 104[2mms[22m[39m
+     [32m✓[39m renders empty state when no result[32m 21[2mms[22m[39m
+     [32m✓[39m displays matrix result[32m 12[2mms[22m[39m
+     [32m✓[39m displays determinant result[32m 15[2mms[22m[39m
+[31m     [31m×[31m displays execution time[39m[32m 12[2mms[22m[39m
+     [32m✓[39m displays matrix grid correctly[32m 30[2mms[22m[39m
+[31m     [31m×[31m handles large matrices[39m[32m 13[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/MatrixList.spec.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 124[2mms[22m[39m
+ [31m❯[39m src/components/__tests__/MatrixEditor.spec.ts [2m([22m[2m6 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 144[2mms[22m[39m
+     [32m✓[39m renders correctly[32m 53[2mms[22m[39m
+     [32m✓[39m updates matrix name[32m 14[2mms[22m[39m
+     [32m✓[39m updates rows and cols[32m 14[2mms[22m[39m
+     [32m✓[39m fills matrix with zeros[32m 17[2mms[22m[39m
+     [32m✓[39m disables save button when form is invalid[32m 7[2mms[22m[39m
+[31m     [31m×[31m emits save event with matrix data[39m[32m 38[2mms[22m[39m
+ [31m❯[39m src/components/__tests__/OperationPanel.spec.ts [2m([22m[2m7 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 143[2mms[22m[39m
+     [32m✓[39m renders correctly[32m 42[2mms[22m[39m
+     [32m✓[39m displays matrix selectors[32m 13[2mms[22m[39m
+     [32m✓[39m shows binary operations section[32m 9[2mms[22m[39m
+     [32m✓[39m shows unary operations section[32m 6[2mms[22m[39m
+     [32m✓[39m disables execute button when no matrices selected[32m 8[2mms[22m[39m
+[31m     [31m×[31m enables execute button when matrices selected and operation chosen[39m[32m 19[2mms[22m[39m
+[31m     [31m×[31m emits operation-execute event when execute clicked[39m[32m 44[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m3 passed[39m[22m[90m (6)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[2m | [22m[1m[32m32 passed[39m[22m[90m (37)[39m
+[2m   Start at [22m 23:22:38
+[2m   Duration [22m 1.68s[2m (transform 1.34s, setup 0ms, import 3.68s, tests 557ms, environment 3.03s)[22m
+
