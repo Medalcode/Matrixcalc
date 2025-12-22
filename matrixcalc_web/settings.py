@@ -33,6 +33,12 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+# Cloud Run detection
+if os.environ.get('K_SERVICE'):
+    # Running on Cloud Run
+    ALLOWED_HOSTS = ['*']  # Cloud Run maneja el routing
+    DEBUG = False
+
 
 # Application definition
 
@@ -53,6 +59,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Servir static files en producción
     'corsheaders.middleware.CorsMiddleware',  # CORS debe ir antes de CommonMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -87,10 +94,13 @@ WSGI_APPLICATION = 'matrixcalc_web.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 # Usar PostgreSQL por defecto, SQLite para desarrollo local
+# Supabase o cualquier PostgreSQL externo via DATABASE_URL
 DATABASES = {
     'default': dj_database_url.config(
         default=f'postgresql://matrixcalc:changeme123@localhost:5432/matrixcalc',
-        conn_max_age=600
+        conn_max_age=600,
+        conn_health_checks=True,  # Health checks para Cloud Run
+        ssl_require=True if os.environ.get('DATABASE_URL', '').startswith('postgresql://') else False
     )
 }
 
@@ -135,6 +145,16 @@ STATICFILES_DIRS = [
     BASE_DIR / 'calculator' / 'static',
 ]
 
+# WhiteNoise configuration for static files in production
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
 # Media files
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -161,10 +181,10 @@ REST_FRAMEWORK = {
 
 # CORS Configuration
 CORS_ALLOW_ALL_ORIGINS = DEBUG  # Solo en desarrollo
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Vite dev server
-    "http://127.0.0.1:5173",
-]
+
+# CORS origins desde variable de entorno (Cloud Run frontend)
+cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173')
+CORS_ALLOWED_ORIGINS = cors_origins.split(',')
 CORS_ALLOW_CREDENTIALS = True
 
 # Rate Limiting
