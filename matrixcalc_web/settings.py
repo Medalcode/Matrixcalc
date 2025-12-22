@@ -100,7 +100,6 @@ DATABASES = {
         default=f'postgresql://matrixcalc:changeme123@localhost:5432/matrixcalc',
         conn_max_age=600,
         conn_health_checks=True,  # Health checks para Cloud Run
-        ssl_require=True if os.environ.get('DATABASE_URL', '').startswith('postgresql://') else False
     )
 }
 
