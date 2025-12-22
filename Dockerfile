@@ -1,51 +1,54 @@
-# Backend Dockerfile - Multi-stage build
-FROM python:3.11-slim as builder
+# Multi-stage build para optimizar tamaño de imagen
+FROM python:3.13-slim as builder
 
 WORKDIR /app
 
-# Install system dependencies
+# Instalar dependencias de sistema necesarias para compilación
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     postgresql-client \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
+# Copiar solo requirements para aprovechar cache de Docker
 COPY requirements-web.txt .
+# Instalar globalmente para facilitar acceso
+RUN pip install --no-cache-dir -r requirements-web.txt
 
-# Install Python dependencies
-RUN pip install --no-cache-dir --user -r requirements-web.txt
-
-# Final stage
-FROM python:3.11-slim
+# Etapa final - imagen mínima
+FROM python:3.13-slim
 
 WORKDIR /app
 
-# Install PostgreSQL client
+# Instalar solo runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client \
+    libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Python dependencies from builder
-COPY --from=builder /root/.local /root/.local
+# Copiar dependencias instaladas desde builder
+COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Make sure scripts in .local are usable
-ENV PATH=/root/.local/bin:$PATH
-
-# Copy application code
+# Copiar código de la aplicación
 COPY . .
 
-# Create necessary directories
-RUN mkdir -p backups calculator/static
+# Collectstatic ANTES de cambiar de usuario
+RUN python manage.py collectstatic --noinput
 
-# Copy entrypoint script
-COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Crear usuario no-root y dar permisos
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
 
-# Expose port
-EXPOSE 8000
+USER appuser
 
-# Set entrypoint
-ENTRYPOINT ["/entrypoint.sh"]
+# Exponer puerto
+EXPOSE 8080
 
-# Default command
-CMD ["gunicorn", "matrixcalc_web.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120"]
+# Variables de entorno por defecto (se sobrescriben en Cloud Run)
+ENV PORT=8080 \
+    PYTHONUNBUFFERED=1 \
+    DEBUG=False
+
+# Comando para iniciar aplicación
+CMD exec gunicorn --bind :$PORT --workers 2 --threads 4 --timeout 60 matrixcalc_web.wsgi:application
