@@ -1,0 +1,55 @@
+# Multi-stage build para optimizar tamaño de imagen
+FROM python:3.13-slim as builder
+
+WORKDIR /app
+
+# Instalar dependencias de sistema necesarias para compilación
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    postgresql-client \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar solo requirements para aprovechar cache de Docker
+COPY requirements-web.txt .
+RUN pip install --no-cache-dir --user -r requirements-web.txt
+
+# Etapa final - imagen mínima
+FROM python:3.13-slim
+
+WORKDIR /app
+
+# Instalar solo runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar dependencias instaladas desde builder
+COPY --from=builder /root/.local /root/.local
+
+# Asegurar que scripts estén en PATH
+ENV PATH=/root/.local/bin:$PATH
+
+# Copiar código de la aplicación
+COPY . .
+
+# Crear usuario no-root para seguridad
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
+
+USER appuser
+
+# Collectstatic y preparar aplicación
+RUN python manage.py collectstatic --noinput
+
+# Exponer puerto
+EXPOSE 8080
+
+# Variables de entorno por defecto (se sobrescriben en Cloud Run)
+ENV PORT=8080 \
+    PYTHONUNBUFFERED=1 \
+    DEBUG=False
+
+# Comando para iniciar aplicación
+CMD exec gunicorn --bind :$PORT --workers 2 --threads 4 --timeout 60 matrixcalc_web.wsgi:application
