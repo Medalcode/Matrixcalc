@@ -12,8 +12,11 @@ RUN npm ci
 # Copiar código fuente
 COPY frontend/ .
 
+# Configurar URL del backend para producción
+ENV VITE_API_URL=https://matrixcalc-backend-dcyullgtoa-uc.a.run.app/api
+
 # Build para producción
-RUN npm run build
+RUN npm run build-only
 
 # Etapa 2: Servir con nginx
 FROM nginx:alpine
