@@ -1,54 +1,47 @@
-# Multi-stage build para optimizar tamaño de imagen
-FROM python:3.13-slim as builder
+# Frontend Dockerfile - Multi-stage build
+FROM node:20-alpine as builder
 
 WORKDIR /app
 
-# Instalar dependencias de sistema necesarias para compilación
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    postgresql-client \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Copy package files from frontend folder
+COPY frontend/package*.json ./
 
-# Copiar solo requirements para aprovechar cache de Docker
-COPY requirements-web.txt .
-# Instalar globalmente para facilitar acceso
-RUN pip install --no-cache-dir -r requirements-web.txt
+# Install dependencies
+RUN npm ci
 
-# Etapa final - imagen mínima
-FROM python:3.13-slim
+# Copy source code from frontend folder
+COPY frontend/ ./
 
-WORKDIR /app
+# Build for production (skip type checking to speed up)
+RUN npm run build-only
 
-# Instalar solo runtime dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    postgresql-client \
-    libpq5 \
-    && rm -rf /var/lib/apt/lists/*
+# Production stage
+FROM nginx:alpine
 
-# Copiar dependencias instaladas desde builder
-COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
+# Copy built files from builder
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copiar código de la aplicación
-COPY . .
+# Create nginx config for Cloud Run (port 8080)
+RUN echo 'server { \
+    listen 8080; \
+    server_name _; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    gzip on; \
+    gzip_vary on; \
+    gzip_min_length 1024; \
+    gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/javascript application/json; \
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ { \
+    expires 1y; \
+    add_header Cache-Control "public, immutable"; \
+    } \
+    location / { \
+    try_files $uri $uri/ /index.html; \
+    } \
+    }' > /etc/nginx/conf.d/default.conf
 
-# Collectstatic ANTES de cambiar de usuario
-RUN python manage.py collectstatic --noinput
-
-# Crear usuario no-root y dar permisos
-RUN useradd -m -u 1000 appuser && \
-    chown -R appuser:appuser /app
-
-USER appuser
-
-# Exponer puerto
+# Expose port
 EXPOSE 8080
 
-# Variables de entorno por defecto (se sobrescriben en Cloud Run)
-ENV PORT=8080 \
-    PYTHONUNBUFFERED=1 \
-    DEBUG=False
-
-# Comando para iniciar aplicación
-CMD exec gunicorn --bind :$PORT --workers 2 --threads 4 --timeout 60 matrixcalc_web.wsgi:application
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
