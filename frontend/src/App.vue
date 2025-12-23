@@ -1,27 +1,44 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import { useI18n } from 'vue-i18n'
-import { setLocale } from './i18n'
+import { onMounted } from "vue";
+import { RouterLink, RouterView } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { setLocale } from "./i18n";
+import ToastContainer from "@/components/ToastContainer.vue";
+import ThemeToggle from "@/components/ThemeToggle.vue";
+import { useTheme } from "@/composables/useTheme";
 
-const { t, locale } = useI18n()
+const { t, locale } = useI18n();
+const { initTheme } = useTheme();
 
 const changeLocale = (newLocale: string) => {
-  setLocale(newLocale)
-}
+  setLocale(newLocale);
+};
+
+onMounted(() => {
+  initTheme();
+});
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col">
+  <div
+    class="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col transition-colors duration-200"
+  >
     <!-- Navegación -->
-    <nav class="bg-white shadow-sm border-b border-gray-200">
+    <nav
+      class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 transition-colors duration-200"
+    >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <!-- Logo y nombre -->
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg">
+            <div
+              class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg"
+            >
               M
             </div>
-            <span class="text-xl font-bold text-gray-900">MatrixCalc</span>
+            <span class="text-xl font-bold text-gray-900 dark:text-white"
+              >MatrixCalc</span
+            >
           </div>
 
           <!-- Links de navegación -->
@@ -31,55 +48,59 @@ const changeLocale = (newLocale: string) => {
               class="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors font-medium"
               active-class="bg-blue-50 text-blue-600"
             >
-              {{ t('nav.home') }}
+              {{ t("nav.home") }}
             </RouterLink>
             <RouterLink
               to="/calculator"
               class="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors font-medium"
               active-class="bg-blue-50 text-blue-600"
             >
-              {{ t('nav.calculator') }}
+              {{ t("nav.calculator") }}
             </RouterLink>
             <RouterLink
               to="/stats"
               class="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors font-medium"
               active-class="bg-blue-50 text-blue-600"
             >
-              {{ t('nav.stats') }}
+              {{ t("nav.stats") }}
             </RouterLink>
             <RouterLink
               to="/about"
               class="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors font-medium"
               active-class="bg-blue-50 text-blue-600"
             >
-              {{ t('nav.about') }}
+              {{ t("nav.about") }}
             </RouterLink>
           </div>
 
-          <!-- Selector de idioma -->
-          <div class="flex items-center gap-2">
-            <button
-              @click="changeLocale('es')"
-              :class="[
-                'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
-                locale === 'es'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              ]"
-            >
-              ES
-            </button>
-            <button
-              @click="changeLocale('en')"
-              :class="[
-                'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
-                locale === 'en'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              ]"
-            >
-              EN
-            </button>
+          <!-- Theme Toggle y Selector de idioma -->
+          <div class="flex items-center gap-3">
+            <ThemeToggle />
+
+            <div class="flex items-center gap-2">
+              <button
+                @click="changeLocale('es')"
+                :class="[
+                  'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                  locale === 'es'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600',
+                ]"
+              >
+                ES
+              </button>
+              <button
+                @click="changeLocale('en')"
+                :class="[
+                  'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                  locale === 'en'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600',
+                ]"
+              >
+                EN
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -91,10 +112,15 @@ const changeLocale = (newLocale: string) => {
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200">
+    <footer
+      class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 transition-colors duration-200"
+    >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div class="text-center text-gray-600 text-sm">
-          <p>MatrixCalc © {{ new Date().getFullYear() }} - Calculadora de Matrices Profesional</p>
+        <div class="text-center text-gray-600 dark:text-gray-400 text-sm">
+          <p>
+            MatrixCalc © {{ new Date().getFullYear() }} - Calculadora de
+            Matrices Profesional
+          </p>
           <p class="mt-1">
             Desarrollado con
             <span class="text-red-500">❤</span>
@@ -103,6 +129,9 @@ const changeLocale = (newLocale: string) => {
         </div>
       </div>
     </footer>
+
+    <!-- Toast Container -->
+    <ToastContainer />
   </div>
 </template>
 
