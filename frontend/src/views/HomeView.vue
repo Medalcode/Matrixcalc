@@ -16,9 +16,11 @@ const goToCalculator = () => {
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center">
         <div class="flex justify-center mb-8">
-          <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-4xl shadow-2xl">
-            M
-          </div>
+          <img 
+            src="/logo.png" 
+            alt="MatrixCalc Logo" 
+            class="w-24 h-24 rounded-2xl shadow-2xl"
+          />
         </div>
         <h1 class="text-4xl font-extrabold text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
           {{ t('home.title') }}
