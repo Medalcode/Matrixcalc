@@ -5,10 +5,19 @@ import { useI18n } from "vue-i18n";
 import { setLocale } from "./i18n";
 import ToastContainer from "@/components/ToastContainer.vue";
 import ThemeToggle from "@/components/ThemeToggle.vue";
+import CommandPalette from "@/components/CommandPalette.vue";
+import ShortcutsHelp from "@/components/ShortcutsHelp.vue";
 import { useTheme } from "@/composables/useTheme";
+import { useKeyboardShortcuts } from "@/composables/useKeyboardShortcuts";
+
+// Import animations CSS
+import "@/assets/animations.css";
 
 const { t, locale } = useI18n();
 const { initTheme } = useTheme();
+
+// Initialize keyboard shortcuts
+useKeyboardShortcuts();
 
 const changeLocale = (newLocale: string) => {
   setLocale(newLocale);
@@ -132,6 +141,12 @@ onMounted(() => {
 
     <!-- Toast Container -->
     <ToastContainer />
+    
+    <!-- Command Palette - Ctrl+K -->
+    <CommandPalette />
+    
+    <!-- Shortcuts Help Modal - Ctrl+/ -->
+    <ShortcutsHelp />
   </div>
 </template>
 
