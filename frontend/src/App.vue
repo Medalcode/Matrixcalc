@@ -40,11 +40,11 @@ onMounted(() => {
         <div class="flex justify-between items-center h-16">
           <!-- Logo y nombre -->
           <div class="flex items-center gap-3">
-            <div
-              class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg"
-            >
-              M
-            </div>
+            <img 
+              src="/logo.png" 
+              alt="MatrixCalc Logo" 
+              class="w-10 h-10 rounded-lg shadow-lg"
+            />
             <span class="text-xl font-bold text-gray-900 dark:text-white"
               >MatrixCalc</span
             >

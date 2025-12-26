@@ -82,6 +82,7 @@
 
     <!-- Matrix Grid -->
     <div
+      id="matrix-grid"
       class="mb-4 overflow-x-auto bg-gray-50 dark:bg-gray-900 rounded-lg p-4 transition-colors"
     >
       <LoadingSpinner v-if="loading" size="lg" message="Guardando matriz..." />
@@ -189,12 +190,14 @@ import { ref, computed, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useMatrixStore } from "@/stores/matrixStore";
 import { useToast } from "@/composables/useToast";
+import { useAnimations } from "@/composables/useAnimations";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
 import { matrixTemplates, type MatrixTemplate } from "@/utils/matrixTemplates";
 import type { Matrix } from "@/types/matrix";
 
 const { t } = useI18n();
 const { success, error: showError, info } = useToast();
+const { matrixFlip, confetti, shake } = useAnimations();
 
 const props = defineProps<{
   matrix?: Matrix;
@@ -285,6 +288,27 @@ function fillRandom() {
     .map(() => Math.floor(Math.random() * 11));
 }
 
+// Templates functionality
+const filteredTemplates = computed(() => {
+  // Show only 8 most useful templates
+  const priorityTemplates = ['Zeros', 'Ones', 'Identity', 'Random (0-1)', 'Random (-10 to 10)', 'Diagonal', 'Upper Triangular', 'Lower Triangular'];
+  return matrixTemplates.filter(t => priorityTemplates.includes(t.name));
+});
+
+function applyTemplate(template: MatrixTemplate) {
+  // Animate the matrix grid with flip effect
+  matrixFlip('matrix-grid', () => {
+    // Generate the matrix data (2D array)
+    const matrix2D = template.generateData(rows.value, cols.value);
+    
+    // Flatten to 1D array for editor
+    flatMatrix.value = matrix2D.flat();
+    
+    // Show success toast
+    info(`📐 Plantilla "${template.name}" aplicada`);
+  });
+}
+
 function clearMatrix() {
   matrixName.value = "";
   rows.value = 3;
@@ -328,6 +352,8 @@ async function saveMatrix() {
     } else {
       const newMatrix = await matrixStore.createMatrix(matrixData);
       successMessage.value = "Matriz guardada exitosamente";
+      success("✅ Matriz guardada exitosamente");
+      confetti(50); // Celebrate with confetti!
       emit("saved", newMatrix);
       clearMatrix();
     }
@@ -337,6 +363,8 @@ async function saveMatrix() {
     }, 3000);
   } catch (err) {
     error.value = String(err);
+    shake('matrix-grid'); // Shake on error
+    showError("Error al guardar: " + String(err));
   } finally {
     loading.value = false;
   }
