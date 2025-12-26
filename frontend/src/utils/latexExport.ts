@@ -19,6 +19,7 @@ export function exportToLaTeX(matrix: Matrix): string {
   // Add matrix data
   for (let i = 0; i < rows; i++) {
     const row = data[i];
+    if (!row) continue;
     const rowStr = row.map(formatNumber).join(' & ');
     latex += `  ${rowStr}`;
     

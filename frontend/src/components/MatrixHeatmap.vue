@@ -108,7 +108,7 @@ const colorScales = {
 
 function getCellColor(value: number): string {
   const range = maxValue.value - minValue.value;
-  if (range === 0) return colorScales[selectedColorScale.value][0];
+  if (range === 0) return colorScales[selectedColorScale.value][0] || '#000000';
   
   const normalized = (value - minValue.value) / range;
   return interpolateColor(normalized, colorScales[selectedColorScale.value]);
@@ -119,8 +119,8 @@ function interpolateColor(t: number, colors: string[]): string {
   const segment = Math.floor(t * segments);
   const localT = (t * segments) - segment;
   
-  const color1 = colors[Math.min(segment, segments)];
-  const color2 = colors[Math.min(segment + 1, segments)];
+  const color1 = colors[Math.min(segment, segments)] || '#000000';
+  const color2 = colors[Math.min(segment + 1, segments)] || '#000000';
   
   return blendColors(color1, color2, localT);
 }
@@ -139,9 +139,9 @@ function blendColors(color1: string, color2: string, t: number): string {
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result ? {
-    r: parseInt(result[1], 16),
-    g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16)
+    r: parseInt(result[1] || '0', 16),
+    g: parseInt(result[2] || '0', 16),
+    b: parseInt(result[3] || '0', 16)
   } : { r: 0, g: 0, b: 0 };
 }
 

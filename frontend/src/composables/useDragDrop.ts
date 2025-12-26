@@ -3,7 +3,7 @@
  * MatrixCalc v3.0
  */
 
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, type Ref } from 'vue';
 
 export interface DropZoneOptions {
   accept?: string[]; // File extensions: ['.csv', '.txt', '.json']
@@ -150,7 +150,7 @@ export async function parseCSVFile(file: File): Promise<number[][]> {
         });
 
         // Validate all rows have same length
-        const cols = matrix[0].length;
+        const cols = matrix[0]?.length || 0;
         const allSameLength = matrix.every(row => row.length === cols);
         
         if (!allSameLength) {
