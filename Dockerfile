@@ -1,47 +1,56 @@
-# Frontend Dockerfile - Multi-stage build
-FROM node:20-alpine as builder
+# Multi-stage build para optimizar tamaño de imagen
+FROM python:3.13-slim as builder
 
 WORKDIR /app
 
-# Copy package files from frontend folder
-COPY frontend/package*.json ./
+# Instalar dependencias de sistema necesarias para compilación
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    postgresql-client \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
-RUN npm ci
+# Copiar solo requirements para aprovechar cache de Docker
+COPY requirements-web.txt .
+RUN pip install --no-cache-dir --user -r requirements-web.txt
 
-# Copy source code from frontend folder
-COPY frontend/ ./
+# Etapa final - imagen mínima
+FROM python:3.13-slim
 
-# Build for production (skip type checking to speed up)
-RUN npm run build-only
+WORKDIR /app
 
-# Production stage
-FROM nginx:alpine
+# Instalar solo runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy built files from builder
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Copiar dependencias instaladas desde builder
+COPY --from=builder /root/.local /root/.local
 
-# Create nginx config for Cloud Run (port 8080)
-RUN echo 'server { \
-    listen 8080; \
-    server_name _; \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    gzip on; \
-    gzip_vary on; \
-    gzip_min_length 1024; \
-    gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/javascript application/json; \
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ { \
-    expires 1y; \
-    add_header Cache-Control "public, immutable"; \
-    } \
-    location / { \
-    try_files $uri $uri/ /index.html; \
-    } \
-    }' > /etc/nginx/conf.d/default.conf
+# Asegurar que scripts estén en PATH
+ENV PATH=/root/.local/bin:$PATH
 
-# Expose port
+# Copiar código de la aplicación
+COPY . .
+
+# Crear usuario no-root para seguridad
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
+
+# USER appuser
+
+# Collectstatic y preparar aplicación
+ENV DEBUG=True
+# RUN python manage.py collectstatic --noinput
+
+# Exponer puerto
 EXPOSE 8080
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Variables de entorno por defecto (se sobrescriben en Cloud Run)
+ENV PORT=8080 \
+    PYTHONUNBUFFERED=1 \
+    DEBUG=False
+
+# Comando para iniciar aplicación
+CMD exec gunicorn --bind :$PORT --workers 2 --threads 4 --timeout 60 matrixcalc_web.wsgi:application
