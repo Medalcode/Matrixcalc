@@ -38,10 +38,11 @@ COPY . .
 RUN useradd -m -u 1000 appuser && \
     chown -R appuser:appuser /app
 
-USER appuser
+# USER appuser
 
 # Collectstatic y preparar aplicación
-RUN python manage.py collectstatic --noinput
+ENV DEBUG=True
+# RUN python manage.py collectstatic --noinput
 
 # Exponer puerto
 EXPOSE 8080

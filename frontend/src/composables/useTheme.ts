@@ -15,17 +15,23 @@ export function useTheme() {
   }
   
   const applyTheme = () => {
-    if (theme.value === 'dark' || 
-        (theme.value === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark')
-      isDark.value = true
+    console.log('[Theme] Applying theme:', theme.value);
+    const root = document.documentElement;
+    const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (theme.value === 'dark' || (theme.value === 'auto' && isSystemDark)) {
+      root.classList.add('dark');
+      isDark.value = true;
+      console.log('[Theme] Dark mode enabled');
     } else {
-      document.documentElement.classList.remove('dark')
-      isDark.value = false
+      root.classList.remove('dark');
+      isDark.value = false;
+      console.log('[Theme] Dark mode disabled');
     }
   }
   
   const toggleTheme = () => {
+    console.log('[Theme] Toggling from:', theme.value);
     if (theme.value === 'light') {
       setTheme('dark')
     } else if (theme.value === 'dark') {
