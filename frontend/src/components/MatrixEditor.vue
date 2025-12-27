@@ -134,14 +134,14 @@
     </div>
 
     <!-- Actions -->
-    <div class="flex gap-2">
+    <div class="flex gap-2 mt-4">
       <button
         @click="saveMatrix"
         :disabled="loading || !isValidMatrix"
-        class="flex-1 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+        class="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-md"
       >
         <span v-if="loading">
-          <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+          <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
             <circle
               class="opacity-25"
               cx="12"
@@ -157,19 +157,19 @@
             ></path>
           </svg>
         </span>
-        {{
+        💾 {{
           loading
             ? t("common.loading")
             : editMode
             ? "Actualizar"
-            : t("calculator.editor.actions.save")
+            : "Guardar Matriz"
         }}
       </button>
       <button
         v-if="editMode"
         @click="cancelEdit"
         :disabled="loading"
-        class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
+        class="px-6 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
       >
         {{ t("calculator.editor.actions.cancel") }}
       </button>
@@ -177,7 +177,7 @@
         v-else
         @click="clearMatrix"
         :disabled="loading"
-        class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
+        class="px-6 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
       >
         Limpiar
       </button>
