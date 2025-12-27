@@ -133,13 +133,13 @@
             :class="[
               'p-3 rounded-lg border-2 transition-all',
               selectedOperation === 'sum'
-                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
-                : 'border-gray-200 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-500 text-gray-700 dark:text-gray-300',
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-2 ring-blue-200 dark:ring-blue-800'
+                : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 text-gray-700 dark:text-gray-300',
               !canPerformBinaryOperation && 'opacity-50 cursor-not-allowed',
             ]"
           >
             <div class="text-2xl mb-1">+</div>
-            <div class="text-xs">
+            <div class="text-xs font-semibold">
               {{ t("calculator.operations.types.sum") }}
             </div>
           </button>
@@ -150,13 +150,13 @@
             :class="[
               'p-3 rounded-lg border-2 transition-all',
               selectedOperation === 'subtract'
-                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
-                : 'border-gray-200 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-500 text-gray-700 dark:text-gray-300',
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-2 ring-blue-200 dark:ring-blue-800'
+                : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 text-gray-700 dark:text-gray-300',
               !canPerformBinaryOperation && 'opacity-50 cursor-not-allowed',
             ]"
           >
             <div class="text-2xl mb-1">−</div>
-            <div class="text-xs">
+            <div class="text-xs font-semibold">
               {{ t("calculator.operations.types.subtract") }}
             </div>
           </button>
@@ -167,13 +167,13 @@
             :class="[
               'p-3 rounded-lg border-2 transition-all',
               selectedOperation === 'multiply'
-                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
-                : 'border-gray-200 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-500 text-gray-700 dark:text-gray-300',
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-2 ring-blue-200 dark:ring-blue-800'
+                : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 text-gray-700 dark:text-gray-300',
               !canPerformBinaryOperation && 'opacity-50 cursor-not-allowed',
             ]"
           >
             <div class="text-2xl mb-1">×</div>
-            <div class="text-xs">
+            <div class="text-xs font-semibold">
               {{ t("calculator.operations.types.multiply") }}
             </div>
           </button>
@@ -192,13 +192,13 @@
             :class="[
               'p-3 rounded-lg border-2 transition-all',
               selectedOperation === 'inverse'
-                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
-                : 'border-gray-200 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-500 text-gray-700 dark:text-gray-300',
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-2 ring-blue-200 dark:ring-blue-800'
+                : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 text-gray-700 dark:text-gray-300',
               !canPerformUnaryOperation && 'opacity-50 cursor-not-allowed',
             ]"
           >
             <div class="text-2xl mb-1">A⁻¹</div>
-            <div class="text-xs">
+            <div class="text-xs font-semibold">
               {{ t("calculator.operations.types.inverse") }}
             </div>
           </button>
@@ -209,13 +209,13 @@
             :class="[
               'p-3 rounded-lg border-2 transition-all',
               selectedOperation === 'determinant'
-                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
-                : 'border-gray-200 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-500 text-gray-700 dark:text-gray-300',
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-2 ring-blue-200 dark:ring-blue-800'
+                : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 text-gray-700 dark:text-gray-300',
               !canPerformUnaryOperation && 'opacity-50 cursor-not-allowed',
             ]"
           >
             <div class="text-2xl mb-1">|A|</div>
-            <div class="text-xs">Determinante</div>
+            <div class="text-xs font-semibold">Determinante</div>
           </button>
 
           <button
@@ -224,13 +224,13 @@
             :class="[
               'p-3 rounded-lg border-2 transition-all',
               selectedOperation === 'transpose'
-                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
-                : 'border-gray-200 dark:border-gray-600 hover:border-primary-300 dark:hover:border-primary-500 text-gray-700 dark:text-gray-300',
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-2 ring-blue-200 dark:ring-blue-800'
+                : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 text-gray-700 dark:text-gray-300',
               !canPerformUnaryOperation && 'opacity-50 cursor-not-allowed',
             ]"
           >
             <div class="text-2xl mb-1">Aᵀ</div>
-            <div class="text-xs">
+            <div class="text-xs font-semibold">
               {{ t("calculator.operations.types.transpose") }}
             </div>
           </button>
@@ -254,14 +254,15 @@
     </div>
 
     <!-- Execute Button -->
+    <!-- Execute Button -->
     <button
       @click="executeOperation"
       :disabled="!canExecute || loading"
-      class="w-full px-4 py-3 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all flex items-center justify-center gap-2"
+      class="w-full mt-6 px-6 py-4 bg-blue-600 text-white font-bold text-lg rounded-xl hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3"
     >
       <svg
         v-if="loading"
-        class="animate-spin h-5 w-5"
+        class="animate-spin h-6 w-6"
         fill="none"
         viewBox="0 0 24 24"
       >
@@ -279,7 +280,7 @@
           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
         ></path>
       </svg>
-      {{ loading ? "Calculando..." : t("calculator.operations.calculate") }}
+      {{ loading ? "Calculando..." : "⚡ " + t("calculator.operations.calculate") }}
     </button>
   </div>
 </template>
