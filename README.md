@@ -36,6 +36,7 @@
 ## ✨ Características
 
 ### 🔢 Operaciones Matriciales
+
 - **Suma** - Adición de matrices de mismas dimensiones
 - **Resta** - Sustracción de matrices de mismas dimensiones
 - **Multiplicación** - Producto matricial con validación dimensional
@@ -44,6 +45,7 @@
 - **Transpuesta** - Transposición de matrices de cualquier dimensión
 
 ### 💾 Gestión de Datos
+
 - **CRUD completo** - Crear, leer, actualizar y eliminar matrices
 - **Persistencia** - Almacenamiento en PostgreSQL/SQLite
 - **Backup/Restore** - Exportación e importación en JSON/CSV
@@ -51,12 +53,14 @@
 - **Limpieza automática** - Eliminación de datos antiguos configurable
 
 ### 📊 Estadísticas y Visualización
+
 - **Dashboard interactivo** - Gráficos con Chart.js
 - **Métricas en tiempo real** - Total de matrices, operaciones, tiempos de ejecución
 - **Análisis temporal** - Timeline de operaciones de últimos 30 días
 - **Distribución** - Operaciones por tipo con porcentajes
 
 ### 🛡️ Seguridad y Rendimiento
+
 - **Rate Limiting** - Protección contra abuso de API (100 req/hora)
 - **Validaciones** - Límites de dimensión y valores numéricos
 - **Manejo de errores** - Excepciones personalizadas con mensajes claros
@@ -64,6 +68,7 @@
 - **CORS configurado** - Seguridad para peticiones cross-origin
 
 ### 🎨 Interfaz Moderna
+
 - **Responsive** - Diseño adaptable mobile-first con Tailwind CSS
 - **TypeScript** - Tipos estrictos para mayor robustez
 - **Componentes reutilizables** - Arquitectura modular Vue 3
@@ -179,6 +184,7 @@ docker-compose up -d
 ```
 
 **Acceder a la aplicación:**
+
 - 🌐 **Frontend**: http://localhost:3000
 - 🔌 **API Backend**: http://localhost:8000/api
 - 🔧 **Admin Django**: http://localhost:8000/admin (admin/admin123)
@@ -263,6 +269,7 @@ Frontend disponible en: http://localhost:5173
 Ver documentación completa en [docs/API.md](./docs/API.md)
 
 **Ejemplo: Crear matriz**
+
 ```bash
 curl -X POST http://localhost:8000/api/matrices/ \
   -H "Content-Type: application/json" \
@@ -275,6 +282,7 @@ curl -X POST http://localhost:8000/api/matrices/ \
 ```
 
 **Ejemplo: Sumar matrices**
+
 ```bash
 curl -X POST http://localhost:8000/api/operations/sum/ \
   -H "Content-Type: application/json" \
@@ -289,6 +297,7 @@ curl -X POST http://localhost:8000/api/operations/sum/ \
 ## 🛠️ Tecnologías
 
 ### Backend
+
 - **Django 4.2** - Framework web Python
 - **Django REST Framework** - API REST toolkit
 - **PostgreSQL 15** - Base de datos relacional
@@ -297,6 +306,7 @@ curl -X POST http://localhost:8000/api/operations/sum/ \
 - **APScheduler** - Tareas programadas (limpieza)
 
 ### Frontend
+
 - **Vue.js 3.5** - Framework JavaScript progresivo
 - **TypeScript 5.7** - Superset tipado de JavaScript
 - **Pinia** - State management
@@ -306,6 +316,7 @@ curl -X POST http://localhost:8000/api/operations/sum/ \
 - **Axios** - Cliente HTTP
 
 ### DevOps
+
 - **Docker + Docker Compose** - Contenedorización
 - **Nginx** - Servidor web y proxy reverso
 - **GitHub Actions** - CI/CD (futuro)
@@ -314,16 +325,35 @@ curl -X POST http://localhost:8000/api/operations/sum/ \
 
 ## 📚 Documentación
 
-- 📖 [DOCKER.md](./DOCKER.md) - Guía completa de Docker
-- 🔌 [docs/API.md](./docs/API.md) - Documentación de API REST
-- 🤝 [CONTRIBUTING.md](./CONTRIBUTING.md) - Guía de contribución
-- 🗺️ [docs/ROADMAP.md](./docs/ROADMAP.md) - Hoja de ruta del proyecto
+### 📖 Guías Principales
+
+- **[Índice de Documentación](./docs/README.md)** - Navegación completa
+- **[Guía de Deployment](./docs/deployment/README.md)** - Despliegue en producción
+  - Google Cloud Run (recomendado)
+  - Docker Compose
+  - Servidor tradicional
+- **[Troubleshooting](./docs/deployment/troubleshooting.md)** - Solución de problemas
+- **[Guía de Testing](./docs/developer/testing.md)** - Ejecutar y escribir tests
+- **[Migración v1→v2](./docs/migration/v1-to-v2.md)** - Migración Tkinter a Web
+
+### 🔧 Para Desarrolladores
+
+- **[Contribuir](./CONTRIBUTING.md)** - Guía de contribución
+- **[API Documentation](./docs/API.md)** - Referencia de API REST
+- **[Roadmap](./docs/ROADMAP.md)** - Hoja de ruta del proyecto
+
+### 📦 Archivo Histórico
+
+- **[v2.0 Docs](./docs/archive/v2.0/)** - Documentación histórica v2.0
+- **[v3.0 Planning](./docs/archive/v3.0/)** - Planificación de mejoras v3.0
+- **[Legacy Code](./archive/legacy/)** - Código legacy (Tkinter v1.0)
 
 ---
 
 ## 🤝 Contribuir
 
 ¡Las contribuciones son bienvenidas! Por favor lee [CONTRIBUTING.md](./CONTRIBUTING.md) para detalles sobre:
+
 - Código de conducta
 - Proceso de pull requests
 - Estándares de código
@@ -339,7 +369,19 @@ Este proyecto está bajo la Licencia MIT. Ver [LICENSE](./LICENSE) para más det
 
 ## 📌 Versiones
 
-### v2.0 - Django Web Migration (Actual)
+### v3.0 (En Desarrollo - Enero 2026)
+
+- ✅ Exportación LaTeX (6 formatos: bmatrix, pmatrix, vmatrix, etc.)
+- ✅ Sistema de atajos de teclado (15+ shortcuts)
+- ✅ Sistema de animaciones completo
+- ✅ Documentación consolidada y organizada
+- ✅ Código legacy archivado
+- 🔨 Command Palette mejorado
+- 🔨 Heatmap con gradientes configurables
+- 🔨 Operaciones avanzadas (Eigenvalues, SVD, QR, LU)
+
+### v2.0 - Django Web Migration (Actual - Diciembre 2025)
+
 - ✅ Migración completa de Tkinter a Django + Vue.js
 - ✅ API REST con Django REST Framework
 - ✅ Frontend moderno con Vue 3 + TypeScript
@@ -347,11 +389,14 @@ Este proyecto está bajo la Licencia MIT. Ver [LICENSE](./LICENSE) para más det
 - ✅ Docker Compose con PostgreSQL
 - ✅ Sistema de backup/restore
 - ✅ Rate limiting y seguridad
+- ✅ Dark mode completo
+- ✅ Sistema de toasts y notificaciones
 
-### v1.0 - Tkinter Desktop (Legacy)
+### v1.0 - Tkinter Desktop (Legacy - Archivado)
+
 - GUI de escritorio con Tkinter
 - Operaciones matriciales básicas
-- Disponible en tag `v1.0-tkinter-desktop`
+- Código disponible en `archive/legacy/v1.0-tkinter/`
 
 ---
 
