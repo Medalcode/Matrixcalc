@@ -346,7 +346,6 @@ curl -X POST http://localhost:8000/api/operations/sum/ \
 
 - **[v2.0 Docs](./docs/archive/v2.0/)** - Documentación histórica v2.0
 - **[v3.0 Planning](./docs/archive/v3.0/)** - Planificación de mejoras v3.0
-- **[Legacy Code](./archive/legacy/)** - Código legacy (Tkinter v1.0)
 
 ---
 
@@ -396,7 +395,7 @@ Este proyecto está bajo la Licencia MIT. Ver [LICENSE](./LICENSE) para más det
 
 - GUI de escritorio con Tkinter
 - Operaciones matriciales básicas
-- Código disponible en `archive/legacy/v1.0-tkinter/`
+- Deprecado (código eliminado)
 
 ---
 
