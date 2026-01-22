@@ -37,12 +37,11 @@
 
 ### 🔢 Operaciones Matriciales
 
-- **Suma** - Adición de matrices de mismas dimensiones
-- **Resta** - Sustracción de matrices de mismas dimensiones
-- **Multiplicación** - Producto matricial con validación dimensional
-- **Inversa** - Cálculo de matriz inversa (matrices cuadradas no singulares)
-- **Determinante** - Cálculo del determinante (matrices cuadradas)
-- **Transpuesta** - Transposición de matrices de cualquier dimensión
+- **Básicas** - Suma, Resta, Multiplicación
+- **Avanzadas (Nuevo v3.0)** - Rank, Eigenvalues/Eigenvectors
+- **Descomposiciones (Nuevo v3.0)** - SVD (Singular Value Decomposition), QR, Cholesky, LU
+- **Propiedades** - Determinante, Inversa, Transpuesta, Traza
+- **Transformaciones** - Potencia de matriz
 
 ### 💾 Gestión de Datos
 
@@ -74,6 +73,15 @@
 - **Componentes reutilizables** - Arquitectura modular Vue 3
 - **UX optimizada** - Feedback visual, validaciones en tiempo real
 - **Dark Mode Ready** - Preparado para tema oscuro
+
+---
+
+## ☁️ Depsliegue en Producción
+
+La aplicación está desplegada y operativa en Google Cloud Run:
+
+- 🚀 **Frontend (App):** [https://matrixcalc-frontend-541716295092.us-central1.run.app](https://matrixcalc-frontend-541716295092.us-central1.run.app)
+- 🔌 **Backend (API):** [https://matrixcalc-backend-772384307164.us-central1.run.app](https://matrixcalc-backend-772384307164.us-central1.run.app)
 
 ---
 
@@ -112,7 +120,7 @@
 │  │                                                     │    │
 │  │  ┌──────────────────────────────────────────────┐ │    │
 │  │  │         Business Logic (Utils)               │ │    │
-│  │  │  • matrix_model.py (NumPy calculations)      │ │    │
+│  │  │  • matrix_model.py (NumPy/SciPy)             │ │    │
 │  │  │  • exceptions.py (Custom errors)             │ │    │
 │  │  │  • scheduler.py (Cleanup tasks)              │ │    │
 │  │  └──────────────────────────────────────────────┘ │    │
@@ -123,13 +131,13 @@
 │  │  │             │  │  • import_backup         │   │    │
 │  │  │             │  │  • cleanup_old_data      │   │    │
 │  │  └─────────────┘  └──────────────────────────┘   │    │
-│  └────────────────────────────────────────────────────┘    │
+│  │  └────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────┘
                             │
                             │ ORM (Django)
                             │
 ┌─────────────────────────────────────────────────────────────┐
-│                  BASE DE DATOS (PostgreSQL)                  │
+│                  BASE DE DATOS (PostgreSQL/SQLite)           │
 │                                                              │
 │  ┌────────────────┐          ┌────────────────┐            │
 │  │  calculator_   │          │  calculator_   │            │
@@ -152,13 +160,15 @@
 │                              │  - matrix_a    │            │
 │                              │  - result      │            │
 │                              └────────────────┘            │
+│                              │  - extra_data  │            │
+│                              └────────────────┘            │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ### 🔄 Flujo de Datos
 
 1. **Cliente → Backend**: Usuario interactúa con Vue.js → Axios envía petición HTTP → Django recibe en ViewSet
-2. **Backend → Lógica**: ViewSet valida con Serializer → Llama a utils/matrix_model.py (NumPy) → Guarda en DB
+2. **Backend → Lógica**: ViewSet valida con Serializer → Llama a utils/matrix_model.py (NumPy/SciPy) → Guarda en DB
 3. **Backend → Cliente**: Serializa respuesta → Retorna JSON → Pinia actualiza estado → Vue re-renderiza
 
 ---
@@ -252,8 +262,8 @@ Frontend disponible en: http://localhost:5173
 2. **Realizar Operación**
    - Pestaña "Operaciones"
    - Seleccionar matriz(ces) de los dropdowns
-   - Elegir operación (suma, resta, multiplicación, etc.)
-   - Ver resultado en pantalla
+   - Elegir operación (suma, producto, inversa, SVD, etc.)
+   - Ver resultado en pantalla (incluyendo descomposiciones complejas)
 
 3. **Ver Estadísticas**
    - Ir a "Estadísticas"
@@ -301,7 +311,7 @@ curl -X POST http://localhost:8000/api/operations/sum/ \
 - **Django 4.2** - Framework web Python
 - **Django REST Framework** - API REST toolkit
 - **PostgreSQL 15** - Base de datos relacional
-- **NumPy** - Cálculos matriciales eficientes
+- **NumPy & SciPy** - Cálculos matriciales y científicos avanzados
 - **Gunicorn** - Servidor WSGI para producción
 - **APScheduler** - Tareas programadas (limpieza)
 
@@ -318,8 +328,8 @@ curl -X POST http://localhost:8000/api/operations/sum/ \
 ### DevOps
 
 - **Docker + Docker Compose** - Contenedorización
-- **Nginx** - Servidor web y proxy reverso
-- **GitHub Actions** - CI/CD (futuro)
+- **Google Cloud Run** - Despliegue serverless escalable
+- **Buildpacks / Dockerfile** - Estrategias de build
 
 ---
 
@@ -368,18 +378,15 @@ Este proyecto está bajo la Licencia MIT. Ver [LICENSE](./LICENSE) para más det
 
 ## 📌 Versiones
 
-### v3.0 (En Desarrollo - Enero 2026)
+### v3.0 (En Producción - Enero 2026)
 
-- ✅ Exportación LaTeX (6 formatos: bmatrix, pmatrix, vmatrix, etc.)
-- ✅ Sistema de atajos de teclado (15+ shortcuts)
-- ✅ Sistema de animaciones completo
-- ✅ Documentación consolidada y organizada
-- ✅ Código legacy archivado
-- 🔨 Command Palette mejorado
-- 🔨 Heatmap con gradientes configurables
-- 🔨 Operaciones avanzadas (Eigenvalues, SVD, QR, LU)
+- ✅ **Operaciones Avanzadas:** Rank, Eigenvalues, SVD, QR, Cholesky, LU.
+- ✅ **Exportación LaTeX:** Múltiples formatos para documentos académicos.
+- ✅ **UI Mejorada:** Atajos de teclado, animaciones fluidas, visualización de resultados complejos.
+- ✅ **Documentación:** Consolidada y organizada.
+- ✅ **Despliegue:** Cloud Run unificado (Frontend + Backend).
 
-### v2.0 - Django Web Migration (Actual - Diciembre 2025)
+### v2.0 - Django Web Migration (Diciembre 2025)
 
 - ✅ Migración completa de Tkinter a Django + Vue.js
 - ✅ API REST con Django REST Framework
