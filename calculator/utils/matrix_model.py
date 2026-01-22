@@ -20,6 +20,13 @@ __all__ = [
     "safe_inv",
     "safe_det",
     "safe_transpose",
+    # Nuevas funciones v3.0
+    "safe_eigenvalues",
+    "safe_rank",
+    "safe_svd",
+    "safe_qr",
+    "safe_lu",
+    "safe_cholesky",
 ]
 
 
@@ -188,3 +195,129 @@ def safe_transpose(A: Any) -> np.ndarray:
     if A_np.ndim != 2:
         raise InvalidMatrixError(f"El operando debe ser una matriz 2D (shape={A_np.shape}).")
     return A_np.T
+
+
+def safe_eigenvalues(A: Any) -> dict:
+    """
+    Calcula valores y vectores propios de una matriz cuadrada.
+    
+    Returns:
+        dict: {
+            'eigenvalues': [{'real': float, 'imag': float}, ...],
+            'eigenvectors': [[...], ...]  # Columnas son los autovectores
+        }
+    """
+    A_np = np.ascontiguousarray(A, dtype=np.float64)
+    
+    if A_np.ndim != 2 or A_np.shape[0] != A_np.shape[1]:
+        raise InvalidMatrixError(f"La matriz debe ser cuadrada para calcular valores propios (shape={A_np.shape}).")
+
+    try:
+        vals, vecs = np.linalg.eig(A_np)
+        
+        # Formatear valores propios (manejo de complejos)
+        vals_list = []
+        for v in vals:
+            if np.iscomplex(v):
+                vals_list.append({'real': float(v.real), 'imag': float(v.imag), 'is_complex': True})
+            else:
+                vals_list.append({'real': float(v.real), 'imag': 0.0, 'is_complex': False})
+                
+        # Los vectores propios en numpy son las columnas de 'vecs'.
+        # Para visualización fácil, convertimos a lista de listas standard (filas)
+        # pero mantenemos la estructura numérica.
+        # Nota: Los autovectores pueden ser complejos si los autovalores lo son.
+        # Por simplicidad en JSON, tomamos la parte real si es complejo, o notificamos.
+        # Para v3.0 MVP: Retornamos representación string si es complejo para evitar errores de JSON simples,
+        # o estructuras separadas.
+        
+        # Enfoque robusto: Convertir a listas de componentes reales/imag para vectores también sería ideal,
+        # pero muy verboso. Convertiremos a listas de floats tomando parte real si la imaginaria es despreciable,
+        # o string complex representation si no.
+        
+        vecs_formatted = []
+        for row in vecs:
+            row_formatted = []
+            for val in row:
+                if np.iscomplex(val) and not np.isclose(val.imag, 0):
+                    row_formatted.append(str(val)) # Fallback a string para complejos
+                else:
+                    row_formatted.append(float(val.real))
+            vecs_formatted.append(row_formatted)
+
+        return {
+            'eigenvalues': vals_list,
+            'eigenvectors': vecs_formatted
+        }
+    except np.linalg.LinAlgError as exc:
+        raise NumericError("El cálculo de valores propios no convergió.") from exc
+
+
+def safe_rank(A: Any) -> int:
+    """Calcula el rango matricial usando SVD."""
+    A_np = np.ascontiguousarray(A, dtype=np.float64)
+    try:
+        return int(np.linalg.matrix_rank(A_np))
+    except Exception as exc:
+         raise NumericError("Error al calcular el rango de la matriz.") from exc
+
+
+def safe_svd(A: Any) -> dict:
+    """
+    Calcula la descomposición en valores singulares (SVD).
+    A = U * S * Vh
+    
+    Returns:
+        dict: {'U': list, 'S': list, 'Vh': list}
+    """
+    A_np = np.ascontiguousarray(A, dtype=np.float64)
+    try:
+        u, s, vh = np.linalg.svd(A_np, full_matrices=True)
+        return {
+            'U': u.tolist(),
+            'S': s.tolist(), # Valores singulares (vector 1D)
+            'Vh': vh.tolist()
+        }
+    except np.linalg.LinAlgError as exc:
+        raise NumericError("El cálculo SVD no convergió.") from exc
+
+
+def safe_qr(A: Any) -> dict:
+    """
+    Calcula la descomposición QR.
+    A = Q * R
+    
+    Returns:
+        dict: {'Q': list, 'R': list}
+    """
+    A_np = np.ascontiguousarray(A, dtype=np.float64)
+    try:
+        q, r = np.linalg.qr(A_np)
+        return {
+            'Q': q.tolist(),
+            'R': r.tolist()
+        }
+    except np.linalg.LinAlgError as exc:
+        raise NumericError("Error en la descomposición QR.") from exc
+
+
+def safe_cholesky(A: Any) -> list:
+    """
+    Calcula la descomposición de Cholesky.
+    A = L * L.H
+    
+    Requiere que la matriz sea Hermítica (simétrica si real) y definida positiva.
+    """
+    A_np = np.ascontiguousarray(A, dtype=np.float64)
+    
+    if A_np.ndim != 2 or A_np.shape[0] != A_np.shape[1]:
+        raise InvalidMatrixError(f"La matriz debe ser cuadrada (shape={A_np.shape}).")
+        
+    try:
+        L = np.linalg.cholesky(A_np)
+        return L.tolist()
+    except np.linalg.LinAlgError:
+        raise NumericError(
+            "La matriz no es definida positiva. La descomposición de Cholesky require "
+            "una matriz simétrica y definida positiva."
+        )

@@ -13,6 +13,12 @@ from calculator.utils.matrix_model import (
     safe_inv,
     safe_det,
     safe_transpose,
+    # Nuevas operaciones v3.0
+    safe_rank,
+    safe_eigenvalues,
+    safe_svd,
+    safe_qr,
+    safe_cholesky,
 )
 from calculator.utils.exceptions import (
     MatrixModelError,
@@ -28,6 +34,11 @@ __all__ = [
     'safe_inv',
     'safe_det',
     'safe_transpose',
+    'safe_rank',
+    'safe_eigenvalues',
+    'safe_svd',
+    'safe_qr',
+    'safe_cholesky',
     'MatrixModelError',
     'InvalidMatrixError',
     'NumericError',
