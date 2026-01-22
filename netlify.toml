@@ -1,0 +1,12 @@
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+[context.production.environment]
+  VITE_API_URL = "https://matrixcalc-backend-772384307164.us-central1.run.app/api"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
