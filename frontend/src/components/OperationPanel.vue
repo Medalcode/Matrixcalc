@@ -236,6 +236,89 @@
           </button>
         </div>
       </div>
+
+      <!-- Advanced Operations -->
+      <div class="mt-4">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+          Operaciones Avanzadas
+        </p>
+        <div class="grid grid-cols-3 gap-2">
+          <button
+            @click="selectOperation('rank')"
+            :disabled="!canPerformUnaryOperation"
+            :class="[
+              'p-3 rounded-lg border-2 transition-all',
+              selectedOperation === 'rank'
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-2 ring-blue-200 dark:ring-blue-800'
+                : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 text-gray-700 dark:text-gray-300',
+              !canPerformUnaryOperation && 'opacity-50 cursor-not-allowed',
+            ]"
+          >
+            <div class="text-xl mb-1 font-bold">Rk</div>
+            <div class="text-xs font-semibold">Rango</div>
+          </button>
+
+          <button
+            @click="selectOperation('eigenvalues')"
+            :disabled="!canPerformUnaryOperation"
+            :class="[
+              'p-3 rounded-lg border-2 transition-all',
+              selectedOperation === 'eigenvalues'
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-2 ring-blue-200 dark:ring-blue-800'
+                : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 text-gray-700 dark:text-gray-300',
+              !canPerformUnaryOperation && 'opacity-50 cursor-not-allowed',
+            ]"
+          >
+            <div class="text-xl mb-1 font-bold">λ</div>
+            <div class="text-xs font-semibold">Eigen</div>
+          </button>
+
+          <button
+            @click="selectOperation('svd')"
+            :disabled="!canPerformUnaryOperation"
+            :class="[
+              'p-3 rounded-lg border-2 transition-all',
+              selectedOperation === 'svd'
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-2 ring-blue-200 dark:ring-blue-800'
+                : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 text-gray-700 dark:text-gray-300',
+              !canPerformUnaryOperation && 'opacity-50 cursor-not-allowed',
+            ]"
+          >
+            <div class="text-xl mb-1 font-bold">SVD</div>
+            <div class="text-xs font-semibold">SVD</div>
+          </button>
+
+          <button
+            @click="selectOperation('qr')"
+            :disabled="!canPerformUnaryOperation"
+            :class="[
+              'p-3 rounded-lg border-2 transition-all',
+              selectedOperation === 'qr'
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-2 ring-blue-200 dark:ring-blue-800'
+                : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 text-gray-700 dark:text-gray-300',
+              !canPerformUnaryOperation && 'opacity-50 cursor-not-allowed',
+            ]"
+          >
+            <div class="text-xl mb-1 font-bold">QR</div>
+            <div class="text-xs font-semibold">QR</div>
+          </button>
+
+          <button
+            @click="selectOperation('cholesky')"
+            :disabled="!canPerformUnaryOperation"
+            :class="[
+              'p-3 rounded-lg border-2 transition-all',
+              selectedOperation === 'cholesky'
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-2 ring-blue-200 dark:ring-blue-800'
+                : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 text-gray-700 dark:text-gray-300',
+              !canPerformUnaryOperation && 'opacity-50 cursor-not-allowed',
+            ]"
+          >
+            <div class="text-xl mb-1 font-bold">LLᵀ</div>
+            <div class="text-xs font-semibold">Cholesky</div>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Loading State -->
@@ -280,7 +363,9 @@
           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
         ></path>
       </svg>
-      {{ loading ? "Calculando..." : "⚡ " + t("calculator.operations.calculate") }}
+      {{
+        loading ? "Calculando..." : "⚡ " + t("calculator.operations.calculate")
+      }}
     </button>
   </div>
 </template>
@@ -316,6 +401,11 @@ const selectedOperation = ref<
   | "inverse"
   | "determinant"
   | "transpose"
+  | "rank"
+  | "eigenvalues"
+  | "svd"
+  | "qr"
+  | "cholesky"
   | null
 >(null);
 const loading = ref(false);
@@ -323,23 +413,23 @@ const loading = ref(false);
 const availableMatrices = computed(() => matrices.value);
 
 const selectedMatrixA = computed(
-  () => matrices.value.find((m) => m.id === selectedMatrixAId.value) || null
+  () => matrices.value.find((m) => m.id === selectedMatrixAId.value) || null,
 );
 
 const selectedMatrixB = computed(
-  () => matrices.value.find((m) => m.id === selectedMatrixBId.value) || null
+  () => matrices.value.find((m) => m.id === selectedMatrixBId.value) || null,
 );
 
 const requiresTwoMatrices = computed(
   () =>
     selectedOperation.value &&
-    ["sum", "subtract", "multiply"].includes(selectedOperation.value)
+    ["sum", "subtract", "multiply"].includes(selectedOperation.value),
 );
 
 const canPerformUnaryOperation = computed(() => !!selectedMatrixA.value);
 
 const canPerformBinaryOperation = computed(
-  () => !!selectedMatrixA.value && !!selectedMatrixB.value
+  () => !!selectedMatrixA.value && !!selectedMatrixB.value,
 );
 
 const validationMessage = computed(() => {
@@ -368,25 +458,32 @@ const validationMessage = computed(() => {
       }
     }
   } else {
+    // Unary operations validation
     if (!selectedMatrixA.value) {
       return "Selecciona una matriz para esta operación";
     }
 
+    const mat = selectedMatrixA.value;
+    const isSquare = mat.rows === mat.cols;
+
     if (
-      selectedOperation.value === "inverse" ||
-      selectedOperation.value === "determinant"
+      ["inverse", "determinant", "eigenvalues", "cholesky"].includes(
+        selectedOperation.value,
+      )
     ) {
-      if (selectedMatrixA.value.rows !== selectedMatrixA.value.cols) {
+      if (!isSquare) {
         return "La matriz debe ser cuadrada para esta operación";
       }
     }
+
+    // Cholesky requires positive definite too, but we can't check easily in frontend. Backend will handle it.
   }
 
   return null;
 });
 
 const canExecute = computed(
-  () => !!selectedOperation.value && !validationMessage.value
+  () => !!selectedOperation.value && !validationMessage.value,
 );
 
 const operationNames: Record<string, string> = {
@@ -396,6 +493,11 @@ const operationNames: Record<string, string> = {
   inverse: "Inversa",
   determinant: "Determinante",
   transpose: "Transpuesta",
+  rank: "Rango",
+  eigenvalues: "Valores Propios",
+  svd: "SVD",
+  qr: "QR",
+  cholesky: "Cholesky",
 };
 
 function selectOperation(operation: typeof selectedOperation.value) {
@@ -416,7 +518,7 @@ async function executeOperation() {
     const operation = await statsStore.performOperation(
       selectedOperation.value,
       selectedMatrixAId.value!,
-      selectedMatrixBId.value || undefined
+      selectedMatrixBId.value || undefined,
     );
 
     const opName =
@@ -447,7 +549,7 @@ watch(
       selectedMatrixAId.value = newVal.id;
       info(`Matriz A seleccionada: "${newVal.name}"`);
     }
-  }
+  },
 );
 
 watch(
@@ -457,6 +559,6 @@ watch(
       selectedMatrixBId.value = newVal.id;
       info(`Matriz B seleccionada: "${newVal.name}"`);
     }
-  }
+  },
 );
 </script>

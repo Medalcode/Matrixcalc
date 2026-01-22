@@ -269,6 +269,76 @@ export function useMatrixAPI() {
     }
   }
 
+  const calculateRank = async (request: OperationRequest): Promise<Operation> => {
+    loading.value = true
+    error.value = null
+    try {
+      const response = await axios.post<Operation>(`${API_BASE_URL}/operations/rank/`, request)
+      return response.data
+    } catch (err) {
+      error.value = handleError(err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const calculateEigenvalues = async (request: OperationRequest): Promise<Operation> => {
+    loading.value = true
+    error.value = null
+    try {
+      const response = await axios.post<Operation>(`${API_BASE_URL}/operations/eigenvalues/`, request)
+      return response.data
+    } catch (err) {
+      error.value = handleError(err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const calculateSVD = async (request: OperationRequest): Promise<Operation> => {
+    loading.value = true
+    error.value = null
+    try {
+      const response = await axios.post<Operation>(`${API_BASE_URL}/operations/svd/`, request)
+      return response.data
+    } catch (err) {
+      error.value = handleError(err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const calculateQR = async (request: OperationRequest): Promise<Operation> => {
+    loading.value = true
+    error.value = null
+    try {
+      const response = await axios.post<Operation>(`${API_BASE_URL}/operations/qr/`, request)
+      return response.data
+    } catch (err) {
+      error.value = handleError(err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const calculateCholesky = async (request: OperationRequest): Promise<Operation> => {
+    loading.value = true
+    error.value = null
+    try {
+      const response = await axios.post<Operation>(`${API_BASE_URL}/operations/cholesky/`, request)
+      return response.data
+    } catch (err) {
+      error.value = handleError(err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   // Stats
   const getStats = async (): Promise<Stats> => {
     console.log('📊 [getStats] - INICIO')
@@ -306,6 +376,11 @@ export function useMatrixAPI() {
     inverseMatrix,
     determinantMatrix,
     transposeMatrix,
+    calculateRank,
+    calculateEigenvalues,
+    calculateSVD,
+    calculateQR,
+    calculateCholesky,
     // Stats
     getStats
   }
