@@ -23,6 +23,7 @@ from calculator.serializers import MatrixSerializer, OperationSerializer, StatsS
 from calculator.utils import (
     parse_matrix, safe_add, safe_subtract, safe_dot,
     safe_inv, safe_det, safe_transpose,
+    safe_rank, safe_eigenvalues, safe_svd, safe_qr, safe_cholesky,
     InvalidMatrixError, NumericError
 )
 
@@ -564,3 +565,205 @@ def stats_view(request):
     serializer.is_valid(raise_exception=True)
     
     return Response(serializer.data)
+
+
+@api_view(['POST'])
+@ratelimit(key='ip', rate='30/m', method='POST')
+def calculate_rank(request):
+    """Calcula el rango de una matriz."""
+    matrix_id = request.data.get('matrix_id')
+    
+    if not matrix_id:
+        return Response({'error': 'Se requiere matrix_id'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    try:
+        matrix = Matrix.objects.get(id=matrix_id)
+        A = np.array(matrix.data, dtype=np.float64)
+        
+        start_time = time.time()
+        rank_val = safe_rank(A)
+        execution_time_ms = int((time.time() - start_time) * 1000)
+        
+        # Guardar resultado como matriz 1x1
+        result_matrix = Matrix.objects.create(
+            name=f"Rank({matrix.name})",
+            rows=1, cols=1,
+            data=[[float(rank_val)]]
+        )
+        
+        operation = Operation.objects.create(
+            operation_type='RANK',
+            matrix_a=matrix,
+            result=result_matrix,
+            execution_time_ms=execution_time_ms,
+            extra_data={'rank': rank_val}
+        )
+        
+        return Response(OperationSerializer(operation).data, status=status.HTTP_201_CREATED)
+    except Matrix.DoesNotExist:
+         return Response({'error': 'La matriz no existe'}, status=status.HTTP_404_NOT_FOUND)
+    except (InvalidMatrixError, NumericError):
+        raise
+
+
+@api_view(['POST'])
+@ratelimit(key='ip', rate='20/m', method='POST')
+def calculate_eigenvalues(request):
+    """Calcula valores y vectores propios."""
+    matrix_id = request.data.get('matrix_id')
+    
+    if not matrix_id:
+        return Response({'error': 'Se requiere matrix_id'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        matrix = Matrix.objects.get(id=matrix_id)
+        A = np.array(matrix.data, dtype=np.float64)
+        
+        start_time = time.time()
+        eig_data = safe_eigenvalues(A)
+        execution_time_ms = int((time.time() - start_time) * 1000)
+        
+        # Para resultado principal guardamos los autovalores como matriz diagonal (si son reales)
+        # o como lista de 1 columna. Usaremos 1 columna con la parte Real.
+        vals = eig_data['eigenvalues']
+        rows = len(vals)
+        real_vals_col = [[v['real']] for v in vals]
+        
+        result_matrix = Matrix.objects.create(
+            name=f"Eigenvals({matrix.name})",
+            rows=rows, cols=1,
+            data=real_vals_col
+        )
+        
+        operation = Operation.objects.create(
+            operation_type='EIGEN',
+            matrix_a=matrix,
+            result=result_matrix,
+            execution_time_ms=execution_time_ms,
+            extra_data=eig_data # Guarda todo: vals complejos y vectores
+        )
+        
+        return Response(OperationSerializer(operation).data, status=status.HTTP_201_CREATED)
+    except Matrix.DoesNotExist:
+         return Response({'error': 'La matriz no existe'}, status=status.HTTP_404_NOT_FOUND)
+    except (InvalidMatrixError, NumericError):
+        raise
+
+
+@api_view(['POST'])
+@ratelimit(key='ip', rate='20/m', method='POST')
+def calculate_svd(request):
+    """Calcula descomposición SVD (U, S, Vh)."""
+    matrix_id = request.data.get('matrix_id')
+    
+    if not matrix_id:
+        return Response({'error': 'Se requiere matrix_id'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        matrix = Matrix.objects.get(id=matrix_id)
+        A = np.array(matrix.data, dtype=np.float64)
+        
+        start_time = time.time()
+        svd_data = safe_svd(A)
+        execution_time_ms = int((time.time() - start_time) * 1000)
+        
+        # Guardamos S (Valores singulares) como matriz resultado principal
+        s_vals = svd_data['S']
+        result_matrix = Matrix.objects.create(
+            name=f"SVD-S({matrix.name})",
+            rows=len(s_vals), cols=1,
+            data=[[v] for v in s_vals]
+        )
+        
+        operation = Operation.objects.create(
+            operation_type='SVD',
+            matrix_a=matrix,
+            result=result_matrix,
+            execution_time_ms=execution_time_ms,
+            extra_data=svd_data # Contiene U, S, Vh completos
+        )
+        
+        return Response(OperationSerializer(operation).data, status=status.HTTP_201_CREATED)
+    except Matrix.DoesNotExist:
+         return Response({'error': 'La matriz no existe'}, status=status.HTTP_404_NOT_FOUND)
+    except (InvalidMatrixError, NumericError):
+         raise
+
+
+@api_view(['POST'])
+@ratelimit(key='ip', rate='20/m', method='POST')
+def calculate_qr(request):
+    """Calcula descomposición QR."""
+    matrix_id = request.data.get('matrix_id')
+    
+    if not matrix_id:
+        return Response({'error': 'Se requiere matrix_id'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        matrix = Matrix.objects.get(id=matrix_id)
+        A = np.array(matrix.data, dtype=np.float64)
+        
+        start_time = time.time()
+        qr_data = safe_qr(A)
+        execution_time_ms = int((time.time() - start_time) * 1000)
+        
+        # Guardamos Q como resultado principal
+        q_data = qr_data['Q']
+        result_matrix = Matrix.objects.create(
+            name=f"QR-Q({matrix.name})",
+            rows=len(q_data), cols=len(q_data[0]),
+            data=q_data
+        )
+        
+        operation = Operation.objects.create(
+            operation_type='QR',
+            matrix_a=matrix,
+            result=result_matrix,
+            execution_time_ms=execution_time_ms,
+            extra_data=qr_data # Contiene Q y R
+        )
+        
+        return Response(OperationSerializer(operation).data, status=status.HTTP_201_CREATED)
+    except Matrix.DoesNotExist:
+         return Response({'error': 'La matriz no existe'}, status=status.HTTP_404_NOT_FOUND)
+    except (InvalidMatrixError, NumericError):
+         raise
+
+
+@api_view(['POST'])
+@ratelimit(key='ip', rate='20/m', method='POST')
+def calculate_cholesky(request):
+    """Calcula descomposición Cholesky."""
+    matrix_id = request.data.get('matrix_id')
+    
+    if not matrix_id:
+        return Response({'error': 'Se requiere matrix_id'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        matrix = Matrix.objects.get(id=matrix_id)
+        A = np.array(matrix.data, dtype=np.float64)
+        
+        start_time = time.time()
+        L_data = safe_cholesky(A)
+        execution_time_ms = int((time.time() - start_time) * 1000)
+        
+        # Guardamos L como resultado principal
+        result_matrix = Matrix.objects.create(
+            name=f"Cholesky-L({matrix.name})",
+            rows=len(L_data), cols=len(L_data[0]),
+            data=L_data
+        )
+        
+        operation = Operation.objects.create(
+            operation_type='CHOLESKY',
+            matrix_a=matrix,
+            result=result_matrix,
+            execution_time_ms=execution_time_ms,
+            # No extra data necesaria, L es el unico resultado
+        )
+        
+        return Response(OperationSerializer(operation).data, status=status.HTTP_201_CREATED)
+    except Matrix.DoesNotExist:
+         return Response({'error': 'La matriz no existe'}, status=status.HTTP_404_NOT_FOUND)
+    except (InvalidMatrixError, NumericError):
+         raise

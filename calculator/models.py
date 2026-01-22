@@ -79,6 +79,13 @@ class Operation(models.Model):
         ('INVERSE', 'Inversa'),
         ('DETERMINANT', 'Determinante'),
         ('TRANSPOSE', 'Transpuesta'),
+        # Nuevas operaciones v3.0
+        ('RANK', 'Rango'),
+        ('EIGEN', 'Valores/Vectores Propios'),
+        ('SVD', 'Descomposición Valor Singular'),
+        ('QR', 'Descomposición QR'),
+        ('LU', 'Descomposición LU'),
+        ('CHOLESKY', 'Descomposición Cholesky'),
     ]
     
     operation_type = models.CharField(
@@ -104,7 +111,12 @@ class Operation(models.Model):
         Matrix,
         on_delete=models.CASCADE,
         related_name='operations_as_result',
-        help_text="Matriz resultado"
+        help_text="Matriz resultado principal"
+    )
+    extra_data = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Datos adicionales o referencias a otras matrices resultado (ej: SVD components)"
     )
     created_at = models.DateTimeField(auto_now_add=True)
     execution_time_ms = models.PositiveIntegerField(

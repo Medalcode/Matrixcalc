@@ -20,6 +20,12 @@ urlpatterns = [
     path('operations/inverse/', views.inverse_matrix, name='inverse-matrix'),
     path('operations/determinant/', views.determinant_matrix, name='determinant-matrix'),
     path('operations/transpose/', views.transpose_matrix, name='transpose-matrix'),
+    # Nuevas operaciones v3.0
+    path('operations/rank/', views.calculate_rank, name='rank-matrix'),
+    path('operations/eigenvalues/', views.calculate_eigenvalues, name='eigenvalues-matrix'),
+    path('operations/svd/', views.calculate_svd, name='svd-matrix'),
+    path('operations/qr/', views.calculate_qr, name='qr-matrix'),
+    path('operations/cholesky/', views.calculate_cholesky, name='cholesky-matrix'),
     
     # ViewSets
     path('', include(router.urls)),

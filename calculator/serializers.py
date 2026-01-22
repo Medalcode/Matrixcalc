@@ -125,6 +125,7 @@ class OperationSerializer(serializers.ModelSerializer):
             'matrix_a',
             'matrix_b',
             'result',
+            'extra_data',
             'created_at',
             'execution_time_ms'
         ]
