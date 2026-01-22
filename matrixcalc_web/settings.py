@@ -179,7 +179,7 @@ REST_FRAMEWORK = {
 }
 
 # CORS Configuration
-CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL_ORIGINS', '').lower() == 'true' or DEBUG
+CORS_ALLOW_ALL_ORIGINS = True # os.environ.get('CORS_ALLOW_ALL_ORIGINS', '').lower() == 'true' or DEBUG
 
 if not CORS_ALLOW_ALL_ORIGINS:
     cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173')
@@ -196,6 +196,11 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://matrixcalc-advanced.netlify.app',
+    'https://matrixcalc-frontend-541716295092.us-central1.run.app'
 ]
 
 # Rate Limiting
