@@ -25,6 +25,7 @@ export interface Operation {
   matrix_a: Matrix
   matrix_b?: Matrix | null
   result: Matrix
+  extra_data?: any
   execution_time_ms: number
   created_at: string
 }
@@ -36,6 +37,11 @@ export type OperationType =
   | 'INVERSE' 
   | 'DETERMINANT' 
   | 'TRANSPOSE'
+  | 'RANK'
+  | 'EIGEN'
+  | 'SVD'
+  | 'QR'
+  | 'CHOLESKY'
 
 export interface OperationRequest {
   matrix_a_id?: number

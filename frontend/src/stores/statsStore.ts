@@ -51,7 +51,7 @@ export const useStatsStore = defineStore('stats', () => {
   }
 
   async function performOperation(
-    type: 'sum' | 'subtract' | 'multiply' | 'inverse' | 'determinant' | 'transpose',
+    type: 'sum' | 'subtract' | 'multiply' | 'inverse' | 'determinant' | 'transpose' | 'rank' | 'eigenvalues' | 'svd' | 'qr' | 'cholesky',
     matrixAId?: number,
     matrixBId?: number
   ) {
@@ -76,6 +76,21 @@ export const useStatsStore = defineStore('stats', () => {
           break
         case 'transpose':
           operation = await api.transposeMatrix({ matrix_id: matrixAId })
+          break
+        case 'rank':
+          operation = await api.calculateRank({ matrix_id: matrixAId })
+          break
+        case 'eigenvalues':
+          operation = await api.calculateEigenvalues({ matrix_id: matrixAId })
+          break
+        case 'svd':
+          operation = await api.calculateSVD({ matrix_id: matrixAId })
+          break
+        case 'qr':
+          operation = await api.calculateQR({ matrix_id: matrixAId })
+          break
+        case 'cholesky':
+          operation = await api.calculateCholesky({ matrix_id: matrixAId })
           break
         default:
           throw new Error(`Unknown operation type: ${type}`)
