@@ -179,11 +179,18 @@ REST_FRAMEWORK = {
 }
 
 # CORS Configuration
-CORS_ALLOW_ALL_ORIGINS = True # os.environ.get('CORS_ALLOW_ALL_ORIGINS', '').lower() == 'true' or DEBUG
+CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "https://matrixcalc-frontend-541716295092.us-central1.run.app",
+    "https://matrixcalc-advanced.netlify.app",
+    "http://localhost:5173",
+]
 
 if not CORS_ALLOW_ALL_ORIGINS:
     cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173')
-    CORS_ALLOWED_ORIGINS = cors_origins.split(',')
+    if cors_origins:
+        CORS_ALLOWED_ORIGINS.extend(cors_origins.split(','))
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
@@ -199,9 +206,30 @@ CORS_ALLOW_HEADERS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://matrixcalc-advanced.netlify.app',
-    'https://matrixcalc-frontend-541716295092.us-central1.run.app'
+    "https://matrixcalc-frontend-541716295092.us-central1.run.app",
+    "https://matrixcalc-advanced.netlify.app",
 ]
+
+# Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'corsheaders': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}
 
 # Rate Limiting
 RATELIMIT_ENABLE = True
