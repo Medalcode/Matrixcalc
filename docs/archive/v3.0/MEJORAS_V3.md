@@ -12,6 +12,19 @@ Transformar MatrixCalc en una **calculadora de matrices premium** con caracterí
 
 ## 🌟 Mejoras Planificadas
 
+### ✅ **Fase 0: Motor Matemático Avanzado** (Completada)
+
+Se ha implementado un motor robusto en base a NumPy en el backend Django, exponiendo operaciones complejas a través de la API y consumidas por el Frontend.
+
+#### Características Implementadas:
+
+- **Cálculo de Rango (Rank)**
+- **Valores y Vectores Propios (Eigenvalues/Eigenvectors)**
+- **Descomposición SVD** (Valores Singulares)
+- **Descomposición QR**
+- **Descomposición de Cholesky**
+- **Visualización en Frontend** de resultados complejos (S, U, V, Q, R, L, números complejos)
+
 ### 🎬 **Fase 1: Animaciones y Microinteracciones** (Alta Prioridad)
 
 #### 1.1 Animaciones de Transición entre Vistas
@@ -421,25 +434,21 @@ Transformar MatrixCalc en una **calculadora de matrices premium** con caracterí
 ### Ideas que nos distinguirán:
 
 1. **AI-Powered Matrix Insights** 🤖
-
    - Sugerencias de qué operación hacer
    - Detección de patrones en matrices
    - Explicación de resultados en lenguaje natural
 
 2. **Collaborative Editing** 👥
-
    - Trabajar en matrices con otros en tiempo real
    - Comments y annotations
    - Version control integrado
 
 3. **Matrix Music** 🎵
-
    - Sonificar matrices (valores → tonos)
    - Audiolización de patterns
    - MIDI export de eigenvalues
 
 4. **AR/VR Mode** 🥽
-
    - Ver matrices en espacio 3D
    - Manipular con gestos
    - WebXR integration

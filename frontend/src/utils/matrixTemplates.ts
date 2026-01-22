@@ -90,15 +90,20 @@ export const matrixTemplates: MatrixTemplate[] = [
     description: '2x2 rotation matrix for 90 degrees',
     category: 'transformation',
     generateData: (rows, cols) => {
+      // Create empty matrix first
+      const matrix = Array(rows).fill(0).map(() => Array(cols).fill(0))
+      
       if (rows >= 2 && cols >= 2) {
-        const matrix = Array(rows).fill(0).map(() => Array(cols).fill(0))
-        matrix[0][0] = 0
-        matrix[0][1] = -1
-        matrix[1][0] = 1
-        matrix[1][1] = 0
-        return matrix
+        if (matrix[0]) {
+          matrix[0][0] = 0
+          matrix[0][1] = -1
+        }
+        if (matrix[1]) {
+          matrix[1][0] = 1
+          matrix[1][1] = 0
+        }
       }
-      return Array(rows).fill(0).map(() => Array(cols).fill(0))
+      return matrix
     }
   },
   {
@@ -106,13 +111,14 @@ export const matrixTemplates: MatrixTemplate[] = [
     description: '2x2 scaling matrix (2x in x, 3x in y)',
     category: 'transformation',
     generateData: (rows, cols) => {
+      // Create empty matrix first
+      const matrix = Array(rows).fill(0).map(() => Array(cols).fill(0))
+
       if (rows >= 2 && cols >= 2) {
-        const matrix = Array(rows).fill(0).map(() => Array(cols).fill(0))
-        matrix[0][0] = 2
-        matrix[1][1] = 3
-        return matrix
+        if (matrix[0]) matrix[0][0] = 2
+        if (matrix[1]) matrix[1][1] = 3
       }
-      return Array(rows).fill(0).map(() => Array(cols).fill(0))
+      return matrix
     }
   },
   {
