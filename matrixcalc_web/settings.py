@@ -99,9 +99,19 @@ DATABASES = {
     'default': dj_database_url.config(
         default=f'postgresql://matrixcalc:changeme123@localhost:5432/matrixcalc',
         conn_max_age=600,
-        conn_health_checks=True,  # Health checks para Cloud Run
+        conn_health_checks=True,
     )
 }
+
+# Critical Fallback: Use SQLite in Cloud Run if no DATABASE_URL is provided
+# This ensures the app starts even without a external DB connection
+if os.environ.get('K_SERVICE') and not os.environ.get('DATABASE_URL'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
