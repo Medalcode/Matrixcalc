@@ -1,415 +1,163 @@
-# 🧮 MatrixCalc Web
+# 🧮 MatrixCalc
 
-<div align="center">
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+![Python](https://img.shields.io/badge/python-3.11-blue)
+![Vue](https://img.shields.io/badge/vue-3.x-green)
+![Cloud Run](https://img.shields.io/badge/deployment-google%20cloud%20run-blueviolet)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-![Python](https://img.shields.io/badge/Python-3.11-blue.svg)
-![Django](https://img.shields.io/badge/Django-4.2-green.svg)
-![Vue.js](https://img.shields.io/badge/Vue.js-3.5-brightgreen.svg)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+**The Cloud-Native Linear Algebra Workspace.**
 
-**Calculadora de matrices profesional con API REST y frontend moderno**
-
-[Características](#-características) • [Demo](#-demo) • [Instalación](#-instalación) • [Documentación](#-documentación) • [Contribuir](#-contribuir)
-
-</div>
+MatrixCalc is a production-grade web platform designed to bridge the gap between ephemeral online calculators and complex desktop environments like MATLAB. It provides a persistent, audit-traceable workspace for performing rigorous matrix computations (SVD, Eigenvalues, Cholesky) with backend-guaranteed numerical stability.
 
 ---
 
-## 📋 Índice
+## 🧐 Why This Project Exists
 
-- [Características](#-características)
-- [Arquitectura](#️-arquitectura)
-- [Instalación](#-instalación)
-  - [Con Docker (Recomendado)](#con-docker-recomendado)
-  - [Desarrollo Local](#desarrollo-local)
-- [Uso](#-uso)
-- [API REST](#-api-rest)
-- [Tecnologías](#️-tecnologías)
-- [Documentación](#-documentación)
-- [Contribuir](#-contribuir)
-- [Licencia](#-licencia)
-- [Versiones](#-versiones)
+Linear algebra is the "assembly language" of modern data science and engineering. However, the current tooling landscape forces a difficult trade-off:
 
----
+- **Simple Calculators:** Lack persistence, advanced decompositions, and often run on client-side JS (sacrificing precision).
+- **Excel:** Struggles with dimensionality and obscures logic behind opaque formulas.
+- **MATLAB/Wolfram:** Expensive licenses and heavy local footprints.
+- **Python/Jupyter:** Requires environment management and coding skills just to verify a result.
 
-## ✨ Características
+**MatrixCalc exists to democratize access to powerful, verifiable linear algebra.** It combines the accessibility of a web app with the power of a NumPy backend.
 
-### 🔢 Operaciones Matriciales
+## 👥 Who Is This For
 
-- **Básicas** - Suma, Resta, Multiplicación
-- **Avanzadas (Nuevo v3.0)** - Rank, Eigenvalues/Eigenvectors
-- **Descomposiciones (Nuevo v3.0)** - SVD (Singular Value Decomposition), QR, Cholesky, LU
-- **Propiedades** - Determinante, Inversa, Transpuesta, Traza
-- **Transformaciones** - Potencia de matriz
-
-### 💾 Gestión de Datos
-
-- **CRUD completo** - Crear, leer, actualizar y eliminar matrices
-- **Persistencia** - Almacenamiento en PostgreSQL/SQLite
-- **Backup/Restore** - Exportación e importación en JSON/CSV
-- **Historial** - Registro completo de operaciones realizadas
-- **Limpieza automática** - Eliminación de datos antiguos configurable
-
-### 📊 Estadísticas y Visualización
-
-- **Dashboard interactivo** - Gráficos con Chart.js
-- **Métricas en tiempo real** - Total de matrices, operaciones, tiempos de ejecución
-- **Análisis temporal** - Timeline de operaciones de últimos 30 días
-- **Distribución** - Operaciones por tipo con porcentajes
-
-### 🛡️ Seguridad y Rendimiento
-
-- **Rate Limiting** - Protección contra abuso de API (100 req/hora)
-- **Validaciones** - Límites de dimensión y valores numéricos
-- **Manejo de errores** - Excepciones personalizadas con mensajes claros
-- **Optimización** - Índices de base de datos, caché de queries
-- **CORS configurado** - Seguridad para peticiones cross-origin
-
-### 🎨 Interfaz Moderna
-
-- **Responsive** - Diseño adaptable mobile-first con Tailwind CSS
-- **TypeScript** - Tipos estrictos para mayor robustez
-- **Componentes reutilizables** - Arquitectura modular Vue 3
-- **UX optimizada** - Feedback visual, validaciones en tiempo real
-- **Dark Mode Ready** - Preparado para tema oscuro
+- **Engineering Students & Academics:** Instantly verify hand-calculations for complex factorizations using a reliable engine.
+- **Machine Learning Learners:** Visualize the building blocks of algorithms (e.g., decomposing a matrix to understand PCA) in a noise-free environment.
+- **Software Architects:** A reference implementation for a clean **Django + Vue + Cloud Run** architecture, demonstrating Domain-Driven Design (DDD) patterns within a decoupled monolith.
 
 ---
 
-## ☁️ Depsliegue en Producción
+## ✨ Key Features
 
-La aplicación está desplegada y operativa en Google Cloud Run:
+### 📐 Advanced Computational Engine
 
-- 🚀 **Frontend (App):** [https://matrixcalc-frontend-541716295092.us-central1.run.app](https://matrixcalc-frontend-541716295092.us-central1.run.app)
-- 🔌 **Backend (API):** [https://matrixcalc-backend-772384307164.us-central1.run.app](https://matrixcalc-backend-772384307164.us-central1.run.app)
+Powered by a hardened **NumPy** core, ensuring 64-bit float precision for all operations.
 
----
+- **Fundamental Ops:** `A + B`, `A * B`, Inverse, Determinant, Transpose.
+- **Decompositions:**
+  - **SVD (Singular Value Decomposition):** Analyze singular values securely.
+  - **Eigenvalues/Vectors:** For stability analysis.
+  - **QR & Cholesky:** Optimized implementation for symmetric positive-definite matrices.
+  - **Rank:** Numerical rank calculation using SVD tolerance.
 
-## 🏗️ Arquitectura
+### 💾 Persistence & Auditability
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     CLIENTE (Navegador)                      │
-│                                                              │
-│  ┌────────────────────────────────────────────────────┐    │
-│  │           Vue.js 3 SPA (TypeScript)                │    │
-│  │                                                     │    │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌───────────┐ │    │
-│  │  │  Components │  │   Stores    │  │  Router   │ │    │
-│  │  │   (Views)   │  │   (Pinia)   │  │ (Vue Router)│ │    │
-│  │  └─────────────┘  └─────────────┘  └───────────┘ │    │
-│  │                                                     │    │
-│  │  ┌─────────────────────────────────────────────┐  │    │
-│  │  │       Composables (useMatrixAPI)            │  │    │
-│  │  └─────────────────────────────────────────────┘  │    │
-│  └────────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────────┘
-                            │
-                            │ HTTP/HTTPS (Axios)
-                            │
-┌─────────────────────────────────────────────────────────────┐
-│                    BACKEND (Servidor)                        │
-│                                                              │
-│  ┌────────────────────────────────────────────────────┐    │
-│  │              Django 4.2 REST API                   │    │
-│  │                                                     │    │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌─────────┐ │    │
-│  │  │   ViewSets   │  │ Serializers  │  │  URLs   │ │    │
-│  │  │   (CRUD)     │  │ (Validation) │  │(Routes) │ │    │
-│  │  └──────────────┘  └──────────────┘  └─────────┘ │    │
-│  │                                                     │    │
-│  │  ┌──────────────────────────────────────────────┐ │    │
-│  │  │         Business Logic (Utils)               │ │    │
-│  │  │  • matrix_model.py (NumPy/SciPy)             │ │    │
-│  │  │  • exceptions.py (Custom errors)             │ │    │
-│  │  │  • scheduler.py (Cleanup tasks)              │ │    │
-│  │  └──────────────────────────────────────────────┘ │    │
-│  │                                                     │    │
-│  │  ┌─────────────┐  ┌──────────────────────────┐   │    │
-│  │  │   Models    │  │  Management Commands     │   │    │
-│  │  │ (ORM)       │  │  • export_backup         │   │    │
-│  │  │             │  │  • import_backup         │   │    │
-│  │  │             │  │  • cleanup_old_data      │   │    │
-│  │  └─────────────┘  └──────────────────────────┘   │    │
-│  │  └────────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────────┘
-                            │
-                            │ ORM (Django)
-                            │
-┌─────────────────────────────────────────────────────────────┐
-│                  BASE DE DATOS (PostgreSQL/SQLite)           │
-│                                                              │
-│  ┌────────────────┐          ┌────────────────┐            │
-│  │  calculator_   │          │  calculator_   │            │
-│  │    matrix      │ ◄─────── │   operation    │            │
-│  │                │   FK     │                │            │
-│  │  • id          │          │  • id          │            │
-│  │  • name        │          │  • operation_  │            │
-│  │  • rows        │          │    type        │            │
-│  │  • cols        │          │  • matrix_a    │            │
-│  │  • data (JSON) │          │  • matrix_b    │            │
-│  │  • created_at  │          │  • result      │            │
-│  │  • updated_at  │          │  • execution_  │            │
-│  │                │          │    time        │            │
-│  │  Índices:      │          │  • created_at  │            │
-│  │  - created_at  │          │                │            │
-│  │  - updated_at  │          │  Índices:      │            │
-│  └────────────────┘          │  - operation_  │            │
-│                              │    type        │            │
-│                              │  - created_at  │            │
-│                              │  - matrix_a    │            │
-│                              │  - result      │            │
-│                              └────────────────┘            │
-│                              │  - extra_data  │            │
-│                              └────────────────┘            │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### 🔄 Flujo de Datos
-
-1. **Cliente → Backend**: Usuario interactúa con Vue.js → Axios envía petición HTTP → Django recibe en ViewSet
-2. **Backend → Lógica**: ViewSet valida con Serializer → Llama a utils/matrix_model.py (NumPy/SciPy) → Guarda en DB
-3. **Backend → Cliente**: Serializa respuesta → Retorna JSON → Pinia actualiza estado → Vue re-renderiza
+- **Workspace History:** Unlike standard calculators, every operation is logged as an immutable event.
+- **Traceability:** See exactly when `Operation #42` was created, its inputs, and execution time (ms).
+- **Data Portability:** Import datasets via CSV; export results for use in other tools.
 
 ---
 
-## 🚀 Instalación
+## 🔍 GlassBox Mode: Understanding the "How"
 
-### Con Docker (Recomendado)
+**Don't just get the answer. Understand the algorithm.**
 
-**Requisitos**: Docker 20.10+ y Docker Compose 2.0+
+Standard engineering tools (Excel, NumPy, MATLAB) operate as "Black Boxes"—inputs go in, results come out, but the intermediate logic remains hidden. This is efficient for automation but terrible for learning.
 
-```bash
-# 1. Clonar repositorio
-git clone https://github.com/tuusuario/Matrixcalc.git
-cd Matrixcalc
+**GlassBox Mode** transforms MatrixCalc from a calculator into an algorithmic visualizer. It runs a dedicated tracing engine alongside the numerical core to capture every atomic step of complex operations.
 
-# 2. Setup completo automático
-make setup
+### ✨ Why It Matters
 
-# O manualmente:
-cp .env.example .env
-docker-compose build
-docker-compose up -d
-```
+- **For Students:** Verify your manual Gaussian elimination homework step-by-step. Pinpoint exactly where your calculation diverged from the correct path.
+- **For Instructors:** Demonstrate algorithms like LU Decomposition or Gram-Schmidt dynamically in the classroom without drawing dozens of matrices on a whiteboard.
+- **For Developers:** Visualize numerical stability issues (e.g., pivot decay) in real-time.
 
-**Acceder a la aplicación:**
+### 🕹️ Interactive Trace Player
 
-- 🌐 **Frontend**: http://localhost:3000
-- 🔌 **API Backend**: http://localhost:8000/api
-- 🔧 **Admin Django**: http://localhost:8000/admin (admin/admin123)
+When you enable GlassBox Mode, you get full "VCR-style" control over the mathematical process:
 
-📖 Ver [DOCKER.md](./DOCKER.md) para documentación completa de Docker
+- **Step-by-Step Playback:** Rewind and fast-forward through row operations ($R_2 \leftarrow R_2 - 3R_1$).
+- **Contextual Highlighting:** See exactly which rows are interacting—Source rows glow green, Target rows glow red.
+- **Semantic Explanation:** Each step is accompanied by a human-readable narrative explaining _why_ the algorithm made that move (e.g., _"Swapping rows 2 and 3 to avoid a zero pivot"_).
 
-### Desarrollo Local
-
-#### Backend (Django)
-
-```bash
-# 1. Crear y activar entorno virtual
-python3.11 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# 2. Instalar dependencias
-pip install -r requirements-web.txt
-
-# 3. Configurar variables de entorno
-cp .env.example .env
-# Editar .env con tu configuración
-
-# 4. Ejecutar migraciones
-python manage.py migrate
-
-# 5. Crear superusuario
-python manage.py createsuperuser
-
-# 6. Iniciar servidor de desarrollo
-python manage.py runserver
-```
-
-Backend disponible en: http://127.0.0.1:8000
-
-#### Frontend (Vue.js)
-
-```bash
-cd frontend
-
-# 1. Instalar dependencias
-npm install
-
-# 2. Configurar variables de entorno
-cp .env.example .env
-# VITE_API_URL=http://127.0.0.1:8000/api
-
-# 3. Iniciar servidor de desarrollo
-npm run dev
-```
-
-Frontend disponible en: http://localhost:5173
+> _Available now for: Gaussian Elimination, RREF, and Determinant Expansion._
 
 ---
 
-## 💻 Uso
+## 🏗️ Technical Architecture
 
-### Interfaz Web
+MatrixCalc follows a **Decoupled Monolith** pattern, optimized for containerization and serverless deployment.
 
-1. **Crear Matriz**
-   - Ir a "Calculadora" → pestaña "Editor"
-   - Especificar nombre y dimensiones
-   - Rellenar valores manualmente o usar rellenos rápidos
-   - Guardar
+### Backend (The Core)
 
-2. **Realizar Operación**
-   - Pestaña "Operaciones"
-   - Seleccionar matriz(ces) de los dropdowns
-   - Elegir operación (suma, producto, inversa, SVD, etc.)
-   - Ver resultado en pantalla (incluyendo descomposiciones complejas)
+- **Django REST Framework:** Acts as the API Gateway and Orchestrator.
+- **Domain Layer:** Encapsulated in `calculator.utils.matrix_model`. This "Anti-Corruption Layer" sanitizes inputs and abstracts NumPy complexity, implementing strict domain rules.
+- **Persistence:** PostgreSQL (Production) / SQLite (Dev) with optimized JSON storage (pending ByteString optimization) for matrix data.
 
-3. **Ver Estadísticas**
-   - Ir a "Estadísticas"
-   - Ver métricas generales y gráficos interactivos
+### Frontend (The Interface)
 
-4. **Backup/Restore**
-   - Pestaña "Backup"
-   - Exportar: descarga JSON con todas las matrices
-   - Importar: subir archivo CSV con formato específico
+- **Vue 3 (Composition API):** Modular, reactive UI components built with TypeScript.
+- **Pinia:** Type-safe state management for handling the Matrix Workspace.
+- **TailwindCSS:** Utility-first styling for a clean, "Math-First" aesthetic.
+- **Latex Support:** Renders beautiful mathematical notation for results.
 
-### API REST
+### DevOps (The Pipeline)
 
-Ver documentación completa en [docs/API.md](./docs/API.md)
-
-**Ejemplo: Crear matriz**
-
-```bash
-curl -X POST http://localhost:8000/api/matrices/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Matriz A",
-    "rows": 2,
-    "cols": 2,
-    "data": [[1, 2], [3, 4]]
-  }'
-```
-
-**Ejemplo: Sumar matrices**
-
-```bash
-curl -X POST http://localhost:8000/api/operations/sum/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "matrix_a_id": 1,
-    "matrix_b_id": 2
-  }'
-```
+- **Docker:** Multi-stage builds reduce image size for faster cold starts.
+- **Google Cloud Run:** Serverless deployment ensuring auto-scaling and zero-maintenance infrastructure.
+- **Cloud Build:** Automated CI/CD pipelines defined in `cloudbuild.yaml`.
 
 ---
 
-## 🛠️ Tecnologías
+## 🚀 Getting Started
 
-### Backend
+### Prerequisites
 
-- **Django 4.2** - Framework web Python
-- **Django REST Framework** - API REST toolkit
-- **PostgreSQL 15** - Base de datos relacional
-- **NumPy & SciPy** - Cálculos matriciales y científicos avanzados
-- **Gunicorn** - Servidor WSGI para producción
-- **APScheduler** - Tareas programadas (limpieza)
+- Docker & Docker Compose
 
-### Frontend
+### Fast Launch
 
-- **Vue.js 3.5** - Framework JavaScript progresivo
-- **TypeScript 5.7** - Superset tipado de JavaScript
-- **Pinia** - State management
-- **Vue Router** - Enrutamiento SPA
-- **Tailwind CSS 4** - Framework CSS utility-first
-- **Chart.js + vue-chartjs** - Visualización de datos
-- **Axios** - Cliente HTTP
+1.  **Clone the repository**
 
-### DevOps
+    ```bash
+    git clone https://github.com/medalcode/MatrixCalc.git
+    cd MatrixCalc
+    ```
 
-- **Docker + Docker Compose** - Contenedorización
-- **Google Cloud Run** - Despliegue serverless escalable
-- **Buildpacks / Dockerfile** - Estrategias de build
+2.  **Configure Environment**
 
----
+    ```bash
+    cp .env.example .env
+    ```
 
-## 📚 Documentación
+3.  **Start the stack**
 
-### 📖 Guías Principales
+    ```bash
+    docker-compose up --build
+    ```
 
-- **[Índice de Documentación](./docs/README.md)** - Navegación completa
-- **[Guía de Deployment](./docs/deployment/README.md)** - Despliegue en producción
-  - Google Cloud Run (recomendado)
-  - Docker Compose
-  - Servidor tradicional
-- **[Troubleshooting](./docs/deployment/troubleshooting.md)** - Solución de problemas
-- **[Guía de Testing](./docs/developer/testing.md)** - Ejecutar y escribir tests
-- **[Migración v1→v2](./docs/migration/v1-to-v2.md)** - Migración Tkinter a Web
-
-### 🔧 Para Desarrolladores
-
-- **[Contribuir](./CONTRIBUTING.md)** - Guía de contribución
-- **[API Documentation](./docs/API.md)** - Referencia de API REST
-- **[Roadmap](./docs/ROADMAP.md)** - Hoja de ruta del proyecto
-
-### 📦 Archivo Histórico
-
-- **[v2.0 Docs](./docs/archive/v2.0/)** - Documentación histórica v2.0
-- **[v3.0 Planning](./docs/archive/v3.0/)** - Planificación de mejoras v3.0
+4.  **Access the application**
+    - **Frontend:** `http://localhost:5173`
+    - **Backend API:** `http://localhost:8000/api/`
 
 ---
 
-## 🤝 Contribuir
+## 📦 Deployment
 
-¡Las contribuciones son bienvenidas! Por favor lee [CONTRIBUTING.md](./CONTRIBUTING.md) para detalles sobre:
+This project is "Cloud Run Ready".
 
-- Código de conducta
-- Proceso de pull requests
-- Estándares de código
-- Flujo de desarrollo
+1.  **Authenticate with GCP**
+    Ensure you have the `gcloud` CLI installed and authenticated.
 
----
+2.  **Deploy via Cloud Build**
+    ```bash
+    gcloud builds submit --config cloudbuild.yaml .
+    ```
 
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver [LICENSE](./LICENSE) para más detalles.
-
----
-
-## 📌 Versiones
-
-### v3.0 (En Producción - Enero 2026)
-
-- ✅ **Operaciones Avanzadas:** Rank, Eigenvalues, SVD, QR, Cholesky, LU.
-- ✅ **Exportación LaTeX:** Múltiples formatos para documentos académicos.
-- ✅ **UI Mejorada:** Atajos de teclado, animaciones fluidas, visualización de resultados complejos.
-- ✅ **Documentación:** Consolidada y organizada.
-- ✅ **Despliegue:** Cloud Run unificado (Frontend + Backend).
-
-### v2.0 - Django Web Migration (Diciembre 2025)
-
-- ✅ Migración completa de Tkinter a Django + Vue.js
-- ✅ API REST con Django REST Framework
-- ✅ Frontend moderno con Vue 3 + TypeScript
-- ✅ Dashboard con estadísticas y gráficos
-- ✅ Docker Compose con PostgreSQL
-- ✅ Sistema de backup/restore
-- ✅ Rate limiting y seguridad
-- ✅ Dark mode completo
-- ✅ Sistema de toasts y notificaciones
-
-### v1.0 - Tkinter Desktop (Legacy - Archivado)
-
-- GUI de escritorio con Tkinter
-- Operaciones matriciales básicas
-- Deprecado (código eliminado)
+For detailed configuration (database URLs, secret keys), see [Deployment Documentation](docs/deployment/README.md).
 
 ---
 
-<div align="center">
+## 🤝 Contributing
 
-**Desarrollado con ❤️ usando Django y Vue.js**
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to propose bug fixes and new features.
 
-[⬆ Volver arriba](#-matrixcalc-web)
+---
 
-</div>
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
