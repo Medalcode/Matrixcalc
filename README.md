@@ -84,9 +84,10 @@ MatrixCalc follows a **Decoupled Monolith** pattern, optimized for containerizat
 
 ### Backend (The Core)
 
-- **Django REST Framework:** Acts as the API Gateway and Orchestrator.
-- **Domain Layer:** Encapsulated in `calculator.utils.matrix_model`. This "Anti-Corruption Layer" sanitizes inputs and abstracts NumPy complexity, implementing strict domain rules.
-- **Persistence:** PostgreSQL (Production) / SQLite (Dev) with optimized JSON storage (pending ByteString optimization) for matrix data.
+- **Django REST Framework:** Acts as the API Gateway. Views have been refactored into **Lean Views**, delegating orchestration to internal helpers to ensure "DRY" code.
+- **Services Layer:** Located in `calculator.services`, it orchestrates high-level application logic (backups, data retention) separately from HTTP concerns.
+- **Domain Layer:** Encapsulated in `calculator.utils.matrix_model`. This "Anti-Corruption Layer" sanitizes inputs and abstracts NumPy complexity, implementing strict domain rules and custom domain exceptions.
+- **Persistence:** PostgreSQL (Production) / SQLite (Dev) with optimized JSON storage for matrix data.
 
 ### Frontend (The Interface)
 
