@@ -10,3 +10,4 @@ APScheduler>=3.10.4
 dj-database-url>=2.1.0
 whitenoise>=6.6.0
 django-filter>=24.0
+celery[redis]>=5.2.0
