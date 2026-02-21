@@ -2,14 +2,14 @@
 Pytest configuration and fixtures for calculator tests
 """
 import pytest
-from django.contrib.auth.models import User
-from calculator.models import Matrix, Operation
 import json
+
 
 
 @pytest.fixture
 def user():
     """Create a test user"""
+    from django.contrib.auth.models import User
     return User.objects.create_user(
         username='testuser',
         email='test@example.com',
@@ -31,13 +31,15 @@ def sample_matrix_data():
 @pytest.fixture
 def matrix(db, sample_matrix_data):
     """Create a test matrix"""
-    return Matrix.objects.create(**sample_matrix_data)
+    from calculator.models import Matrix
+    return Matrix.objects.create(**sample_matrix_data)  # type: ignore[attr-defined]
 
 
 @pytest.fixture
 def identity_matrix(db):
     """Create an identity matrix for testing"""
-    return Matrix.objects.create(
+    from calculator.models import Matrix
+    return Matrix.objects.create(  # type: ignore[attr-defined]
         name='Identity 3x3',
         rows=3,
         cols=3,
@@ -48,13 +50,15 @@ def identity_matrix(db):
 @pytest.fixture
 def matrix_pair(db):
     """Create two matrices for binary operations"""
-    matrix_a = Matrix.objects.create(
+    from calculator.models import Matrix
+
+    matrix_a = Matrix.objects.create(  # type: ignore[attr-defined]
         name='Matrix A',
         rows=2,
         cols=2,
         data=[[1, 2], [3, 4]]
     )
-    matrix_b = Matrix.objects.create(
+    matrix_b = Matrix.objects.create(  # type: ignore[attr-defined]
         name='Matrix B',
         rows=2,
         cols=2,
