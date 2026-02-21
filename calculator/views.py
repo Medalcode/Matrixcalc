@@ -28,7 +28,88 @@ from calculator.utils import (
 )
 
 
-# Helper function para aplicar rate limiting a ViewSets
+# --- Helpers de Operación ---
+
+def _perform_matrix_operation(operation_type, matrix_a_id, matrix_b_id=None, extra_data=None):
+    """
+    Helper centralizado para ejecutar operaciones, medir tiempo y persistir resultados.
+    """
+    try:
+        matrix_a = Matrix.objects.get(id=matrix_a_id)
+        matrix_b = Matrix.objects.get(id=matrix_b_id) if matrix_b_id else None
+    except Matrix.DoesNotExist:
+        return Response({'error': 'Una o ambos matrices no existen'}, status=status.HTTP_404_NOT_FOUND)
+
+    try:
+        # Preparar operandos
+        A = np.array(matrix_a.data, dtype=np.float64)
+        B = np.array(matrix_b.data, dtype=np.float64) if matrix_b else None
+        
+        # Mapeo de funciones de utilidad
+        ops_map = {
+            'SUM': lambda: (safe_add(A, B), f"Suma: {matrix_a.name} + {matrix_b.name}"),
+            'SUBTRACT': lambda: (safe_subtract(A, B), f"Resta: {matrix_a.name} - {matrix_b.name}"),
+            'MULTIPLY': lambda: (safe_dot(A, B), f"Producto: {matrix_a.name} × {matrix_b.name}"),
+            'INVERSE': lambda: (safe_inv(A), f"Inversa: {matrix_a.name}⁻¹"),
+            'DETERMINANT': lambda: (np.array([[float(safe_det(A))]]), f"Det({matrix_a.name})"),
+            'TRANSPOSE': lambda: (safe_transpose(A), f"Transpuesta: {matrix_a.name}ᵀ"),
+            'RANK': lambda: (np.array([[float(safe_rank(A))]]), f"Rank({matrix_a.name})"),
+            'EIGEN': lambda: (None, None), # Caso especial manejado abajo o via safe_eigenvalues directamente
+            'SVD': lambda: (None, None),
+            'QR': lambda: (None, None),
+            'CHOLESKY': lambda: (safe_cholesky(A), f"Cholesky-L({matrix_a.name})"),
+        }
+
+        # Ejecución y timing
+        start_time = time.time()
+        
+        # Casos especiales (v3.0) que retornan estructuras complejas
+        if operation_type in ['EIGEN', 'SVD', 'QR']:
+            if operation_type == 'EIGEN':
+                data = safe_eigenvalues(A)
+                # Resultado principal: autovalores como columna real
+                res_arr = np.array([[v['real']] for v in data['eigenvalues']])
+                name = f"Eigenvals({matrix_a.name})"
+            elif operation_type == 'SVD':
+                data = safe_svd(A)
+                res_arr = np.array([[v] for v in data['S']]) # Valores singulares
+                name = f"SVD-S({matrix_a.name})"
+            elif operation_type == 'QR':
+                data = safe_qr(A)
+                res_arr = np.array(data['Q'])
+                name = f"QR-Q({matrix_a.name})"
+            
+            extra_data = data # Guardar todo en JSON extra
+        else:
+            res_arr, name = ops_map[operation_type]()
+            if isinstance(res_arr, list): res_arr = np.array(res_arr)
+
+        execution_time_ms = int((time.time() - start_time) * 1000)
+
+        # Persistir
+        result_matrix = Matrix.objects.create(
+            name=name,
+            rows=res_arr.shape[0],
+            cols=res_arr.shape[1],
+            data=res_arr.tolist()
+        )
+
+        operation = Operation.objects.create(
+            operation_type=operation_type,
+            matrix_a=matrix_a,
+            matrix_b=matrix_b,
+            result=result_matrix,
+            execution_time_ms=execution_time_ms,
+            extra_data=extra_data
+        )
+
+        return Response(OperationSerializer(operation).data, status=status.HTTP_201_CREATED)
+
+    except (InvalidMatrixError, NumericError):
+        raise
+
+
+# --- ViewSets ---
 def ratelimit_viewset(rate):
     def decorator(cls):
         cls = method_decorator(ratelimit(key='ip', rate=rate, method='POST'), name='create')(cls)
@@ -189,315 +270,52 @@ class OperationViewSet(viewsets.ReadOnlyModelViewSet):
 @api_view(['POST'])
 @ratelimit(key='ip', rate='50/m', method='POST')
 def sum_matrices(request):
-    """
-    Suma dos matrices.
-    
-    Body:
-        - matrix_a_id: ID de la primera matriz
-        - matrix_b_id: ID de la segunda matriz
-    
-    Returns:
-        Matriz resultado y registro de operación
-    """
-    matrix_a_id = request.data.get('matrix_a_id')
-    matrix_b_id = request.data.get('matrix_b_id')
-    
-    if not matrix_a_id or not matrix_b_id:
-        return Response(
-            {'error': 'Se requieren matrix_a_id y matrix_b_id'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    try:
-        matrix_a = Matrix.objects.get(id=matrix_a_id)
-        matrix_b = Matrix.objects.get(id=matrix_b_id)
-    except Matrix.DoesNotExist:
-        return Response(
-            {'error': 'Una o ambas matrices no existen'},
-            status=status.HTTP_404_NOT_FOUND
-        )
-    
-    try:
-        # Convertir a numpy arrays
-        A = np.array(matrix_a.data, dtype=np.float64)
-        B = np.array(matrix_b.data, dtype=np.float64)
-        
-        # Ejecutar operación con timing
-        start_time = time.time()
-        result_array = safe_add(A, B)
-        execution_time_ms = int((time.time() - start_time) * 1000)
-        
-        # Guardar resultado como nueva matriz
-        result_matrix = Matrix.objects.create(
-            name=f"Suma: {matrix_a.name} + {matrix_b.name}",
-            rows=result_array.shape[0],
-            cols=result_array.shape[1],
-            data=result_array.tolist()
-        )
-        
-        # Crear registro de operación
-        operation = Operation.objects.create(
-            operation_type='SUM',
-            matrix_a=matrix_a,
-            matrix_b=matrix_b,
-            result=result_matrix,
-            execution_time_ms=execution_time_ms
-        )
-        
-        serializer = OperationSerializer(operation)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-    except (InvalidMatrixError, NumericError) as e:
-        # El custom exception handler manejará esto
-        raise
+    """Suma dos matrices."""
+    return _perform_matrix_operation('SUM', request.data.get('matrix_a_id'), request.data.get('matrix_b_id'))
 
 
 @api_view(['POST'])
 @ratelimit(key='ip', rate='50/m', method='POST')
 def subtract_matrices(request):
     """Resta dos matrices."""
-    matrix_a_id = request.data.get('matrix_a_id')
-    matrix_b_id = request.data.get('matrix_b_id')
-    
-    if not matrix_a_id or not matrix_b_id:
-        return Response(
-            {'error': 'Se requieren matrix_a_id y matrix_b_id'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    try:
-        matrix_a = Matrix.objects.get(id=matrix_a_id)
-        matrix_b = Matrix.objects.get(id=matrix_b_id)
-    except Matrix.DoesNotExist:
-        return Response(
-            {'error': 'Una o ambas matrices no existen'},
-            status=status.HTTP_404_NOT_FOUND
-        )
-    
-    try:
-        A = np.array(matrix_a.data, dtype=np.float64)
-        B = np.array(matrix_b.data, dtype=np.float64)
-        
-        start_time = time.time()
-        result_array = safe_subtract(A, B)
-        execution_time_ms = int((time.time() - start_time) * 1000)
-        
-        result_matrix = Matrix.objects.create(
-            name=f"Resta: {matrix_a.name} - {matrix_b.name}",
-            rows=result_array.shape[0],
-            cols=result_array.shape[1],
-            data=result_array.tolist()
-        )
-        
-        operation = Operation.objects.create(
-            operation_type='SUBTRACT',
-            matrix_a=matrix_a,
-            matrix_b=matrix_b,
-            result=result_matrix,
-            execution_time_ms=execution_time_ms
-        )
-        
-        serializer = OperationSerializer(operation)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    except (InvalidMatrixError, NumericError) as e:
-        raise
+    return _perform_matrix_operation('SUBTRACT', request.data.get('matrix_a_id'), request.data.get('matrix_b_id'))
 
 
 @api_view(['POST'])
 @ratelimit(key='ip', rate='50/m', method='POST')
 def multiply_matrices(request):
     """Multiplica dos matrices."""
-    matrix_a_id = request.data.get('matrix_a_id')
-    matrix_b_id = request.data.get('matrix_b_id')
-    
-    if not matrix_a_id or not matrix_b_id:
-        return Response(
-            {'error': 'Se requieren matrix_a_id y matrix_b_id'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    try:
-        matrix_a = Matrix.objects.get(id=matrix_a_id)
-        matrix_b = Matrix.objects.get(id=matrix_b_id)
-    except Matrix.DoesNotExist:
-        return Response(
-            {'error': 'Una o ambas matrices no existen'},
-            status=status.HTTP_404_NOT_FOUND
-        )
-    
-    try:
-        A = np.array(matrix_a.data, dtype=np.float64)
-        B = np.array(matrix_b.data, dtype=np.float64)
-        
-        start_time = time.time()
-        result_array = safe_dot(A, B)
-        execution_time_ms = int((time.time() - start_time) * 1000)
-        
-        result_matrix = Matrix.objects.create(
-            name=f"Producto: {matrix_a.name} × {matrix_b.name}",
-            rows=result_array.shape[0],
-            cols=result_array.shape[1],
-            data=result_array.tolist()
-        )
-        
-        operation = Operation.objects.create(
-            operation_type='MULTIPLY',
-            matrix_a=matrix_a,
-            matrix_b=matrix_b,
-            result=result_matrix,
-            execution_time_ms=execution_time_ms
-        )
-        
-        serializer = OperationSerializer(operation)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    except (InvalidMatrixError, NumericError) as e:
-        raise
+    return _perform_matrix_operation('MULTIPLY', request.data.get('matrix_a_id'), request.data.get('matrix_b_id'))
 
 
 @api_view(['POST'])
 @ratelimit(key='ip', rate='50/m', method='POST')
 def inverse_matrix(request):
     """Calcula la inversa de una matriz."""
-    matrix_id = request.data.get('matrix_id')
-    
-    if not matrix_id:
-        return Response(
-            {'error': 'Se requiere matrix_id'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    try:
-        matrix = Matrix.objects.get(id=matrix_id)
-    except Matrix.DoesNotExist:
-        return Response(
-            {'error': 'La matriz no existe'},
-            status=status.HTTP_404_NOT_FOUND
-        )
-    
-    try:
-        A = np.array(matrix.data, dtype=np.float64)
-        
-        start_time = time.time()
-        result_array = safe_inv(A)
-        execution_time_ms = int((time.time() - start_time) * 1000)
-        
-        result_matrix = Matrix.objects.create(
-            name=f"Inversa: {matrix.name}⁻¹",
-            rows=result_array.shape[0],
-            cols=result_array.shape[1],
-            data=result_array.tolist()
-        )
-        
-        operation = Operation.objects.create(
-            operation_type='INVERSE',
-            matrix_a=matrix,
-            result=result_matrix,
-            execution_time_ms=execution_time_ms
-        )
-        
-        serializer = OperationSerializer(operation)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    except (InvalidMatrixError, NumericError) as e:
-        raise
+    return _perform_matrix_operation('INVERSE', request.data.get('matrix_id'))
 
 
 @api_view(['POST'])
 @ratelimit(key='ip', rate='50/m', method='POST')
 def determinant_matrix(request):
     """Calcula el determinante de una matriz."""
-    matrix_id = request.data.get('matrix_id')
-    
-    if not matrix_id:
-        return Response(
-            {'error': 'Se requiere matrix_id'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    try:
-        matrix = Matrix.objects.get(id=matrix_id)
-    except Matrix.DoesNotExist:
-        return Response(
-            {'error': 'La matriz no existe'},
-            status=status.HTTP_404_NOT_FOUND
-        )
-    
-    try:
-        A = np.array(matrix.data, dtype=np.float64)
-        
-        start_time = time.time()
-        det_value = safe_det(A)
-        execution_time_ms = int((time.time() - start_time) * 1000)
-        
-        # Para determinante, guardamos el escalar como matriz 1x1
-        result_matrix = Matrix.objects.create(
-            name=f"Det({matrix.name})",
-            rows=1,
-            cols=1,
-            data=[[float(det_value)]]
-        )
-        
-        operation = Operation.objects.create(
-            operation_type='DETERMINANT',
-            matrix_a=matrix,
-            result=result_matrix,
-            execution_time_ms=execution_time_ms
-        )
-        
-        # Incluir el valor del determinante directamente
-        serializer = OperationSerializer(operation)
-        response_data = serializer.data
-        response_data['determinant_value'] = float(det_value)
-        
-        return Response(response_data, status=status.HTTP_201_CREATED)
-    except (InvalidMatrixError, NumericError) as e:
-        raise
+    # El helper ya guarda el resultado como 1x1, podemos añadir lógica extra si es necesario
+    return _perform_matrix_operation('DETERMINANT', request.data.get('matrix_id'))
 
 
 @api_view(['POST'])
 @ratelimit(key='ip', rate='50/m', method='POST')
 def transpose_matrix(request):
     """Calcula la transpuesta de una matriz."""
-    matrix_id = request.data.get('matrix_id')
-    
-    if not matrix_id:
-        return Response(
-            {'error': 'Se requiere matrix_id'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    try:
-        matrix = Matrix.objects.get(id=matrix_id)
-    except Matrix.DoesNotExist:
-        return Response(
-            {'error': 'La matriz no existe'},
-            status=status.HTTP_404_NOT_FOUND
-        )
-    
-    try:
-        A = np.array(matrix.data, dtype=np.float64)
-        
-        start_time = time.time()
-        result_array = safe_transpose(A)
-        execution_time_ms = int((time.time() - start_time) * 1000)
-        
-        result_matrix = Matrix.objects.create(
-            name=f"Transpuesta: {matrix.name}ᵀ",
-            rows=result_array.shape[0],
-            cols=result_array.shape[1],
-            data=result_array.tolist()
-        )
-        
-        operation = Operation.objects.create(
-            operation_type='TRANSPOSE',
-            matrix_a=matrix,
-            result=result_matrix,
-            execution_time_ms=execution_time_ms
-        )
-        
-        serializer = OperationSerializer(operation)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    except (InvalidMatrixError, NumericError) as e:
-        raise
+    return _perform_matrix_operation('TRANSPOSE', request.data.get('matrix_id'))
+
+
+
+
+
+
+
+
 
 
 @api_view(['GET'])
@@ -571,199 +389,32 @@ def stats_view(request):
 @ratelimit(key='ip', rate='30/m', method='POST')
 def calculate_rank(request):
     """Calcula el rango de una matriz."""
-    matrix_id = request.data.get('matrix_id')
-    
-    if not matrix_id:
-        return Response({'error': 'Se requiere matrix_id'}, status=status.HTTP_400_BAD_REQUEST)
-        
-    try:
-        matrix = Matrix.objects.get(id=matrix_id)
-        A = np.array(matrix.data, dtype=np.float64)
-        
-        start_time = time.time()
-        rank_val = safe_rank(A)
-        execution_time_ms = int((time.time() - start_time) * 1000)
-        
-        # Guardar resultado como matriz 1x1
-        result_matrix = Matrix.objects.create(
-            name=f"Rank({matrix.name})",
-            rows=1, cols=1,
-            data=[[float(rank_val)]]
-        )
-        
-        operation = Operation.objects.create(
-            operation_type='RANK',
-            matrix_a=matrix,
-            result=result_matrix,
-            execution_time_ms=execution_time_ms,
-            extra_data={'rank': rank_val}
-        )
-        
-        return Response(OperationSerializer(operation).data, status=status.HTTP_201_CREATED)
-    except Matrix.DoesNotExist:
-         return Response({'error': 'La matriz no existe'}, status=status.HTTP_404_NOT_FOUND)
-    except (InvalidMatrixError, NumericError):
-        raise
+    return _perform_matrix_operation('RANK', request.data.get('matrix_id'))
 
 
 @api_view(['POST'])
 @ratelimit(key='ip', rate='20/m', method='POST')
 def calculate_eigenvalues(request):
     """Calcula valores y vectores propios."""
-    matrix_id = request.data.get('matrix_id')
-    
-    if not matrix_id:
-        return Response({'error': 'Se requiere matrix_id'}, status=status.HTTP_400_BAD_REQUEST)
-
-    try:
-        matrix = Matrix.objects.get(id=matrix_id)
-        A = np.array(matrix.data, dtype=np.float64)
-        
-        start_time = time.time()
-        eig_data = safe_eigenvalues(A)
-        execution_time_ms = int((time.time() - start_time) * 1000)
-        
-        # Para resultado principal guardamos los autovalores como matriz diagonal (si son reales)
-        # o como lista de 1 columna. Usaremos 1 columna con la parte Real.
-        vals = eig_data['eigenvalues']
-        rows = len(vals)
-        real_vals_col = [[v['real']] for v in vals]
-        
-        result_matrix = Matrix.objects.create(
-            name=f"Eigenvals({matrix.name})",
-            rows=rows, cols=1,
-            data=real_vals_col
-        )
-        
-        operation = Operation.objects.create(
-            operation_type='EIGEN',
-            matrix_a=matrix,
-            result=result_matrix,
-            execution_time_ms=execution_time_ms,
-            extra_data=eig_data # Guarda todo: vals complejos y vectores
-        )
-        
-        return Response(OperationSerializer(operation).data, status=status.HTTP_201_CREATED)
-    except Matrix.DoesNotExist:
-         return Response({'error': 'La matriz no existe'}, status=status.HTTP_404_NOT_FOUND)
-    except (InvalidMatrixError, NumericError):
-        raise
+    return _perform_matrix_operation('EIGEN', request.data.get('matrix_id'))
 
 
 @api_view(['POST'])
 @ratelimit(key='ip', rate='20/m', method='POST')
 def calculate_svd(request):
     """Calcula descomposición SVD (U, S, Vh)."""
-    matrix_id = request.data.get('matrix_id')
-    
-    if not matrix_id:
-        return Response({'error': 'Se requiere matrix_id'}, status=status.HTTP_400_BAD_REQUEST)
-
-    try:
-        matrix = Matrix.objects.get(id=matrix_id)
-        A = np.array(matrix.data, dtype=np.float64)
-        
-        start_time = time.time()
-        svd_data = safe_svd(A)
-        execution_time_ms = int((time.time() - start_time) * 1000)
-        
-        # Guardamos S (Valores singulares) como matriz resultado principal
-        s_vals = svd_data['S']
-        result_matrix = Matrix.objects.create(
-            name=f"SVD-S({matrix.name})",
-            rows=len(s_vals), cols=1,
-            data=[[v] for v in s_vals]
-        )
-        
-        operation = Operation.objects.create(
-            operation_type='SVD',
-            matrix_a=matrix,
-            result=result_matrix,
-            execution_time_ms=execution_time_ms,
-            extra_data=svd_data # Contiene U, S, Vh completos
-        )
-        
-        return Response(OperationSerializer(operation).data, status=status.HTTP_201_CREATED)
-    except Matrix.DoesNotExist:
-         return Response({'error': 'La matriz no existe'}, status=status.HTTP_404_NOT_FOUND)
-    except (InvalidMatrixError, NumericError):
-         raise
+    return _perform_matrix_operation('SVD', request.data.get('matrix_id'))
 
 
 @api_view(['POST'])
 @ratelimit(key='ip', rate='20/m', method='POST')
 def calculate_qr(request):
     """Calcula descomposición QR."""
-    matrix_id = request.data.get('matrix_id')
-    
-    if not matrix_id:
-        return Response({'error': 'Se requiere matrix_id'}, status=status.HTTP_400_BAD_REQUEST)
-
-    try:
-        matrix = Matrix.objects.get(id=matrix_id)
-        A = np.array(matrix.data, dtype=np.float64)
-        
-        start_time = time.time()
-        qr_data = safe_qr(A)
-        execution_time_ms = int((time.time() - start_time) * 1000)
-        
-        # Guardamos Q como resultado principal
-        q_data = qr_data['Q']
-        result_matrix = Matrix.objects.create(
-            name=f"QR-Q({matrix.name})",
-            rows=len(q_data), cols=len(q_data[0]),
-            data=q_data
-        )
-        
-        operation = Operation.objects.create(
-            operation_type='QR',
-            matrix_a=matrix,
-            result=result_matrix,
-            execution_time_ms=execution_time_ms,
-            extra_data=qr_data # Contiene Q y R
-        )
-        
-        return Response(OperationSerializer(operation).data, status=status.HTTP_201_CREATED)
-    except Matrix.DoesNotExist:
-         return Response({'error': 'La matriz no existe'}, status=status.HTTP_404_NOT_FOUND)
-    except (InvalidMatrixError, NumericError):
-         raise
+    return _perform_matrix_operation('QR', request.data.get('matrix_id'))
 
 
 @api_view(['POST'])
 @ratelimit(key='ip', rate='20/m', method='POST')
 def calculate_cholesky(request):
     """Calcula descomposición Cholesky."""
-    matrix_id = request.data.get('matrix_id')
-    
-    if not matrix_id:
-        return Response({'error': 'Se requiere matrix_id'}, status=status.HTTP_400_BAD_REQUEST)
-
-    try:
-        matrix = Matrix.objects.get(id=matrix_id)
-        A = np.array(matrix.data, dtype=np.float64)
-        
-        start_time = time.time()
-        L_data = safe_cholesky(A)
-        execution_time_ms = int((time.time() - start_time) * 1000)
-        
-        # Guardamos L como resultado principal
-        result_matrix = Matrix.objects.create(
-            name=f"Cholesky-L({matrix.name})",
-            rows=len(L_data), cols=len(L_data[0]),
-            data=L_data
-        )
-        
-        operation = Operation.objects.create(
-            operation_type='CHOLESKY',
-            matrix_a=matrix,
-            result=result_matrix,
-            execution_time_ms=execution_time_ms,
-            # No extra data necesaria, L es el unico resultado
-        )
-        
-        return Response(OperationSerializer(operation).data, status=status.HTTP_201_CREATED)
-    except Matrix.DoesNotExist:
-         return Response({'error': 'La matriz no existe'}, status=status.HTTP_404_NOT_FOUND)
-    except (InvalidMatrixError, NumericError):
-         raise
+    return _perform_matrix_operation('CHOLESKY', request.data.get('matrix_id'))
