@@ -5,8 +5,8 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
-from calculator.skills.backup import export_backup_skill
-from calculator.skills.cleanup import cleanup_old_data_skill
+from calculator.services import export_backup_service as export_backup_skill
+from calculator.services import cleanup_data_service as cleanup_old_data_skill
 from calculator.models import Matrix, Operation
 from django.conf import settings
 

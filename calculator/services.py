@@ -42,3 +42,17 @@ def cleanup_data_service(days: Optional[int] = None, dry_run: bool = False) -> D
         return {'status': 'ok'}
     except Exception as e:
         return {'status': 'error', 'message': str(e)}
+def maintenance_super_skill(action: str, **kwargs) -> Dict[str, Any]:
+    """
+    Dispatcher de Super-Skill para mantenimiento de plataforma.
+    
+    Args:
+        action: 'backup' o 'cleanup'
+        **kwargs: Parámetros específicos de cada acción.
+    """
+    if action == 'backup':
+        return export_backup_service(output_path=kwargs.get('output_path'))
+    elif action == 'cleanup':
+        return cleanup_data_service(days=kwargs.get('days'), dry_run=kwargs.get('dry_run', False))
+    else:
+        return {'status': 'error', 'message': f'Acción desconocida: {action}'}

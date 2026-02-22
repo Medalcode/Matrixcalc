@@ -1,29 +1,27 @@
-**Overview**
+**Super-Skills Architecture**
 
-En este proyecto una "skill" es una unidad reutilizable de trabajo que un agent puede invocar: p. ej. exportar backups, limpiar datos, ejecutar SVD/tranformaciones grandes o exportar CSV.
+MatrixCalc utiliza "Super-Skills" paramétricas para maximizar la reutilización de código y reducir la verbosidad de las definiciones.
 
-**Contrato de la skill**
+### 1. Skill: `maintenance_operation` (Super-Skill)
+Consolida todas las tareas de administración de la plataforma.
 
-- Entrada: parámetros serializables (dict) y opciones (timeout, force).
-- Salida: objeto con `status`, `result` (o `error`) y `meta` (tiempos, ids de recursos).
-- Requisitos: idempotencia o guardado de marca de ejecución para evitar duplicados.
+- **Parámetros:**
+    - `action` (enum): `backup` | `cleanup`.
+    - `params` (dict):
+        - `output_path`: (para backup) ruta del archivo.
+        - `retention_days`: (para cleanup) días de antigüedad.
+        - `dry_run`: (para cleanup) booleano.
+- **Implementación:** `calculator.services.platform_maintenance_dispatch` (Propuesta)
 
-**Implementación (ejemplos)**
+### 2. Skill: `math_engine_compute` (Super-Skill)
+Consolida las invocaciones al motor de NumPy.
 
-- Management command-wrapper: convertir la lógica existente en funciones reutilizables y exponerlas como comandos y skills.
-- Tarea Celery: envolver la función en una tarea para ejecución asíncrona y programada.
-- HTTP wrapper: exponer una skill vía endpoint protegido para invocación remota.
+- **Parámetros:**
+    - `operation` (string): Tipo de operación (SUM, SVD, QR, etc.)
+    - `operands` (list[ID]): Lista de IDs de matrices en DB.
+- **Implementación:** `calculator.views._perform_matrix_operation` helper.
 
-**Testing & validation**
-
-- Unit tests para cada skill (entrada/salida y manejo de errores).
-- Tests de integración que ejecuten la skill como tarea Celery (puede usar broker in-memory para CI).
-
-**Registro y descubrimiento**
-
-- Registrar skills en `calculator/skills/__init__.py` o mantener convención de nombres (`*_skill`) para descubrimiento dinámico.
-
-**Operacionalizar**
-
-- Estimar recursos por skill (memoria/CPU) y documentarlos.
-- Añadir métricas y trazas por skill; usar etiquetas para agrupación (backup, cleanup, compute).
+---
+**Guía de Reutilización:**
+- **NO crear** una skill `export_csv_skill` si `maintenance_operation` puede aceptar un parámetro `export_type=csv`.
+- **NO crear** una skill `delete_old_matrices` si ya existe `cleanup`.

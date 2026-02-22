@@ -1,33 +1,26 @@
-**Overview**
+**Platform Agents Architecture**
 
-Este documento describe el patrón de "agents" para MatrixCalc: procesos autorizados y orquestados que realizan tareas automáticas, programadas o asíncronas (backups, limpieza, cálculos pesados) fuera del flujo síncrono HTTP.
+Este documento define la jerarquía y responsabilidades de los Agentes de IA en MatrixCalc.
 
-**Cuándo usar un agent**
+### 1. El Agente Generalista (Platform Generalist)
+Para evitar la fragmentación, hemos consolidado roles específicos (BackupAgent, CleanupAgent) en un único Agente versátil.
 
-- Backups periódicos o restauraciones agendadas.
-- Tareas de limpieza/retención a gran escala.
-- Operaciones computacionalmente intensivas que deben ejecutarse fuera del request-response.
+- **Rol:** Administrador de Ciclo de Vida y Cómputo.
+- **Responsabilidades:**
+    - Orquestar tareas de mantenimiento (Respaldos, Purga de datos).
+    - Monitorear la integridad de los modelos matriciales.
+    - Ejecutar transformaciones pesadas de forma asíncrona.
+- **Contexto:** Tiene acceso a `calculator.services` y `calculator.celery_tasks`.
 
-**Modelos de ejecución**
+### 2. Agente de Auditoría (Audit & Trace)
+- **Rol:** Observador de estabilidad numérica.
+- **Responsabilidades:**
+    - Analizar el historial de operaciones (`Operation` model).
+    - Detectar patrones de inestabilidad (matrices mal condicionadas recurrentes).
+    - Generar reportes de uso y salud del sistema.
 
-- In-process (APScheduler): simple; buen fallback para entornos sin broker.
-- External workers (Celery + Redis): recomendado para producción escalable; tolerancia, retries y control de recursos.
-- Serverless jobs (Cloud Run Jobs): útil para ejecuciones puntuales y escalado por invocación.
-
-**Puntos de integración**
-
-- Management commands: [calculator/management/commands](../../calculator/management/commands) — reusar como skills.
-- Scheduler app: [calculator/apps.py](../../calculator/apps.py) — programar invocaciones.
-- REST API: [calculator/views.py](../../calculator/views.py) — iniciar workflows y consultar estado.
-- Models: [calculator/models.py](../../calculator/models.py) — persistencia de resultados y metadatos.
-
-**Seguridad y autenticación**
-
-- Los agents deben usar credenciales de servicio (env vars o Secret Manager). No hardcodear secrets.
-- Para llamadas HTTP internas, usar tokens de servicio o JWT con permisos mínimos.
-
-**Operación y monitorización**
-
-- Logging estructurado y métricas por task (duración, éxito/fracaso).
-- Retries con backoff y idempotencia por task.
-- Límites de recursos y separación de servicios (worker vs web).
+---
+**Detección de Archivos Huérfanos tras Consolidación:**
+- `calculator/skills/backup.py` -> **ELIMINADO** (Reemplazado por `Services`)
+- `calculator/skills/cleanup.py` -> **ELIMINADO** (Reemplazado por `Services`)
+- `temp_model.py` -> **ELIMINADO**
