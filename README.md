@@ -139,14 +139,27 @@ MatrixCalc follows a **Decoupled Monolith** pattern, optimized for containerizat
 
 ## 📦 Deployment
 
+### 🛠️ Developer Toolbar (Makefile)
+
+The project includes a `Makefile` to simplify common operations. Run `make help` to see all available commands.
+
+- `make setup`: Full initial environment setup.
+- `make up`: Start all services (detached).
+- `make test`: Run the test suite.
+- `make deploy`: Trigger the production deployment.
+
+---
+
+## 📦 Deployment
+
 This project is "Cloud Run Ready".
 
 1.  **Authenticate with GCP**
     Ensure you have the `gcloud` CLI installed and authenticated.
 
-2.  **Deploy via Cloud Build**
+2.  **Deploy via Makefile**
     ```bash
-    gcloud builds submit --config cloudbuild.yaml .
+    make deploy
     ```
 
 For detailed configuration (database URLs, secret keys), see [Deployment Documentation](docs/deployment/README.md).

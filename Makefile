@@ -76,6 +76,9 @@ prod: ## Iniciar en modo producción
 status: ## Ver estado de los servicios
 	docker-compose ps
 
+deploy: ## Desplegar a Google Cloud Run vía Cloud Build
+	gcloud builds submit --config cloudbuild.yaml .
+
 setup: ## Setup inicial completo
 	@echo "🚀 Iniciando setup de MatrixCalc..."
 	@if [ ! -f .env ]; then \
