@@ -3,175 +3,167 @@
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.11-blue)
 ![Vue](https://img.shields.io/badge/vue-3.x-green)
+![Docker](https://img.shields.io/badge/docker-ready-blue)
 ![Cloud Run](https://img.shields.io/badge/deployment-google%20cloud%20run-blueviolet)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 **The Cloud-Native Linear Algebra Workspace.**
 
-MatrixCalc is a production-grade web platform designed to bridge the gap between ephemeral online calculators and complex desktop environments like MATLAB. It provides a persistent, audit-traceable workspace for performing rigorous matrix computations (SVD, Eigenvalues, Cholesky) with backend-guaranteed numerical stability.
+MatrixCalc es una plataforma web de grado de producción diseñada para realizar cálculos matriciales rigurosos (SVD, Autovalores, Cholesky, etc.). Combinando la accesibilidad de una aplicación web moderna con la potencia y precisión de un backend en NumPy, proporciona un entorno de trabajo persistente y auditable para ingenieros, estudiantes y desarrolladores.
 
 ---
 
-## 🧐 Why This Project Exists
+## 🧐 Problema que resuelve
 
-Linear algebra is the "assembly language" of modern data science and engineering. However, the current tooling landscape forces a difficult trade-off:
+El ecosistema actual de herramientas matemáticas obliga a los usuarios a elegir entre extremos:
+- **Calculadoras web simples:** Son efímeras, carecen de operaciones avanzadas y calculan los datos en el cliente (perdiendo precisión y estabilidad al trabajar con matrices grandes).
+- **Herramientas de escritorio (MATLAB/Excel):** Requieren licencias costosas, instalaciones pesadas o interfaces poco intuitivas para cálculos multidimensionales.
+- **Scripts locales (Python/Jupyter):** Exigen configuración estricta de entornos y conocimientos previos de programación solo para verificar un simple resultado matemático.
 
-- **Simple Calculators:** Lack persistence, advanced decompositions, and often run on client-side JS (sacrificing precision).
-- **Excel:** Struggles with dimensionality and obscures logic behind opaque formulas.
-- **MATLAB/Wolfram:** Expensive licenses and heavy local footprints.
-- **Python/Jupyter:** Requires environment management and coding skills just to verify a result.
-
-**MatrixCalc exists to democratize access to powerful, verifiable linear algebra.** It combines the accessibility of a web app with the power of a NumPy backend.
-
-## 👥 Who Is This For
-
-- **Engineering Students & Academics:** Instantly verify hand-calculations for complex factorizations using a reliable engine.
-- **Machine Learning Learners:** Visualize the building blocks of algorithms (e.g., decomposing a matrix to understand PCA) in a noise-free environment.
-- **Software Architects:** A reference implementation for a clean **Django + Vue + Cloud Run** architecture, demonstrating Domain-Driven Design (DDD) patterns within a decoupled monolith.
+**MatrixCalc democratiza el acceso a herramientas de álgebra lineal de grado científico.** Ofrece la inmediatez de la web, la exactitud de un motor numérico robusto (NumPy de 64-bits) y la trazabilidad de un historial inmutable.
 
 ---
 
-## ✨ Key Features
+## ✨ Características principales
 
-### 📐 Advanced Computational Engine
-
-Powered by a hardened **NumPy** core, ensuring 64-bit float precision for all operations.
-
-- **Fundamental Ops:** `A + B`, `A * B`, Inverse, Determinant, Transpose.
-- **Decompositions:**
-  - **SVD (Singular Value Decomposition):** Analyze singular values securely.
-  - **Eigenvalues/Vectors:** For stability analysis.
-  - **QR & Cholesky:** Optimized implementation for symmetric positive-definite matrices.
-  - **Rank:** Numerical rank calculation using SVD tolerance.
-
-### 💾 Persistence & Auditability
-
-- **Workspace History:** Unlike standard calculators, every operation is logged as an immutable event.
-- **Traceability:** See exactly when `Operation #42` was created, its inputs, and execution time (ms).
-- **Data Portability:** Import datasets via CSV; export results for use in other tools.
+- **⚙️ Motor Computacional Avanzado:** Cálculos precisos y estables de operaciones fundamentales y factorizaciones complejas (SVD, Descomposición QR, Eigenvectores, Rango, Cholesky).
+- **💾 Persistencia de Trabajo y Auditoría:** Cada operación se guarda de forma inmutable, permitiendo reconstruir cualquier resultado a lo largo del tiempo con métricas de ejecución.
+- **🔍 GlassBox Mode (Modo "Caja de Cristal"):** No solo da el resultado, sino que explica _cómo_ llegó a él. Ejecuta algoritmos numéricos paso a paso (ej. Eliminación Gaussiana) con justificaciones narrativas intuitivas, funcionando como una potente herramienta de enseñanza.
+- **🌐 Exportación e Importación Dinámica:** Soporte para carga de datasets vía CSV y exportación del historial de operaciones de un proyecto.
+- **🖥️ Renderizado Matemático Nivel Académico:** Representación visual elegante tanto de las matrices entrantes como de los resultados mediante integración con LaTeX.
 
 ---
 
-## 🔍 GlassBox Mode: Understanding the "How"
+## 🛠️ Stack tecnológico con justificación breve
 
-**Don't just get the answer. Understand the algorithm.**
+El proyecto sigue una arquitectura de **Monolito Desacoplado** ("Decoupled Monolith"), fuertemente enfocado en buenas prácticas, testabilidad y optimizado para despliegue serverless.
 
-Standard engineering tools (Excel, NumPy, MATLAB) operate as "Black Boxes"—inputs go in, results come out, but the intermediate logic remains hidden. This is efficient for automation but terrible for learning.
+### Backend (Core Lógico y API API)
+- **Python 3.11 & Django REST Framework:** Seleccionado por su madurez, seguridad y velocidad de desarrollo para la construcción de APIs robustas. Implementa un diseño de "Lean Views" adaptando Domain Driven Design.
+- **NumPy:** El estándar definitivo de la industria para computación científica. Garantiza precisión total (*64-bit precision*) y manejo veloz de algoritmos matriciales.
+- **Celery & Redis:** Para procesamiento asíncrono y de mensajería (escalabilidad de cálculos altamente intensivos sin bloquear requests HTTP).
+- **PostgreSQL / SQLite:** Almacenamiento optimizado y serialización eficiente de objetos JSON para guardar el estado matricial de las sesiones matemáticas.
 
-**GlassBox Mode** transforms MatrixCalc from a calculator into an algorithmic visualizer. It runs a dedicated tracing engine alongside the numerical core to capture every atomic step of complex operations.
+### Frontend (Interfaz de Usuario)
+- **Vue 3 (Composition API) & TypeScript:** Permite un desarrollo de componentes fuertemente tipados, escalables y provee una gestión de dependencias predecible.
+- **Pinia:** Elegido como gestor moderno para el almacenamiento global de las interacciones asíncronas del workspace matricial.
+- **Tailwind CSS:** Asegura consistencia visual, iteración muy rápida del diseño UI/UX sin cargar CSS residual e innecesario, manteniendo un aspecto pulido "Math-First".
 
-### ✨ Why It Matters
-
-- **For Students:** Verify your manual Gaussian elimination homework step-by-step. Pinpoint exactly where your calculation diverged from the correct path.
-- **For Instructors:** Demonstrate algorithms like LU Decomposition or Gram-Schmidt dynamically in the classroom without drawing dozens of matrices on a whiteboard.
-- **For Developers:** Visualize numerical stability issues (e.g., pivot decay) in real-time.
-
-### 🕹️ Interactive Trace Player
-
-When you enable GlassBox Mode, you get full "VCR-style" control over the mathematical process:
-
-- **Step-by-Step Playback:** Rewind and fast-forward through row operations ($R_2 \leftarrow R_2 - 3R_1$).
-- **Contextual Highlighting:** See exactly which rows are interacting—Source rows glow green, Target rows glow red.
-- **Semantic Explanation:** Each step is accompanied by a human-readable narrative explaining _why_ the algorithm made that move (e.g., _"Swapping rows 2 and 3 to avoid a zero pivot"_).
-
-> _Available now for: Gaussian Elimination, RREF, and Determinant Expansion._
+### Infraestructura (DevOps)
+- **Docker & Docker Compose:** Entorno de despliegue contenerizado tanto del backend, front y de la base de datos de manera uniforme usando builds multi-etapa para reducción de pesos de imágenes.
+- **Google Cloud Run & Cloud Build:** Orientación total hacia un despliegue "Serverless" y pipelines de CI/CD automatizadas (autoescalado desde y a cero sin infraestructura a gestionar).
 
 ---
 
-## 🏗️ Technical Architecture
+## 🏗️ Arquitectura del sistema
 
-MatrixCalc follows a **Decoupled Monolith** pattern, optimized for containerization and serverless deployment.
+MatrixCalc está compuesto dividiendo responsabilidades estrictas, implementando patrones de *Domain-Driven Design (DDD)* para asegurar mantenibilidad y legibilidad:
 
-### Backend (The Core)
-
-- **Django REST Framework:** Acts as the API Gateway. Views have been refactored into **Lean Views**, delegating orchestration to internal helpers to ensure "DRY" code.
-- **Services Layer:** Located in `calculator.services`, it orchestrates high-level application logic (backups, data retention) separately from HTTP concerns.
-- **Domain Layer:** Encapsulated in `calculator.utils.matrix_model`. This "Anti-Corruption Layer" sanitizes inputs and abstracts NumPy complexity, implementing strict domain rules and custom domain exceptions.
-- **Persistence:** PostgreSQL (Production) / SQLite (Dev) with optimized JSON storage for matrix data.
-
-### Frontend (The Interface)
-
-- **Vue 3 (Composition API):** Modular, reactive UI components built with TypeScript.
-- **Pinia:** Type-safe state management for handling the Matrix Workspace.
-- **TailwindCSS:** Utility-first styling for a clean, "Math-First" aesthetic.
-- **Latex Support:** Renders beautiful mathematical notation for results.
-
-### DevOps (The Pipeline)
-
-- **Docker:** Multi-stage builds reduce image size for faster cold starts.
-- **Google Cloud Run:** Serverless deployment ensuring auto-scaling and zero-maintenance infrastructure.
-- **Cloud Build:** Automated CI/CD pipelines defined in `cloudbuild.yaml`.
+1. **Presentation Layer (Vue/Frontend):** Captura interacciones, mantiene el estado del workspace de forma fluida (SPA) y renderiza tipografía compleja en LaTeX para lectura matemática amigable.
+2. **Gateway Layer (DRF):** Expone endpoints estilo RESTful. Orquesta el tráfico de red, validaciones de seguridad de permisos e hidratación inicial de modelos perezosos.
+3. **Services Layer:** Controla las transacciones y lógica alta de aplicación, de manera independiente a la forma en que los datos entraron, asegurando que el core jamás se ensucie con datos de red.
+4. **Domain Layer (Anti-Corruption):** Módulo core (ej. `calculator.utils.matrix_model`) aislado 100% libre de frameworks web que mapea matrices inseguras u operaciones de las interfaces y revalida todo a través del motor NumPy, protegiendo así toda la lógica de cálculo puro del sistema.
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Instalación paso a paso
 
-### Prerequisites
+### Prerrequisitos
+- [Docker](https://www.docker.com/) y [Docker Compose](https://docs.docker.com/compose/) instalados en tu máquina.
+- Git.
 
-- Docker & Docker Compose
+### Entorno de Desarrollo Rápido
 
-### Fast Launch
+1. **Clonar el repositorio:**
+   ```bash
+   git clone https://github.com/medalcode/MatrixCalc.git
+   cd MatrixCalc
+   ```
 
-1.  **Clone the repository**
+2. **Configurar las variables de entorno:**
+   Usa el archivo base preparado para levantar los servicios elementales.
+   ```bash
+   cp .env.example .env
+   ```
 
-    ```bash
-    git clone https://github.com/medalcode/MatrixCalc.git
-    cd MatrixCalc
-    ```
+3. **Desplegar toda la pila local:**
+   Docker Compose se encargará de configurar la base de datos, descargar todas las dependencias y levantar tanto la API de Python como el servidor en vivo de Vue y el gestor asíncrono.
+   ```bash
+   docker-compose up --build
+   ```
 
-2.  **Configure Environment**
+4. **Acceso a la aplicación:**
+   Una vez que los contenedores estén corriendo saludables:
+   - **Interfaz en el navegador:** `http://localhost:5173`
+   - **Acceso API y Backend:** `http://localhost:8000/api/`
 
-    ```bash
-    cp .env.example .env
-    ```
-
-3.  **Start the stack**
-
-    ```bash
-    docker-compose up --build
-    ```
-
-4.  **Access the application**
-    - **Frontend:** `http://localhost:5173`
-    - **Backend API:** `http://localhost:8000/api/`
-
----
-
-## 📦 Deployment
-
-### 🛠️ Developer Toolbar (Makefile)
-
-The project includes a `Makefile` to simplify common operations. Run `make help` to see all available commands.
-
-- `make setup`: Full initial environment setup.
-- `make up`: Start all services (detached).
-- `make test`: Run the test suite.
-- `make deploy`: Trigger the production deployment.
+*_💡 Tip para Desarrolladores:_* Existe un `Makefile` preconfigurado en la raíz del proyecto para tareas recurrentes. Simplemente ejecuta `make help` para ver comandos ágiles como `make test`, `make down` o `make setup`.
 
 ---
 
-## 📦 Deployment
+## 🕹️ Uso del sistema
 
-This project is "Cloud Run Ready".
+### Diferentes formas de utilizar MatrixCalc
 
-1.  **Authenticate with GCP**
-    Ensure you have the `gcloud` CLI installed and authenticated.
+1. **La Verificadora (El Estudiante / Profesor):**
+   Un estudiante está teniendo problemas detectando errores en sus cálculos fraccionales de un Algoritmo RREF. En un clic, ingresa su matriz a MatrixCalc activando el modo de análisis visual *GlassBox*. El sistema recorre renglón por renglón dictando textualmente las operaciones aritméticas efectuadas y resaltando qué filas restaron de cuáles.
 
-2.  **Deploy via Makefile**
-    ```bash
-    make deploy
-    ```
+2. **Cómputos Masivos (Data Scientist):**
+   Un investigador intenta hacer la Descomposición de Valores Singulares de una matriz densa extraída de un data source. Crea un *espacio de trabajo* aislado en la plataforma, sube las dimensiones, ejecuta el cálculo pesado (el cual NumPy procesa velozmente) e inspecciona el valor de los eigenvectores. Esta sesión queda completamente trazada en la red como operación de consulta auditable para su tesis.
 
-For detailed configuration (database URLs, secret keys), see [Deployment Documentation](docs/deployment/README.md).
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to propose bug fixes and new features.
+3. **Revisión de Arquitecturas (Ingenieros & Reclutadores):**
+   Un equipo evalúa la destreza del Autor con patrones de código maduros. Revisan cómo la SPA está conectada asíncronamente a Django DRF con control transaccional eficiente a bases de datos relacionales mediado todo mediante Docker Orchestration limpio.
 
 ---
 
-## 📄 License
+## 📁 Estructura de carpetas explicada
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Este proyecto está organizado modularmente separando estrictamente código de infraestructura y responsabilidades.
+
+```text
+Matrixcalc/
+├── calculator/           # ✅ Lógica Core: Servicios, endpoints REST, validadores avanzados y el motor de NumPy.
+├── matrixcalc_web/       # ⚙️ Configurador Django: Centralización de routing, settings y middleware (WSGI/ASGI).
+├── frontend/             # 💻 Single Page Application: Código fuente en Vue 3, views, composables de TypeScript y Tailwind.
+├── docs/                 # 📚 Documentación técnica exhaustiva del desarrollo.
+├── docker/               # 🐳 Infraestructura de contenedores para scripts y entrypoints.
+├── backups/              # 📥 Almacén de dumps de base de datos intermedios en caso de reinicios masivos.
+├── docker-compose.yml    # 🚢 Orquestador maestro que interconecta todos los servicios (Django + Node/Vue + DBs).
+├── Makefile              # 🪄 Archivo mágico para la automatización local de tareas en consola (Developer Experience).
+└── cloudbuild.yaml       # ☁️ CI/CD Pipelines: Reglas y stages automatizados de Google Cloud.
+```
+
+---
+
+## 🛣️ Roadmap futuro
+
+- [ ] **Realtime Collaborative Workspaces:** Añadir integración de WebSockets para permitir que varios usuarios manipulen en vivo la misma matriz o espacio de trabajo simultáneamente.
+- [ ] **Extensión Tensor (Matemáticas N-Dimensionales):** Expandir la base para admitir visualización cruzada y cálculos avanzados para Inteligencia Artificial soportando *Arrays multicapa*.
+- [ ] **Soporte total de Números Complejos:** Habilitar a través de toda la aplicación validaciones puramente imaginarias en operaciones elementales de descomposiciones densas de factorizaciones QR avanzadas.
+- [ ] **Refinamiento de Microservicios:** Mover asincronía más pesada al modelo *Pub/Sub*, permitiendo arquitecturas event-driven desacopladas verdaderamente en un entorno backend puro.
+
+---
+
+## 🤝 Contribuciones
+
+MatrixCalc cree firmemente en el movimiento de código abierto para dotar a la comunidad con aplicaciones robustas construyentes. Las contribuciones, discusiones de *Issues* y *Pull Requests* son siempre altamente alentadas.
+
+Para participar, clona el respositorio y sigue las pautas detalladas en el archivo [CONTRIBUTING.md](CONTRIBUTING.md) sobre cómo inicializar tu entorno y nuestras convenciones estrictas de Git Flow.
+
+---
+
+## 📄 Licencia
+
+Este proyecto está disponible y distribuido bajo la permisiva licencia estandarizada **[MIT License](LICENSE)**, protegiendo tanto uso libre, modificaciones o sublicenciamiento tanto en campos abiertos o con fines comerciales.
+
+---
+
+## 👨‍💻 Autor
+
+Diseñado, conceptualizado y programado íntegramente por **Medalcode**
+
+- **Rol:** Senior Software Engineer | Mención completa a roles de backend logic a UI/UX y Devops CI/CD del despliegue en línea.
+- **GitHub:** [@medalcode](https://github.com/medalcode)
+- **LinkedIn/Portfolio:** [Referenciado en mis repositorios principales en GitHub](https://github.com/medalcode)
+
+> _"Escribir código escalable es un desafío de álgebra lógica en sí mismo."_
