@@ -6,6 +6,7 @@
 ![Docker](https://img.shields.io/badge/docker-ready-blue)
 ![Cloud Run](https://img.shields.io/badge/deployment-google%20cloud%20run-blueviolet)
 ![License](https://img.shields.io/badge/license-MIT-green)
+![Version](https://img.shields.io/badge/version-3.0-orange)
 
 **The Cloud-Native Linear Algebra Workspace.**
 
