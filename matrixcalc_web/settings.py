@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
+
 import dj_database_url
 from dotenv import load_dotenv
 
@@ -19,75 +20,77 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Cargar variables de entorno desde .env
-load_dotenv(BASE_DIR / '.env')
+load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure--fofyb23zfr4yz&6w+lxj3wc=-@+td%r=_om)el**&r8yctzv%')
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY", "django-insecure--fofyb23zfr4yz&6w+lxj3wc=-@+td%r=_om)el**&r8yctzv%"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 # Cloud Run detection
-if os.environ.get('K_SERVICE'):
+if os.environ.get("K_SERVICE"):
     # Running on Cloud Run
-    ALLOWED_HOSTS = ['*']  # Cloud Run maneja el routing
+    ALLOWED_HOSTS = ["*"]  # Cloud Run maneja el routing
     DEBUG = False
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
     # Third party apps
-    'rest_framework',
-    'corsheaders',
-    'django_filters',
+    "rest_framework",
+    "corsheaders",
+    "django_filters",
     # Local apps
-    'calculator.apps.CalculatorConfig',
+    "calculator.apps.CalculatorConfig",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Servir static files en producción
-    'corsheaders.middleware.CorsMiddleware',  # CORS debe ir antes de CommonMiddleware
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # Servir static files en producción
+    "corsheaders.middleware.CorsMiddleware",  # CORS debe ir antes de CommonMiddleware
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'matrixcalc_web.urls'
+ROOT_URLCONF = "matrixcalc_web.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'matrixcalc_web.wsgi.application'
+WSGI_APPLICATION = "matrixcalc_web.wsgi.application"
 
 
 # Database
@@ -96,8 +99,8 @@ WSGI_APPLICATION = 'matrixcalc_web.wsgi.application'
 # Usar PostgreSQL por defecto, SQLite para desarrollo local
 # Supabase o cualquier PostgreSQL externo via DATABASE_URL
 DATABASES = {
-    'default': dj_database_url.config(
-        default=f'postgresql://matrixcalc:changeme123@localhost:5432/matrixcalc',
+    "default": dj_database_url.config(
+        default="postgresql://matrixcalc:changeme123@localhost:5432/matrixcalc",
         conn_max_age=600,
         conn_health_checks=True,
     )
@@ -105,11 +108,11 @@ DATABASES = {
 
 # Critical Fallback: Use SQLite in Cloud Run if no DATABASE_URL is provided
 # This ensures the app starts even without a external DB connection
-if os.environ.get('K_SERVICE') and not os.environ.get('DATABASE_URL'):
+if os.environ.get("K_SERVICE") and not os.environ.get("DATABASE_URL"):
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 
@@ -119,16 +122,16 @@ if os.environ.get('K_SERVICE') and not os.environ.get('DATABASE_URL'):
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -136,9 +139,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'es'  # Preparado para i18n
+LANGUAGE_CODE = "es"  # Preparado para i18n
 
-TIME_ZONE = 'America/Santiago'
+TIME_ZONE = "America/Santiago"
 
 USE_I18N = True
 
@@ -148,10 +151,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [
-    BASE_DIR / 'calculator' / 'static',
+    BASE_DIR / "calculator" / "static",
 ]
 
 # WhiteNoise configuration for static files in production
@@ -165,26 +168,26 @@ STORAGES = {
 }
 
 # Media files
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Django REST Framework
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 50,
-    'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend',
-        'rest_framework.filters.OrderingFilter',
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 50,
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.OrderingFilter",
     ],
-    'EXCEPTION_HANDLER': 'calculator.utils.exceptions.custom_exception_handler',
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
+    "EXCEPTION_HANDLER": "calculator.utils.exceptions.custom_exception_handler",
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
     ],
 }
 
@@ -198,21 +201,23 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 if not CORS_ALLOW_ALL_ORIGINS:
-    cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173')
+    cors_origins = os.environ.get(
+        "CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
+    )
     if cors_origins:
-        CORS_ALLOWED_ORIGINS.extend(cors_origins.split(','))
+        CORS_ALLOWED_ORIGINS.extend(cors_origins.split(","))
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',
-    'x-requested-with',
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -222,47 +227,47 @@ CSRF_TRUSTED_ORIGINS = [
 
 # Logging Configuration
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
         },
     },
-    'loggers': {
-        'corsheaders': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
+    "loggers": {
+        "corsheaders": {
+            "handlers": ["console"],
+            "level": "DEBUG",
         },
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
         },
     },
 }
 
 # Rate Limiting
 RATELIMIT_ENABLE = True
-RATELIMIT_USE_CACHE = 'default'
+RATELIMIT_USE_CACHE = "default"
 
 # Cache Configuration
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'matrixcalc-cache',
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "matrixcalc-cache",
     }
 }
 
 # Matrix Calculator Configuration
 MATRIX_CONFIG = {
-    'MAX_DIMENSION': int(os.environ.get('MAX_DIMENSION', 100)),
-    'RETENTION_DAYS': int(os.environ.get('RETENTION_DAYS', 30)),
-    'CONDITION_THRESHOLD': float(os.environ.get('CONDITION_THRESHOLD', 1e12)),
+    "MAX_DIMENSION": int(os.environ.get("MAX_DIMENSION", 100)),
+    "RETENTION_DAYS": int(os.environ.get("RETENTION_DAYS", 30)),
+    "CONDITION_THRESHOLD": float(os.environ.get("CONDITION_THRESHOLD", 1e12)),
 }
 
 # Scheduler Configuration
-RUN_SCHEDULER = os.environ.get('RUN_SCHEDULER', 'false').lower() == 'true'
+RUN_SCHEDULER = os.environ.get("RUN_SCHEDULER", "false").lower() == "true"
 
 # Backup Directory
-BACKUP_DIR = BASE_DIR / 'backups'
+BACKUP_DIR = BASE_DIR / "backups"
 BACKUP_DIR.mkdir(exist_ok=True)

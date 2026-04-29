@@ -1,38 +1,36 @@
 """
 URLs para la app calculator.
 """
-from django.urls import path, include
+
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from calculator import views
 
 # Router para ViewSets
 router = DefaultRouter()
-router.register(r'matrices', views.MatrixViewSet, basename='matrix')
-router.register(r'operations-history', views.OperationViewSet, basename='operation')
+router.register(r"matrices", views.MatrixViewSet, basename="matrix")
+router.register(r"operations-history", views.OperationViewSet, basename="operation")
 
 # URLs de operaciones y stats
 urlpatterns = [
     # Operaciones matriciales (deben ir ANTES del router para no ser capturadas)
-    path('operations/sum/', views.sum_matrices, name='sum-matrices'),
-    path('operations/subtract/', views.subtract_matrices, name='subtract-matrices'),
-    path('operations/multiply/', views.multiply_matrices, name='multiply-matrices'),
-    path('operations/inverse/', views.inverse_matrix, name='inverse-matrix'),
-    path('operations/determinant/', views.determinant_matrix, name='determinant-matrix'),
-    path('operations/transpose/', views.transpose_matrix, name='transpose-matrix'),
+    path("operations/sum/", views.sum_matrices, name="sum-matrices"),
+    path("operations/subtract/", views.subtract_matrices, name="subtract-matrices"),
+    path("operations/multiply/", views.multiply_matrices, name="multiply-matrices"),
+    path("operations/inverse/", views.inverse_matrix, name="inverse-matrix"),
+    path("operations/determinant/", views.determinant_matrix, name="determinant-matrix"),
+    path("operations/transpose/", views.transpose_matrix, name="transpose-matrix"),
     # Nuevas operaciones v3.0
-    path('operations/rank/', views.calculate_rank, name='rank-matrix'),
-    path('operations/eigenvalues/', views.calculate_eigenvalues, name='eigenvalues-matrix'),
-    path('operations/svd/', views.calculate_svd, name='svd-matrix'),
-    path('operations/qr/', views.calculate_qr, name='qr-matrix'),
-    path('operations/cholesky/', views.calculate_cholesky, name='cholesky-matrix'),
-    
+    path("operations/rank/", views.calculate_rank, name="rank-matrix"),
+    path("operations/eigenvalues/", views.calculate_eigenvalues, name="eigenvalues-matrix"),
+    path("operations/svd/", views.calculate_svd, name="svd-matrix"),
+    path("operations/qr/", views.calculate_qr, name="qr-matrix"),
+    path("operations/cholesky/", views.calculate_cholesky, name="cholesky-matrix"),
     # ViewSets
-    path('', include(router.urls)),
-    
+    path("", include(router.urls)),
     # Estadísticas
-    path('stats/', views.stats_view, name='stats'),
-    
+    path("stats/", views.stats_view, name="stats"),
     # Backup/Restore (se agregarán después)
     # path('backup/export/', views.export_backup_view, name='export-backup'),
     # path('backup/import/', views.import_backup_view, name='import-backup'),

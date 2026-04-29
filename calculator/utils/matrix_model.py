@@ -1,4 +1,3 @@
-
 """matrix_model.py
 
 Lógica pura para operaciones matriciales usando NumPy.
@@ -8,9 +7,10 @@ Todas las salidas numéricas usan np.float64 y las entradas son validadas.
 """
 
 from typing import Any
+
 import numpy as np
 
-from calculator.utils.exceptions import InvalidMatrixError, NumericError, MatrixModelError
+from calculator.utils.exceptions import InvalidMatrixError, NumericError
 
 __all__ = [
     "parse_matrix",
@@ -59,15 +59,19 @@ def parse_matrix(text: str, rows: int, cols: int, dtype=np.float64) -> np.ndarra
         raise InvalidMatrixError("Texto de entrada debe ser una cadena.")
 
     # 1) Tokenizar y limpiar
-    tokens = [tok.strip() for tok in text.split(',')]
+    tokens = [tok.strip() for tok in text.split(",")]
 
     # Detectar valores vacíos explícitos (ej: ",," o ", ")
     if any(tok == "" for tok in tokens):
-        raise InvalidMatrixError("Se encontraron valores vacíos en la entrada. Asegúrese de separar valores con comas.")
+        raise InvalidMatrixError(
+            "Se encontraron valores vacíos en la entrada. Asegúrese de separar valores con comas."
+        )
 
     expected = rows * cols
     if len(tokens) != expected:
-        raise InvalidMatrixError(f"Se esperaban {expected} valores (rows*cols={expected}), pero se recibieron {len(tokens)}.")
+        raise InvalidMatrixError(
+            f"Se esperaban {expected} valores (rows*cols={expected}), pero se recibieron {len(tokens)}."
+        )
 
     # 2) Conversión a números usando fromiter (rápido y seguro)
     try:
@@ -75,13 +79,17 @@ def parse_matrix(text: str, rows: int, cols: int, dtype=np.float64) -> np.ndarra
         # asegurar consistencia numérica entre operaciones.
         arr = np.fromiter((float(t) for t in tokens), dtype=dtype, count=len(tokens))
     except ValueError as exc:
-        raise InvalidMatrixError("Error al convertir los valores a número. Asegúrese de usar sólo valores numéricos.") from exc
+        raise InvalidMatrixError(
+            "Error al convertir los valores a número. Asegúrese de usar sólo valores numéricos."
+        ) from exc
 
     # 3) Reshape
     try:
         arr = arr.reshape((rows, cols))
     except Exception as exc:
-        raise InvalidMatrixError("Los valores no pueden redimensionarse a las dimensiones solicitadas.") from exc
+        raise InvalidMatrixError(
+            "Los valores no pueden redimensionarse a las dimensiones solicitadas."
+        ) from exc
 
     return arr
 
@@ -110,7 +118,9 @@ def safe_subtract(A: Any, B: Any) -> np.ndarray:
     B_np = np.ascontiguousarray(B, dtype=np.float64)
 
     if A_np.shape != B_np.shape:
-        raise InvalidMatrixError(f"Shapes incompatibles para resta: A{A_np.shape} vs B{B_np.shape}.")
+        raise InvalidMatrixError(
+            f"Shapes incompatibles para resta: A{A_np.shape} vs B{B_np.shape}."
+        )
 
     return np.subtract(A_np, B_np)
 
@@ -124,14 +134,18 @@ def safe_inv(A: Any) -> np.ndarray:
     A_np = np.ascontiguousarray(A, dtype=np.float64)
 
     if A_np.ndim != 2 or A_np.shape[0] != A_np.shape[1]:
-        raise InvalidMatrixError(f"La matriz debe ser cuadrada para calcular la inversa (shape={A_np.shape}).")
+        raise InvalidMatrixError(
+            f"La matriz debe ser cuadrada para calcular la inversa (shape={A_np.shape})."
+        )
 
     # Comprobar condicionamiento numérico
     try:
         cond = np.linalg.cond(A_np)
     except Exception:
         # Si no se puede calcular la condición, tratarlo como no invertible
-        raise NumericError("No se pudo evaluar la condición de la matriz; es posible que sea singular o inválida.")
+        raise NumericError(
+            "No se pudo evaluar la condición de la matriz; es posible que sea singular o inválida."
+        )
 
     # Umbral práctico para detectar matrices mal condicionadas.
     # La heurística anterior (1/eps) produce valores extremadamente grandes
@@ -141,7 +155,9 @@ def safe_inv(A: Any) -> np.ndarray:
     # numéricos reales sin ser excesivamente restrictivo.
     threshold = 1e12
     if not np.isfinite(cond) or cond > threshold:
-        raise NumericError(f"La matriz está mal condicionada o es singular (condición={cond:.3e}). No es segura para invertir.")
+        raise NumericError(
+            f"La matriz está mal condicionada o es singular (condición={cond:.3e}). No es segura para invertir."
+        )
 
     try:
         inv = np.linalg.inv(A_np)
@@ -158,7 +174,9 @@ def safe_det(A: Any) -> float:
     A_np = np.ascontiguousarray(A, dtype=np.float64)
 
     if A_np.ndim != 2 or A_np.shape[0] != A_np.shape[1]:
-        raise InvalidMatrixError(f"La matriz debe ser cuadrada para calcular el determinante (shape={A_np.shape}).")
+        raise InvalidMatrixError(
+            f"La matriz debe ser cuadrada para calcular el determinante (shape={A_np.shape})."
+        )
 
     try:
         return float(np.linalg.det(A_np))
@@ -175,10 +193,14 @@ def safe_dot(A: Any, B: Any) -> np.ndarray:
     B_np = np.ascontiguousarray(B, dtype=np.float64)
 
     if A_np.ndim != 2 or B_np.ndim != 2:
-        raise InvalidMatrixError(f"Ambos operandos deben ser matrices 2D. Got shapes: A{A_np.shape}, B{B_np.shape}")
+        raise InvalidMatrixError(
+            f"Ambos operandos deben ser matrices 2D. Got shapes: A{A_np.shape}, B{B_np.shape}"
+        )
 
     if A_np.shape[1] != B_np.shape[0]:
-        raise InvalidMatrixError(f"Shapes incompatibles para multiplicación: A{A_np.shape} x B{B_np.shape}. Requiera A.columns == B.rows.")
+        raise InvalidMatrixError(
+            f"Shapes incompatibles para multiplicación: A{A_np.shape} x B{B_np.shape}. Requiera A.columns == B.rows."
+        )
 
     try:
         return np.matmul(A_np, B_np)
@@ -200,7 +222,7 @@ def safe_transpose(A: Any) -> np.ndarray:
 def safe_eigenvalues(A: Any) -> dict:
     """
     Calcula valores y vectores propios de una matriz cuadrada.
-    
+
     Returns:
         dict: {
             'eigenvalues': [{'real': float, 'imag': float}, ...],
@@ -208,20 +230,22 @@ def safe_eigenvalues(A: Any) -> dict:
         }
     """
     A_np = np.ascontiguousarray(A, dtype=np.float64)
-    
+
     if A_np.ndim != 2 or A_np.shape[0] != A_np.shape[1]:
-        raise InvalidMatrixError(f"La matriz debe ser cuadrada para calcular valores propios (shape={A_np.shape}).")
+        raise InvalidMatrixError(
+            f"La matriz debe ser cuadrada para calcular valores propios (shape={A_np.shape})."
+        )
 
     try:
         vals, vecs = np.linalg.eig(A_np)
-        
+
         # Formatear valores propios (manejo de complejos)
         vals_list = []
         for v in vals:
             if np.iscomplex(v):
-                vals_list.append({'real': float(v.real), 'imag': float(v.imag), 'is_complex': True})
+                vals_list.append({"real": float(v.real), "imag": float(v.imag), "is_complex": True})
             else:
-                vals_list.append({'real': float(v.real), 'imag': 0.0, 'is_complex': False})
+                vals_list.append({"real": float(v.real), "imag": 0.0, "is_complex": False})
 
         # Los vectores propios en numpy son las columnas de 'vecs'.
         # Convertimos a estructura real/imag consistente para evitar mezclar tipos.
@@ -229,16 +253,12 @@ def safe_eigenvalues(A: Any) -> dict:
         for row in vecs:
             row_formatted = []
             for val in row:
-                row_formatted.append({
-                    'real': float(val.real),
-                    'imag': float(val.imag) if np.iscomplex(val) else 0.0
-                })
+                row_formatted.append(
+                    {"real": float(val.real), "imag": float(val.imag) if np.iscomplex(val) else 0.0}
+                )
             vecs_formatted.append(row_formatted)
 
-        return {
-            'eigenvalues': vals_list,
-            'eigenvectors': vecs_formatted
-        }
+        return {"eigenvalues": vals_list, "eigenvectors": vecs_formatted}
     except np.linalg.LinAlgError as exc:
         raise NumericError("El cálculo de valores propios no convergió.") from exc
 
@@ -249,14 +269,14 @@ def safe_rank(A: Any) -> int:
     try:
         return int(np.linalg.matrix_rank(A_np))
     except Exception as exc:
-         raise NumericError("Error al calcular el rango de la matriz.") from exc
+        raise NumericError("Error al calcular el rango de la matriz.") from exc
 
 
 def safe_svd(A: Any) -> dict:
     """
     Calcula la descomposición en valores singulares (SVD).
     A = U * S * Vh
-    
+
     Returns:
         dict: {'U': list, 'S': list, 'Vh': list}
     """
@@ -264,9 +284,9 @@ def safe_svd(A: Any) -> dict:
     try:
         u, s, vh = np.linalg.svd(A_np, full_matrices=True)
         return {
-            'U': u.tolist(),
-            'S': s.tolist(), # Valores singulares (vector 1D)
-            'Vh': vh.tolist()
+            "U": u.tolist(),
+            "S": s.tolist(),  # Valores singulares (vector 1D)
+            "Vh": vh.tolist(),
         }
     except np.linalg.LinAlgError as exc:
         raise NumericError("El cálculo SVD no convergió.") from exc
@@ -276,17 +296,14 @@ def safe_qr(A: Any) -> dict:
     """
     Calcula la descomposición QR.
     A = Q * R
-    
+
     Returns:
         dict: {'Q': list, 'R': list}
     """
     A_np = np.ascontiguousarray(A, dtype=np.float64)
     try:
         q, r = np.linalg.qr(A_np)
-        return {
-            'Q': q.tolist(),
-            'R': r.tolist()
-        }
+        return {"Q": q.tolist(), "R": r.tolist()}
     except np.linalg.LinAlgError as exc:
         raise NumericError("Error en la descomposición QR.") from exc
 
@@ -295,14 +312,14 @@ def safe_cholesky(A: Any) -> list:
     """
     Calcula la descomposición de Cholesky.
     A = L * L.H
-    
+
     Requiere que la matriz sea Hermítica (simétrica si real) y definida positiva.
     """
     A_np = np.ascontiguousarray(A, dtype=np.float64)
-    
+
     if A_np.ndim != 2 or A_np.shape[0] != A_np.shape[1]:
         raise InvalidMatrixError(f"La matriz debe ser cuadrada (shape={A_np.shape}).")
-        
+
     try:
         L = np.linalg.cholesky(A_np)
         return L.tolist()
@@ -347,8 +364,4 @@ def safe_lu(A: Any) -> dict:
             L[i, k] = factor
             U[i, k:] -= factor * U[k, k:]
 
-    return {
-        'P': P.tolist(),
-        'L': L.tolist(),
-        'U': U.tolist()
-    }
+    return {"P": P.tolist(), "L": L.tolist(), "U": U.tolist()}

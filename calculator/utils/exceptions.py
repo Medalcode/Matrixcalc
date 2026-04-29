@@ -1,12 +1,13 @@
 """
 Excepciones y Handlers del Dominio para MatrixCalc.
 
-Este módulo centraliza las excepciones personalizadas y el manejador 
+Este módulo centraliza las excepciones personalizadas y el manejador
 de excepciones de Django REST Framework para asegurar respuestas consistentes.
 """
-from rest_framework.views import exception_handler
-from rest_framework.response import Response
+
 from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import exception_handler
 
 
 class MatrixModelError(ValueError):
@@ -27,24 +28,17 @@ def custom_exception_handler(exc, context):
     """
     # Llamar al handler por defecto de DRF primero
     response = exception_handler(exc, context)
-    
+
     # Si DRF no manejó la excepción, manejar excepciones de dominio
     if response is None:
         if isinstance(exc, InvalidMatrixError):
             return Response(
-                {
-                    'error': 'invalid_matrix',
-                    'detail': str(exc)
-                },
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "invalid_matrix", "detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST
             )
         elif isinstance(exc, NumericError):
             return Response(
-                {
-                    'error': 'numeric_error',
-                    'detail': str(exc)
-                },
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY
+                {"error": "numeric_error", "detail": str(exc)},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
-    
+
     return response

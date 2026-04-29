@@ -1,14 +1,15 @@
 """
 URLs del proyecto matrixcalc_web.
 """
-from django.contrib import admin
-from django.urls import path, include
+
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import include, path
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('calculator.urls')),
+    path("admin/", admin.site.urls),
+    path("api/", include("calculator.urls")),
 ]
 
 # Servir archivos estáticos en desarrollo

@@ -3,31 +3,33 @@ Tests unitarios para calculator.utils.matrix_model.
 
 Cubre todas las funciones expuestas en __all__.
 """
+
+from unittest.mock import patch
+
 import numpy as np
 import pytest
-from unittest.mock import patch, DEFAULT
 
+from calculator.utils.exceptions import InvalidMatrixError, NumericError
 from calculator.utils.matrix_model import (
     parse_matrix,
     safe_add,
-    safe_subtract,
-    safe_dot,
-    safe_inv,
-    safe_det,
-    safe_transpose,
-    safe_rank,
-    safe_eigenvalues,
-    safe_svd,
-    safe_qr,
-    safe_lu,
     safe_cholesky,
+    safe_det,
+    safe_dot,
+    safe_eigenvalues,
+    safe_inv,
+    safe_lu,
+    safe_qr,
+    safe_rank,
+    safe_subtract,
+    safe_svd,
+    safe_transpose,
 )
-from calculator.utils.exceptions import InvalidMatrixError, NumericError
-
 
 # =============================================================================
 # parse_matrix
 # =============================================================================
+
 
 class TestParseMatrix:
     def test_parses_csv_correctly(self):
@@ -77,6 +79,7 @@ class TestParseMatrix:
 # safe_add
 # =============================================================================
 
+
 class TestSafeAdd:
     def test_adds_two_matrices(self):
         A = [[1, 2], [3, 4]]
@@ -97,6 +100,7 @@ class TestSafeAdd:
 # safe_subtract
 # =============================================================================
 
+
 class TestSafeSubtract:
     def test_subtracts_matrices(self):
         result = safe_subtract([[5, 6], [7, 8]], [[1, 2], [3, 4]])
@@ -110,6 +114,7 @@ class TestSafeSubtract:
 # =============================================================================
 # safe_dot
 # =============================================================================
+
 
 class TestSafeDot:
     def test_multiplies_compatible_matrices(self):
@@ -137,6 +142,7 @@ class TestSafeDot:
 # safe_inv
 # =============================================================================
 
+
 class TestSafeInv:
     def test_inverts_identity(self):
         result = safe_inv([[1, 0], [0, 1]])
@@ -160,6 +166,7 @@ class TestSafeInv:
 # safe_det
 # =============================================================================
 
+
 class TestSafeDet:
     def test_det_of_identity(self):
         assert safe_det(np.eye(3)) == pytest.approx(1.0)
@@ -178,6 +185,7 @@ class TestSafeDet:
 # =============================================================================
 # safe_transpose
 # =============================================================================
+
 
 class TestSafeTranspose:
     def test_transposes_2x3(self):
@@ -198,6 +206,7 @@ class TestSafeTranspose:
 # safe_rank
 # =============================================================================
 
+
 class TestSafeRank:
     def test_full_rank(self):
         assert safe_rank(np.eye(5)) == 5
@@ -214,28 +223,29 @@ class TestSafeRank:
 # safe_eigenvalues
 # =============================================================================
 
+
 class TestSafeEigenvalues:
     def test_real_eigenvalues(self):
         A = [[2, 0], [0, 3]]
         result = safe_eigenvalues(A)
-        vals = sorted(v['real'] for v in result['eigenvalues'])
+        vals = sorted(v["real"] for v in result["eigenvalues"])
         assert vals == pytest.approx([2.0, 3.0])
-        for v in result['eigenvalues']:
-            assert v['imag'] == 0.0
+        for v in result["eigenvalues"]:
+            assert v["imag"] == 0.0
 
     def test_complex_eigenvalues(self):
         A = [[0, -1], [1, 0]]
         result = safe_eigenvalues(A)
-        complex_vals = [v for v in result['eigenvalues'] if v['is_complex']]
+        complex_vals = [v for v in result["eigenvalues"] if v["is_complex"]]
         assert len(complex_vals) == 2
 
     def test_eigenvectors_dict_format(self):
         A = [[1, 0], [0, 2]]
         result = safe_eigenvalues(A)
-        for row in result['eigenvectors']:
+        for row in result["eigenvectors"]:
             for val in row:
-                assert 'real' in val
-                assert 'imag' in val
+                assert "real" in val
+                assert "imag" in val
 
     def test_rejects_non_square(self):
         with pytest.raises(InvalidMatrixError, match="cuadrada"):
@@ -246,38 +256,40 @@ class TestSafeEigenvalues:
 # safe_svd
 # =============================================================================
 
+
 class TestSafeSvd:
     def test_svd_reconstruction(self):
         A = [[1, 2], [3, 4], [5, 6]]
         result = safe_svd(A)
-        U = np.array(result['U'])
-        S = np.zeros((U.shape[0], len(result['S'])))
-        np.fill_diagonal(S, result['S'])
-        Vh = np.array(result['Vh'])
+        U = np.array(result["U"])
+        S = np.zeros((U.shape[0], len(result["S"])))
+        np.fill_diagonal(S, result["S"])
+        Vh = np.array(result["Vh"])
         reconstructed = U @ S @ Vh
         assert np.allclose(reconstructed, A, atol=1e-10)
 
     def test_svd_keys_present(self):
         result = safe_svd([[1, 0], [0, 1]])
-        assert set(result.keys()) == {'U', 'S', 'Vh'}
+        assert set(result.keys()) == {"U", "S", "Vh"}
 
 
 # =============================================================================
 # safe_qr
 # =============================================================================
 
+
 class TestSafeQr:
     def test_qr_reconstruction(self):
         A = [[12, -51, 4], [6, 167, -68], [-4, 24, -41]]
         result = safe_qr(A)
-        Q = np.array(result['Q'])
-        R = np.array(result['R'])
+        Q = np.array(result["Q"])
+        R = np.array(result["R"])
         assert np.allclose(Q @ R, A, atol=1e-10)
 
     def test_q_orthogonal(self):
         A = [[1, 2], [3, 4]]
         result = safe_qr(A)
-        Q = np.array(result['Q'])
+        Q = np.array(result["Q"])
         assert np.allclose(Q.T @ Q, np.eye(Q.shape[1]), atol=1e-10)
 
 
@@ -285,26 +297,27 @@ class TestSafeQr:
 # safe_lu
 # =============================================================================
 
+
 class TestSafeLu:
     def test_lu_reconstruction(self):
         A = [[4, 3], [6, 3]]
         result = safe_lu(A)
-        P = np.array(result['P'])
-        L = np.array(result['L'])
-        U = np.array(result['U'])
+        P = np.array(result["P"])
+        L = np.array(result["L"])
+        U = np.array(result["U"])
         assert np.allclose(P @ L @ U, A)
 
     def test_l_upper_unit_diag(self):
         result = safe_lu(np.eye(3))
-        L = np.array(result['L'])
+        L = np.array(result["L"])
         assert np.allclose(np.diag(L), np.ones(3))
 
     def test_lu_3x3(self):
         A = [[2, -1, 0], [-1, 2, -1], [0, -1, 2]]
         result = safe_lu(A)
-        P = np.array(result['P'])
-        L = np.array(result['L'])
-        U = np.array(result['U'])
+        P = np.array(result["P"])
+        L = np.array(result["L"])
+        U = np.array(result["U"])
         assert np.allclose(P @ L @ U, A)
 
     def test_rejects_non_square(self):
@@ -319,6 +332,7 @@ class TestSafeLu:
 # =============================================================================
 # safe_cholesky
 # =============================================================================
+
 
 class TestSafeCholesky:
     def test_cholesky_reconstruction(self):
@@ -346,68 +360,84 @@ class TestSafeCholesky:
 # Exception handler edge cases (hard to trigger naturally)
 # =============================================================================
 
+
 class TestExceptionHandlers:
     """Cover exception handlers in matrix_model.py"""
 
     def test_parse_matrix_reshape_error(self):
         """parse_matrix: except Exception from reshape (lines 83-84)"""
-        with patch('calculator.utils.matrix_model.np.fromiter',
-                   return_value=np.array([1.0, 2.0, 3.0])):
+        with patch(
+            "calculator.utils.matrix_model.np.fromiter", return_value=np.array([1.0, 2.0, 3.0])
+        ):
             with pytest.raises(InvalidMatrixError, match="redimensionarse"):
                 parse_matrix("1, 2, 3, 4", 2, 2)
 
     def test_safe_inv_cond_failure(self):
         """safe_inv: except Exception from np.linalg.cond (lines 132-134)"""
-        with patch('calculator.utils.matrix_model.np.linalg.cond',
-                   side_effect=Exception("cond failed")):
+        with patch(
+            "calculator.utils.matrix_model.np.linalg.cond", side_effect=Exception("cond failed")
+        ):
             with pytest.raises(NumericError, match="condici"):
                 safe_inv([[1, 2], [3, 4]])
 
     def test_safe_inv_linalg_error(self):
         """safe_inv: except LinAlgError from np.linalg.inv (lines 149-150)"""
-        with patch('calculator.utils.matrix_model.np.linalg.inv',
-                   side_effect=np.linalg.LinAlgError("singular")):
+        with patch(
+            "calculator.utils.matrix_model.np.linalg.inv",
+            side_effect=np.linalg.LinAlgError("singular"),
+        ):
             with pytest.raises(NumericError, match="singular"):
                 safe_inv([[1, 2], [3, 4]])
 
     def test_safe_det_linalg_error(self):
         """safe_det: except LinAlgError from np.linalg.det (lines 165-166)"""
-        with patch('calculator.utils.matrix_model.np.linalg.det',
-                   side_effect=np.linalg.LinAlgError("det failed")):
+        with patch(
+            "calculator.utils.matrix_model.np.linalg.det",
+            side_effect=np.linalg.LinAlgError("det failed"),
+        ):
             with pytest.raises(NumericError, match="determinante"):
                 safe_det([[1, 2], [3, 4]])
 
     def test_safe_dot_exception(self):
         """safe_dot: except Exception from np.matmul (lines 185-186)"""
-        with patch('calculator.utils.matrix_model.np.matmul',
-                   side_effect=Exception("matmul failed")):
+        with patch(
+            "calculator.utils.matrix_model.np.matmul", side_effect=Exception("matmul failed")
+        ):
             with pytest.raises(NumericError, match="multiplicar"):
                 safe_dot([[1, 2], [3, 4]], [[5, 6], [7, 8]])
 
     def test_safe_eigenvalues_linalg_error(self):
         """safe_eigenvalues: except LinAlgError (lines 242-243)"""
-        with patch('calculator.utils.matrix_model.np.linalg.eig',
-                   side_effect=np.linalg.LinAlgError("eig failed")):
+        with patch(
+            "calculator.utils.matrix_model.np.linalg.eig",
+            side_effect=np.linalg.LinAlgError("eig failed"),
+        ):
             with pytest.raises(NumericError, match="valores propios"):
                 safe_eigenvalues([[1, 2], [3, 4]])
 
     def test_safe_rank_exception(self):
         """safe_rank: except Exception from matrix_rank (lines 251-252)"""
-        with patch('calculator.utils.matrix_model.np.linalg.matrix_rank',
-                   side_effect=Exception("rank failed")):
+        with patch(
+            "calculator.utils.matrix_model.np.linalg.matrix_rank",
+            side_effect=Exception("rank failed"),
+        ):
             with pytest.raises(NumericError, match="rango"):
                 safe_rank([[1, 2], [3, 4]])
 
     def test_safe_svd_linalg_error(self):
         """safe_svd: except LinAlgError from np.linalg.svd (lines 271-272)"""
-        with patch('calculator.utils.matrix_model.np.linalg.svd',
-                   side_effect=np.linalg.LinAlgError("svd failed")):
+        with patch(
+            "calculator.utils.matrix_model.np.linalg.svd",
+            side_effect=np.linalg.LinAlgError("svd failed"),
+        ):
             with pytest.raises(NumericError, match="SVD"):
                 safe_svd([[1, 2], [3, 4]])
 
     def test_safe_qr_linalg_error(self):
         """safe_qr: except LinAlgError from np.linalg.qr (lines 290-291)"""
-        with patch('calculator.utils.matrix_model.np.linalg.qr',
-                   side_effect=np.linalg.LinAlgError("qr failed")):
+        with patch(
+            "calculator.utils.matrix_model.np.linalg.qr",
+            side_effect=np.linalg.LinAlgError("qr failed"),
+        ):
             with pytest.raises(NumericError, match="QR"):
                 safe_qr([[1, 2], [3, 4]])
