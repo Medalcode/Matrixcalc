@@ -36,38 +36,43 @@ class MatrixSerializer(serializers.ModelSerializer):
         cols = attrs.get('cols')
         data = attrs.get('data')
         
+        # Skip dimension validation on partial updates when rows/cols not provided
+        if rows is None and cols is None and data is None:
+            return attrs
+        
         # Validar dimensiones máximas
         max_dim = settings.MATRIX_CONFIG['MAX_DIMENSION']
-        if rows > max_dim or cols > max_dim:
+        if rows is not None and rows > max_dim or cols is not None and cols > max_dim:
             raise serializers.ValidationError(
                 f"Las dimensiones de la matriz no pueden exceder {max_dim}x{max_dim}. "
                 f"Dimensiones solicitadas: {rows}x{cols}"
             )
         
         # Validar que data sea una lista de listas
-        if not isinstance(data, list):
+        if data is not None and not isinstance(data, list):
             raise serializers.ValidationError("Los datos deben ser una lista de listas.")
         
-        if len(data) != rows:
+        if data is not None and rows is not None and len(data) != rows:
             raise serializers.ValidationError(
                 f"Se esperaban {rows} filas, pero se recibieron {len(data)}."
             )
         
-        for i, row in enumerate(data):
-            if not isinstance(row, list):
-                raise serializers.ValidationError(
-                    f"La fila {i} debe ser una lista."
-                )
-            if len(row) != cols:
-                raise serializers.ValidationError(
-                    f"Se esperaban {cols} columnas en la fila {i}, pero se recibieron {len(row)}."
-                )
-            # Validar que todos los valores sean numéricos
-            for j, val in enumerate(row):
-                if not isinstance(val, (int, float)):
+        if data is not None:
+            for i, row in enumerate(data):
+                if not isinstance(row, list):
                     raise serializers.ValidationError(
-                        f"El valor en posición ({i},{j}) no es numérico: {val}"
+                        f"La fila {i} debe ser una lista."
                     )
+                if cols is not None and len(row) != cols:
+                    raise serializers.ValidationError(
+                        f"Se esperaban {cols} columnas en la fila {i}, pero se recibieron {len(row)}."
+                    )
+                # Validar que todos los valores sean numéricos
+                for j, val in enumerate(row):
+                    if not isinstance(val, (int, float)):
+                        raise serializers.ValidationError(
+                            f"El valor en posición ({i},{j}) no es numérico: {val}"
+                        )
         
         return attrs
     

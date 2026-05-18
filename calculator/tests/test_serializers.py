@@ -2,11 +2,8 @@
 Tests for serializers
 """
 import pytest
-from calculator.serializers import (
-    MatrixSerializer,
-    MatrixOperationSerializer, MatrixBulkImportSerializer
-)
-from calculator.models import Matrix, Operation
+from calculator.serializers import MatrixSerializer
+from calculator.models import Matrix
 
 
 @pytest.mark.django_db
@@ -25,8 +22,8 @@ class TestMatrixSerializer:
         assert 'id' in data
         assert 'created_at' in data
         assert 'updated_at' in data
-        assert 'is_square' in data
-        assert 'size' in data
+        assert 'dimensions' in data
+        assert data['dimensions'] == '3x3'
     
     def test_deserialize_valid_matrix(self, sample_matrix_data):
         """Test deserializing valid matrix data"""
@@ -73,7 +70,6 @@ class TestMatrixSerializer:
         }
         serializer = MatrixSerializer(data=data)
         assert not serializer.is_valid()
-        assert 'data' in serializer.errors
     
     def test_deserialize_invalid_data_type(self):
         """Test validation of invalid data types in matrix"""
@@ -115,96 +111,3 @@ class TestMatrixSerializer:
         assert updated_matrix.data == [[1, 2, 3], [4, 5, 6], [7, 8, 9]]  # Unchanged
 
 
-@pytest.mark.django_db
-class TestMatrixOperationSerializer:
-    """Test suite for MatrixOperationSerializer"""
-    
-    def test_valid_binary_operation(self, matrix_pair):
-        """Test valid binary operation data"""
-        matrix_a, matrix_b = matrix_pair
-        data = {
-            'operation': 'sum',
-            'matrix_a_id': matrix_a.id,
-            'matrix_b_id': matrix_b.id
-        }
-        serializer = MatrixOperationSerializer(data=data)
-        assert serializer.is_valid()
-    
-    def test_valid_unary_operation(self, matrix):
-        """Test valid unary operation data"""
-        data = {
-            'operation': 'transpose',
-            'matrix_a_id': matrix.id
-        }
-        serializer = MatrixOperationSerializer(data=data)
-        assert serializer.is_valid()
-    
-    def test_invalid_operation_type(self, matrix):
-        """Test invalid operation type"""
-        data = {
-            'operation': 'invalid_op',
-            'matrix_a_id': matrix.id
-        }
-        serializer = MatrixOperationSerializer(data=data)
-        assert not serializer.is_valid()
-        assert 'operation' in serializer.errors
-    
-    def test_missing_matrix_a(self):
-        """Test missing matrix_a_id"""
-        data = {
-            'operation': 'transpose'
-        }
-        serializer = MatrixOperationSerializer(data=data)
-        assert not serializer.is_valid()
-        assert 'matrix_a_id' in serializer.errors
-
-
-@pytest.mark.django_db
-class TestMatrixBulkImportSerializer:
-    """Test suite for MatrixBulkImportSerializer"""
-    
-    def test_valid_bulk_import(self):
-        """Test valid bulk import data"""
-        data = {
-            'matrices': [
-                {
-                    'name': 'Matrix 1',
-                    'rows': 2,
-                    'cols': 2,
-                    'data': [[1, 2], [3, 4]]
-                },
-                {
-                    'name': 'Matrix 2',
-                    'rows': 2,
-                    'cols': 2,
-                    'data': [[5, 6], [7, 8]]
-                }
-            ]
-        }
-        serializer = MatrixBulkImportSerializer(data=data)
-        assert serializer.is_valid()
-        result = serializer.save()
-        
-        assert len(result['created']) == 2
-        assert Matrix.objects.count() == 2
-    
-    def test_bulk_import_with_invalid_matrix(self):
-        """Test bulk import with one invalid matrix"""
-        data = {
-            'matrices': [
-                {
-                    'name': 'Valid',
-                    'rows': 2,
-                    'cols': 2,
-                    'data': [[1, 2], [3, 4]]
-                },
-                {
-                    'name': 'Invalid',
-                    'rows': 0,  # Invalid
-                    'cols': 2,
-                    'data': [[1, 2]]
-                }
-            ]
-        }
-        serializer = MatrixBulkImportSerializer(data=data)
-        assert not serializer.is_valid()

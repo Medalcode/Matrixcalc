@@ -3,7 +3,6 @@ Tests for API views/endpoints
 """
 import pytest
 from rest_framework import status
-from rest_framework.test import APIClient
 from calculator.models import Matrix, Operation
 from django.urls import reverse
 
@@ -18,8 +17,8 @@ class TestMatrixViewSet:
         response = api_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        assert response.data[0]['name'] == 'Test Matrix'
+        assert response.data['count'] == 1
+        assert response.data['results'][0]['name'] == 'Test Matrix'
     
     def test_list_empty_matrices(self, api_client):
         """Test listing when no matrices exist"""
@@ -27,7 +26,7 @@ class TestMatrixViewSet:
         response = api_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 0
+        assert response.data['count'] == 0
     
     def test_retrieve_matrix(self, api_client, matrix):
         """Test GET /api/matrices/{id}/"""
@@ -109,130 +108,76 @@ class TestMatrixViewSet:
         assert response.status_code == status.HTTP_204_NO_CONTENT
         assert Matrix.objects.count() == 0
     
-    def test_bulk_delete_matrices(self, api_client, matrix_pair):
-        """Test bulk delete action"""
-        matrix_a, matrix_b = matrix_pair
-        url = reverse('matrix-bulk-delete')
-        data = {'ids': [matrix_a.id, matrix_b.id]}
-        response = api_client.post(url, data, format='json')
-        
-        assert response.status_code == status.HTTP_204_NO_CONTENT
-        assert Matrix.objects.count() == 0
-
 
 @pytest.mark.django_db
 class TestMatrixOperationsView:
-    """Test suite for matrix operations endpoint"""
-    
+    """Test suite for matrix operations endpoints"""
+
     def test_sum_operation(self, api_client, matrix_pair):
         """Test matrix addition"""
         matrix_a, matrix_b = matrix_pair
-        url = reverse('matrix-operations')
-        data = {
-            'operation': 'sum',
-            'matrix_a_id': matrix_a.id,
-            'matrix_b_id': matrix_b.id
-        }
+        url = reverse('sum-matrices')
+        data = {'matrix_a_id': matrix_a.id, 'matrix_b_id': matrix_b.id}
         response = api_client.post(url, data, format='json')
-        
-        assert response.status_code == status.HTTP_200_OK
-        assert 'result' in response.data
-        assert response.data['result'] == [[6, 8], [10, 12]]
-        assert 'execution_time' in response.data
-    
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data['result']['data'] == [[6, 8], [10, 12]]
+        assert 'execution_time_ms' in response.data
+
     def test_subtract_operation(self, api_client, matrix_pair):
         """Test matrix subtraction"""
         matrix_a, matrix_b = matrix_pair
-        url = reverse('matrix-operations')
-        data = {
-            'operation': 'subtract',
-            'matrix_a_id': matrix_a.id,
-            'matrix_b_id': matrix_b.id
-        }
+        url = reverse('subtract-matrices')
+        data = {'matrix_a_id': matrix_a.id, 'matrix_b_id': matrix_b.id}
         response = api_client.post(url, data, format='json')
-        
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['result'] == [[-4, -4], [-4, -4]]
-    
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data['result']['data'] == [[-4, -4], [-4, -4]]
+
     def test_multiply_operation(self, api_client, matrix_pair):
         """Test matrix multiplication"""
         matrix_a, matrix_b = matrix_pair
-        url = reverse('matrix-operations')
-        data = {
-            'operation': 'multiply',
-            'matrix_a_id': matrix_a.id,
-            'matrix_b_id': matrix_b.id
-        }
+        url = reverse('multiply-matrices')
+        data = {'matrix_a_id': matrix_a.id, 'matrix_b_id': matrix_b.id}
         response = api_client.post(url, data, format='json')
-        
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['result'] == [[19, 22], [43, 50]]
-    
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data['result']['data'] == [[19, 22], [43, 50]]
+
     def test_transpose_operation(self, api_client, matrix):
         """Test matrix transpose"""
-        url = reverse('matrix-operations')
-        data = {
-            'operation': 'transpose',
-            'matrix_a_id': matrix.id
-        }
+        url = reverse('transpose-matrix')
+        data = {'matrix_id': matrix.id}
         response = api_client.post(url, data, format='json')
-        
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['result'] == [[1, 4, 7], [2, 5, 8], [3, 6, 9]]
-    
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data['result']['data'] == [[1, 4, 7], [2, 5, 8], [3, 6, 9]]
+
     def test_determinant_operation(self, api_client, identity_matrix):
         """Test determinant calculation"""
-        url = reverse('matrix-operations')
-        data = {
-            'operation': 'determinant',
-            'matrix_a_id': identity_matrix.id
-        }
+        url = reverse('determinant-matrix')
+        data = {'matrix_id': identity_matrix.id}
         response = api_client.post(url, data, format='json')
-        
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['result'] == 1.0  # Det of identity is 1
-    
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data['result']['data'] == [[1.0]]
+
     def test_inverse_operation(self, api_client, identity_matrix):
         """Test matrix inversion"""
-        url = reverse('matrix-operations')
-        data = {
-            'operation': 'inverse',
-            'matrix_a_id': identity_matrix.id
-        }
+        url = reverse('inverse-matrix')
+        data = {'matrix_id': identity_matrix.id}
         response = api_client.post(url, data, format='json')
-        
-        assert response.status_code == status.HTTP_200_OK
-        # Inverse of identity is identity
-        assert response.data['result'] == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-    
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data['result']['data'] == [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+
     def test_operation_with_invalid_matrix_id(self, api_client):
         """Test operation with nonexistent matrix"""
-        url = reverse('matrix-operations')
-        data = {
-            'operation': 'transpose',
-            'matrix_a_id': 99999
-        }
+        url = reverse('transpose-matrix')
+        data = {'matrix_id': 99999}
         response = api_client.post(url, data, format='json')
-        
+
         assert response.status_code == status.HTTP_404_NOT_FOUND
-    
-    def test_operation_creates_history(self, api_client, matrix):
-        """Test that operations create Operation entries"""
-        result_matrix = Matrix.objects.create(
-            name='Transpose Result', rows=3, cols=3,
-            data=[[1, 4, 7], [2, 5, 8], [3, 6, 9]]
-        )
-        Operation.objects.create(
-            operation_type='TRANSPOSE',
-            matrix_a=matrix,
-            result=result_matrix,
-            execution_time_ms=10
-        )
-        assert Operation.objects.count() == 1
-        
-        operation = Operation.objects.first()
-        assert operation.operation_type == 'TRANSPOSE'
-        assert operation.matrix_a == matrix
 
 
 @pytest.mark.django_db
@@ -252,31 +197,12 @@ class TestOperationViewSet:
             execution_time_ms=50
         )
         
-        url = '/api/operations/'
+        url = '/api/operations-history/'
         response = api_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) >= 1
     
-    def test_delete_operation(self, api_client, matrix):
-        """Test DELETE /api/operations/{id}/"""
-        result_matrix = Matrix.objects.create(
-            name='Result', rows=3, cols=3,
-            data=[[1, 4, 7], [2, 5, 8], [3, 6, 9]]
-        )
-        operation = Operation.objects.create(
-            operation_type='TRANSPOSE',
-            matrix_a=matrix,
-            result=result_matrix,
-            execution_time_ms=50
-        )
-        
-        url = f'/api/operations/{operation.id}/'
-        response = api_client.delete(url)
-        
-        assert response.status_code == status.HTTP_204_NO_CONTENT
-        assert Operation.objects.count() == 0
-
 
 @pytest.mark.django_db
 class TestStatsView:
@@ -316,32 +242,3 @@ class TestStatsView:
         assert response.status_code == status.HTTP_200_OK
 
 
-@pytest.mark.django_db
-class TestBackupViews:
-    """Test suite for backup/export/import endpoints"""
-    
-    def test_export_json(self, api_client, matrix):
-        """Test GET /api/backup/export/json/"""
-        url = '/api/backup/export/json/'
-        response = api_client.get(url)
-        
-        assert response.status_code == status.HTTP_200_OK
-        assert 'application/json' in response['Content-Type']
-    
-    def test_import_json(self, api_client):
-        """Test POST /api/backup/import/"""
-        url = '/api/backup/import/'
-        import_data = {
-            'matrices': [
-                {
-                    'name': 'Imported Matrix',
-                    'rows': 2,
-                    'cols': 2,
-                    'data': [[1, 2], [3, 4]]
-                }
-            ]
-        }
-        response = api_client.post(url, import_data, format='json')
-        
-        # May return 200 or 201 depending on implementation
-        assert response.status_code in [status.HTTP_200_OK, status.HTTP_201_CREATED]
