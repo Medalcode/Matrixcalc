@@ -18,6 +18,7 @@ from calculator.utils.matrix_model import (
     safe_eigenvalues,
     safe_svd,
     safe_qr,
+    safe_lu,
     safe_cholesky,
 )
 from calculator.utils.exceptions import (
@@ -38,6 +39,7 @@ __all__ = [
     'safe_eigenvalues',
     'safe_svd',
     'safe_qr',
+    'safe_lu',
     'safe_cholesky',
     'MatrixModelError',
     'InvalidMatrixError',

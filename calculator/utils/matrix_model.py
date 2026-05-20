@@ -55,8 +55,8 @@ def parse_matrix(text: str, rows: int, cols: int, dtype=np.float64) -> np.ndarra
     if not isinstance(rows, int) or not isinstance(cols, int) or rows <= 0 or cols <= 0:
         raise InvalidMatrixError("rows y cols deben ser enteros positivos.")
 
-    if text is None:
-        raise InvalidMatrixError("Texto de entrada vacío.")
+    if not isinstance(text, str):
+        raise InvalidMatrixError("Texto de entrada debe ser una cadena.")
 
     # 1) Tokenizar y limpiar
     tokens = [tok.strip() for tok in text.split(',')]
@@ -124,7 +124,7 @@ def safe_inv(A: Any) -> np.ndarray:
     A_np = np.ascontiguousarray(A, dtype=np.float64)
 
     if A_np.ndim != 2 or A_np.shape[0] != A_np.shape[1]:
-        raise ValueError(f"La matriz debe ser cuadrada para calcular la inversa (shape={A_np.shape}).")
+        raise InvalidMatrixError(f"La matriz debe ser cuadrada para calcular la inversa (shape={A_np.shape}).")
 
     # Comprobar condicionamiento numérico
     try:
@@ -162,7 +162,7 @@ def safe_det(A: Any) -> float:
 
     try:
         return float(np.linalg.det(A_np))
-    except Exception as exc:
+    except np.linalg.LinAlgError as exc:
         raise NumericError("Error al calcular el determinante.") from exc
 
 
@@ -222,27 +222,17 @@ def safe_eigenvalues(A: Any) -> dict:
                 vals_list.append({'real': float(v.real), 'imag': float(v.imag), 'is_complex': True})
             else:
                 vals_list.append({'real': float(v.real), 'imag': 0.0, 'is_complex': False})
-                
+
         # Los vectores propios en numpy son las columnas de 'vecs'.
-        # Para visualización fácil, convertimos a lista de listas standard (filas)
-        # pero mantenemos la estructura numérica.
-        # Nota: Los autovectores pueden ser complejos si los autovalores lo son.
-        # Por simplicidad en JSON, tomamos la parte real si es complejo, o notificamos.
-        # Para v3.0 MVP: Retornamos representación string si es complejo para evitar errores de JSON simples,
-        # o estructuras separadas.
-        
-        # Enfoque robusto: Convertir a listas de componentes reales/imag para vectores también sería ideal,
-        # pero muy verboso. Convertiremos a listas de floats tomando parte real si la imaginaria es despreciable,
-        # o string complex representation si no.
-        
+        # Convertimos a estructura real/imag consistente para evitar mezclar tipos.
         vecs_formatted = []
         for row in vecs:
             row_formatted = []
             for val in row:
-                if np.iscomplex(val) and not np.isclose(val.imag, 0):
-                    row_formatted.append(str(val)) # Fallback a string para complejos
-                else:
-                    row_formatted.append(float(val.real))
+                row_formatted.append({
+                    'real': float(val.real),
+                    'imag': float(val.imag) if np.iscomplex(val) else 0.0
+                })
             vecs_formatted.append(row_formatted)
 
         return {
@@ -316,8 +306,49 @@ def safe_cholesky(A: Any) -> list:
     try:
         L = np.linalg.cholesky(A_np)
         return L.tolist()
-    except np.linalg.LinAlgError:
+    except np.linalg.LinAlgError as exc:
         raise NumericError(
             "La matriz no es definida positiva. La descomposición de Cholesky require "
             "una matriz simétrica y definida positiva."
-        )
+        ) from exc
+
+
+def safe_lu(A: Any) -> dict:
+    """
+    Calcula la descomposición LU con pivoteo parcial (Doolittle).
+    A = P * L * U
+
+    Returns:
+        dict: {'P': list, 'L': list, 'U': list}
+    """
+    A_np = np.ascontiguousarray(A, dtype=np.float64)
+
+    if A_np.ndim != 2 or A_np.shape[0] != A_np.shape[1]:
+        raise InvalidMatrixError(f"La matriz debe ser cuadrada (shape={A_np.shape}).")
+
+    n = A_np.shape[0]
+    L = np.eye(n)
+    U = A_np.copy().astype(np.float64)
+    P = np.eye(n)
+
+    for k in range(n):
+        # Pivoteo parcial: encontrar fila con el máximo valor absoluto en columna k
+        max_idx = int(np.argmax(np.abs(U[k:, k]))) + k
+        if np.abs(U[max_idx, k]) < np.finfo(np.float64).eps:
+            raise NumericError("La matriz es singular, no tiene descomposición LU.")
+
+        if max_idx != k:
+            U[[k, max_idx]] = U[[max_idx, k]]
+            P[[k, max_idx]] = P[[max_idx, k]]
+            L[[k, max_idx], :k] = L[[max_idx, k], :k]
+
+        for i in range(k + 1, n):
+            factor = U[i, k] / U[k, k]
+            L[i, k] = factor
+            U[i, k:] -= factor * U[k, k:]
+
+    return {
+        'P': P.tolist(),
+        'L': L.tolist(),
+        'U': U.tolist()
+    }
