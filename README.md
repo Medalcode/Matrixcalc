@@ -1,8 +1,11 @@
 # 🧮 MatrixCalc
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Python](https://img.shields.io/badge/python-3.11-blue)
-![Vue](https://img.shields.io/badge/vue-3.x-green)
+![Python](https://img.shields.io/badge/python-3.14-blue)
+![Coverage](https://img.shields.io/badge/coverage-99%25-brightgreen)
+![Tests](https://img.shields.io/badge/tests-158%20passed-green)
+![Vue](https://img.shields.io/badge/vue-3.5-green)
+![TypeScript](https://img.shields.io/badge/typescript-5.9-blue)
 ![Docker](https://img.shields.io/badge/docker-ready-blue)
 ![Cloud Run](https://img.shields.io/badge/deployment-google%20cloud%20run-blueviolet)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -40,10 +43,11 @@ El ecosistema actual de herramientas matemáticas obliga a los usuarios a elegir
 El proyecto sigue una arquitectura de **Monolito Desacoplado** ("Decoupled Monolith"), fuertemente enfocado en buenas prácticas, testabilidad y optimizado para despliegue serverless.
 
 ### Backend (Core Lógico y API API)
-- **Python 3.11 & Django REST Framework:** Seleccionado por su madurez, seguridad y velocidad de desarrollo para la construcción de APIs robustas. Implementa un diseño de "Lean Views" adaptando Domain Driven Design.
+- **Python 3.14 & Django REST Framework:** Seleccionado por su madurez, seguridad y velocidad de desarrollo para la construcción de APIs robustas. Implementa un diseño de "Lean Views" adaptando Domain Driven Design.
 - **NumPy:** El estándar definitivo de la industria para computación científica. Garantiza precisión total (*64-bit precision*) y manejo veloz de algoritmos matriciales.
 - **Celery & Redis:** Para procesamiento asíncrono y de mensajería (escalabilidad de cálculos altamente intensivos sin bloquear requests HTTP).
 - **PostgreSQL / SQLite:** Almacenamiento optimizado y serialización eficiente de objetos JSON para guardar el estado matricial de las sesiones matemáticas.
+- **Test Coverage: 99%** (158 tests, pytest + coverage.py)
 
 ### Frontend (Interfaz de Usuario)
 - **Vue 3 (Composition API) & TypeScript:** Permite un desarrollo de componentes fuertemente tipados, escalables y provee una gestión de dependencias predecible.

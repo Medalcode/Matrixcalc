@@ -416,20 +416,24 @@ Añade capturas de pantalla para cambios visuales.
 
 ## 🧪 Testing
 
-### Backend (Django)
+### Backend (pytest — 158 tests, 99% coverage)
 
 ```bash
 # Ejecutar todos los tests
-python manage.py test
+cd /ruta/al/proyecto
+source venv/bin/activate
+DATABASE_URL=sqlite:///test_db.sqlite3 python -m pytest calculator/tests/ -v
 
 # Tests específicos
-python manage.py test calculator.tests.test_models
-python manage.py test calculator.tests.test_views
+python -m pytest calculator/tests/test_models.py -v
+python -m pytest calculator/tests/test_views.py -v
 
 # Con cobertura
-coverage run --source='.' manage.py test
-coverage report
-coverage html  # Ver reporte en htmlcov/index.html
+python -m pytest calculator/tests/ --cov=calculator --cov-report=term-missing
+
+# Reporte HTML
+python -m pytest calculator/tests/ --cov=calculator --cov-report=html
+# Abrir htmlcov/index.html en el navegador
 ```
 
 **Estructura de tests:**
@@ -460,7 +464,7 @@ class MatrizSumaTestCase(TestCase):
 ### Frontend (Vue/Vitest)
 
 ```bash
-# Ejecutar tests (cuando estén implementados)
+# Ejecutar tests
 npm run test
 
 # Tests en modo watch
