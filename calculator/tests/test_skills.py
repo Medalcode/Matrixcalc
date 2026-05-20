@@ -1,12 +1,14 @@
 import json
 import os
 from datetime import timedelta
+from unittest import mock
 
 import pytest
 from django.utils import timezone
 
-from calculator.services import export_backup_service as export_backup_skill
-from calculator.services import cleanup_data_service as cleanup_old_data_skill
+from calculator.services import export_backup_service
+from calculator.services import cleanup_data_service
+from calculator.services import maintenance_super_skill
 from calculator.models import Matrix, Operation
 from django.conf import settings
 
@@ -19,7 +21,7 @@ def test_export_backup_skill_creates_file(tmp_path):
     op = Operation.objects.create(operation_type='SUM', matrix_a=m1, matrix_b=m2, result=m1, execution_time_ms=10)
 
     out = tmp_path / 'test_backup.json'
-    result = export_backup_skill(output_path=str(out))
+    result = export_backup_service(output_path=str(out))
     assert result.get('status') == 'ok'
     assert out.exists()
 
@@ -37,6 +39,80 @@ def test_cleanup_old_data_skill_dry_run():
     Matrix.objects.filter(pk=m.pk).update(created_at=old)
 
     # Run dry-run; no deletion should happen
-    result = cleanup_old_data_skill(dry_run=True, days=30)
+    result = cleanup_data_service(dry_run=True, days=30)
     assert result.get('status') == 'ok'
     assert Matrix.objects.filter(pk=m.pk).exists()
+
+
+# =============================================================================
+# export_backup_service — path por defecto y error
+# =============================================================================
+
+@pytest.mark.django_db
+def test_export_backup_default_path():
+    """Export with default output_path should succeed and return a path."""
+    m = Matrix.objects.create(name='X', rows=1, cols=1, data=[[42]])
+    result = export_backup_service()
+    assert result.get('status') == 'ok'
+    assert result.get('path') is not None
+    assert 'backup_' in result['path']
+    assert result['path'].endswith('.json')
+    # Limpiar archivo creado
+    if os.path.exists(result['path']):
+        os.unlink(result['path'])
+
+
+@pytest.mark.django_db
+def test_export_backup_error():
+    """When ExportCommand fails, returns error status."""
+    from calculator.management.commands.export_backup import Command
+
+    with mock.patch.object(Command, 'handle', side_effect=RuntimeError('write denied')):
+        result = export_backup_service(output_path='/tmp/fail.json')
+
+    assert result.get('status') == 'error'
+    assert 'write denied' in result.get('message', '')
+
+
+# =============================================================================
+# cleanup_data_service — error
+# =============================================================================
+
+@pytest.mark.django_db
+def test_cleanup_data_error():
+    """When CleanupCommand fails, returns error status."""
+    from calculator.management.commands.cleanup_old_data import Command
+
+    with mock.patch.object(Command, 'handle', side_effect=RuntimeError('db locked')):
+        result = cleanup_data_service(dry_run=True)
+
+    assert result.get('status') == 'error'
+    assert 'db locked' in result.get('message', '')
+
+
+# =============================================================================
+# maintenance_super_skill
+# =============================================================================
+
+@pytest.mark.django_db
+def test_maintenance_super_skill_backup(tmp_path):
+    """Dispatcher with action='backup' delegates to export_backup_service."""
+    m = Matrix.objects.create(name='M', rows=1, cols=1, data=[[1]])
+    out = tmp_path / 'skill_backup.json'
+    result = maintenance_super_skill('backup', output_path=str(out))
+    assert result.get('status') == 'ok'
+    assert out.exists()
+
+
+@pytest.mark.django_db
+def test_maintenance_super_skill_cleanup():
+    """Dispatcher with action='cleanup' delegates to cleanup_data_service."""
+    result = maintenance_super_skill('cleanup', days=30, dry_run=True)
+    assert result.get('status') == 'ok'
+
+
+def test_maintenance_super_skill_unknown_action():
+    """Dispatcher with unknown action returns error."""
+    result = maintenance_super_skill('reboot')
+    assert result.get('status') == 'error'
+    assert 'Acci\u00f3n desconocida' in result.get('message', '')

@@ -5,6 +5,7 @@ Cubre todas las funciones expuestas en __all__.
 """
 import numpy as np
 import pytest
+from unittest.mock import patch, DEFAULT
 
 from calculator.utils.matrix_model import (
     parse_matrix,
@@ -339,3 +340,74 @@ class TestSafeCholesky:
     def test_rejects_non_positive_definite(self):
         with pytest.raises(NumericError, match="definida positiva"):
             safe_cholesky([[-1, 0], [0, -1]])
+
+
+# =============================================================================
+# Exception handler edge cases (hard to trigger naturally)
+# =============================================================================
+
+class TestExceptionHandlers:
+    """Cover exception handlers in matrix_model.py"""
+
+    def test_parse_matrix_reshape_error(self):
+        """parse_matrix: except Exception from reshape (lines 83-84)"""
+        with patch('calculator.utils.matrix_model.np.fromiter',
+                   return_value=np.array([1.0, 2.0, 3.0])):
+            with pytest.raises(InvalidMatrixError, match="redimensionarse"):
+                parse_matrix("1, 2, 3, 4", 2, 2)
+
+    def test_safe_inv_cond_failure(self):
+        """safe_inv: except Exception from np.linalg.cond (lines 132-134)"""
+        with patch('calculator.utils.matrix_model.np.linalg.cond',
+                   side_effect=Exception("cond failed")):
+            with pytest.raises(NumericError, match="condici"):
+                safe_inv([[1, 2], [3, 4]])
+
+    def test_safe_inv_linalg_error(self):
+        """safe_inv: except LinAlgError from np.linalg.inv (lines 149-150)"""
+        with patch('calculator.utils.matrix_model.np.linalg.inv',
+                   side_effect=np.linalg.LinAlgError("singular")):
+            with pytest.raises(NumericError, match="singular"):
+                safe_inv([[1, 2], [3, 4]])
+
+    def test_safe_det_linalg_error(self):
+        """safe_det: except LinAlgError from np.linalg.det (lines 165-166)"""
+        with patch('calculator.utils.matrix_model.np.linalg.det',
+                   side_effect=np.linalg.LinAlgError("det failed")):
+            with pytest.raises(NumericError, match="determinante"):
+                safe_det([[1, 2], [3, 4]])
+
+    def test_safe_dot_exception(self):
+        """safe_dot: except Exception from np.matmul (lines 185-186)"""
+        with patch('calculator.utils.matrix_model.np.matmul',
+                   side_effect=Exception("matmul failed")):
+            with pytest.raises(NumericError, match="multiplicar"):
+                safe_dot([[1, 2], [3, 4]], [[5, 6], [7, 8]])
+
+    def test_safe_eigenvalues_linalg_error(self):
+        """safe_eigenvalues: except LinAlgError (lines 242-243)"""
+        with patch('calculator.utils.matrix_model.np.linalg.eig',
+                   side_effect=np.linalg.LinAlgError("eig failed")):
+            with pytest.raises(NumericError, match="valores propios"):
+                safe_eigenvalues([[1, 2], [3, 4]])
+
+    def test_safe_rank_exception(self):
+        """safe_rank: except Exception from matrix_rank (lines 251-252)"""
+        with patch('calculator.utils.matrix_model.np.linalg.matrix_rank',
+                   side_effect=Exception("rank failed")):
+            with pytest.raises(NumericError, match="rango"):
+                safe_rank([[1, 2], [3, 4]])
+
+    def test_safe_svd_linalg_error(self):
+        """safe_svd: except LinAlgError from np.linalg.svd (lines 271-272)"""
+        with patch('calculator.utils.matrix_model.np.linalg.svd',
+                   side_effect=np.linalg.LinAlgError("svd failed")):
+            with pytest.raises(NumericError, match="SVD"):
+                safe_svd([[1, 2], [3, 4]])
+
+    def test_safe_qr_linalg_error(self):
+        """safe_qr: except LinAlgError from np.linalg.qr (lines 290-291)"""
+        with patch('calculator.utils.matrix_model.np.linalg.qr',
+                   side_effect=np.linalg.LinAlgError("qr failed")):
+            with pytest.raises(NumericError, match="QR"):
+                safe_qr([[1, 2], [3, 4]])

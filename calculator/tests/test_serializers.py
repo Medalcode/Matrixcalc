@@ -2,8 +2,11 @@
 Tests for serializers
 """
 import pytest
+import numpy as np
+from unittest.mock import patch
 from calculator.serializers import MatrixSerializer
 from calculator.models import Matrix
+from calculator.utils import InvalidMatrixError
 
 
 @pytest.mark.django_db
@@ -109,5 +112,71 @@ class TestMatrixSerializer:
         
         assert updated_matrix.name == 'Partially Updated'
         assert updated_matrix.data == [[1, 2, 3], [4, 5, 6], [7, 8, 9]]  # Unchanged
+
+    def test_validate_exceeds_max_dimension(self):
+        """Test validation when rows/cols exceed MAX_DIMENSION (100)"""
+        data = {
+            'name': 'Too Big',
+            'rows': 101,
+            'cols': 2,
+            'data': [[1, 2]] * 101
+        }
+        serializer = MatrixSerializer(data=data)
+        assert not serializer.is_valid()
+
+    def test_validate_data_not_a_list(self):
+        """Test validation when data is not a list"""
+        data = {
+            'name': 'Bad Data',
+            'rows': 2,
+            'cols': 2,
+            'data': 'not_a_list'
+        }
+        serializer = MatrixSerializer(data=data)
+        assert not serializer.is_valid()
+
+    def test_validate_row_count_mismatch(self):
+        """Test validation when len(data) != rows"""
+        data = {
+            'name': 'Row Mismatch',
+            'rows': 2,
+            'cols': 2,
+            'data': [[1, 2], [3, 4], [5, 6]]
+        }
+        serializer = MatrixSerializer(data=data)
+        assert not serializer.is_valid()
+
+    def test_validate_row_not_a_list(self):
+        """Test validation when a row is not a list"""
+        data = {
+            'name': 'Bad Row',
+            'rows': 2,
+            'cols': 2,
+            'data': [[1, 2], 'not_a_list']
+        }
+        serializer = MatrixSerializer(data=data)
+        assert not serializer.is_valid()
+
+    @patch('calculator.serializers.parse_matrix')
+    def test_create_parse_matrix_error(self, mock_parse):
+        """Test create when parse_matrix raises InvalidMatrixError"""
+        mock_parse.side_effect = InvalidMatrixError("parse error")
+        data = {
+            'name': 'Test Matrix',
+            'rows': 3,
+            'cols': 3,
+            'data': [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        }
+        serializer = MatrixSerializer(data=data)
+        assert serializer.is_valid()
+        with pytest.raises(Exception):
+            serializer.save()
+
+    def test_to_representation_with_ndarray(self):
+        """Test to_representation when data is an ndarray"""
+        matrix = Matrix(name='test', rows=2, cols=2, data=np.array([[1, 2], [3, 4]]))
+        serializer = MatrixSerializer()
+        representation = serializer.to_representation(matrix)
+        assert representation['data'] == [[1, 2], [3, 4]]
 
 

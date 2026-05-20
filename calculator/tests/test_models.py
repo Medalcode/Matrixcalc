@@ -118,6 +118,7 @@ class TestOperationModel:
         )
         assert operation.matrix_b is None
         assert operation.is_binary_operation is False
+        assert 'Test Matrix' in str(operation)
     
     def test_binary_operation_check(self, matrix_pair):
         """Test is_binary_operation property"""

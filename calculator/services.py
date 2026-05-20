@@ -5,7 +5,7 @@ Este módulo contiene lógica de alto nivel que orquestra componentes
 del sistema, como backups, limpiezas y orquestación de tareas largas.
 """
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from django.conf import settings
 from calculator.management.commands.export_backup import Command as ExportCommand
@@ -17,7 +17,7 @@ def export_backup_service(output_path: Optional[str] = None) -> Dict[str, Any]:
     Exporta un respaldo completo de la base de datos a un archivo JSON.
     """
     if output_path is None:
-        timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
         output_path = os.path.join(settings.BASE_DIR, 'backups', f'backup_{timestamp}.json')
 
     try:
