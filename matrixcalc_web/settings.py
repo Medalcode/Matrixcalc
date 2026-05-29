@@ -36,10 +36,9 @@ DEBUG = os.environ.get("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
-# Cloud Run detection
-if os.environ.get("K_SERVICE"):
-    # Running on Cloud Run
-    ALLOWED_HOSTS = ["*"]  # Cloud Run maneja el routing
+# Cloud Run / Railway detection
+if os.environ.get("K_SERVICE") or os.environ.get("RAILWAY_ENVIRONMENT"):
+    ALLOWED_HOSTS = ["*"]  # Cloud Run / Railway maneja el routing
     DEBUG = False
 
 
@@ -206,6 +205,7 @@ REST_FRAMEWORK = {
 CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOWED_ORIGINS = [
+    "https://matrixcalc-advance.netlify.app",  # Frontend en Netlify
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
@@ -231,9 +231,16 @@ CORS_ALLOW_HEADERS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
+    "https://matrixcalc-advance.netlify.app",  # Frontend en Netlify
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
+
+# Añadir Railway public domain automáticamente si está disponible
+_railway_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
+if _railway_domain:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{_railway_domain}")
+    CORS_ALLOWED_ORIGINS.append(f"https://{_railway_domain}")
 
 # Logging Configuration
 LOGGING = {
