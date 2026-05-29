@@ -8,10 +8,11 @@
 ![Vue](https://img.shields.io/badge/vue-3.5-green)
 ![TypeScript](https://img.shields.io/badge/typescript-5.9-blue)
 ![Docker](https://img.shields.io/badge/docker-ready-blue)
-[![Deploy](https://img.shields.io/badge/deploy-Render-46E3B7)](https://render.com)
+[![Deploy Backend](https://img.shields.io/badge/backend-Railway-0B0D0E)](https://railway.app)
+[![Deploy Frontend](https://img.shields.io/badge/frontend-Netlify-00C7B7)](https://netlify.com)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Version](https://img.shields.io/badge/version-3.1.0-orange)
-![Single Service](https://img.shields.io/badge/architecture-single%20service-success)
+![Decoupled Architecture](https://img.shields.io/badge/architecture-decoupled-success)
 
 **The Cloud-Native Linear Algebra Workspace.**
 
@@ -60,9 +61,9 @@ El proyecto sigue una arquitectura de **Monolito Desacoplado** ("Decoupled Monol
 - **Tailwind CSS:** Asegura consistencia visual, iteración muy rápida del diseño UI/UX sin cargar CSS residual e innecesario, manteniendo un aspecto pulido "Math-First".
 
 ### Infraestructura (DevOps)
-- **Docker multi-stage:** Un solo `Dockerfile` que build ea el frontend Vue y lo sirve junto al backend Django.
-- **Render:** Despliegue unificado via Docker + PostgreSQL gratis. Autoescalado a cero.
-- **WhiteNoise:** Servir archivos estáticos y SPA desde el mismo proceso de Django, sin nginx ni CORS.
+- **Railway:** Despliegue del backend Django mediante Docker, gestionando conexiones y escalabilidad.
+- **Netlify:** Alojamiento ultrarrápido para la SPA en Vue 3 (Frontend) conectada vía API REST al backend.
+- **Docker multi-stage:** Entornos aislados y optimizados para producción.
 
 ---
 
@@ -95,15 +96,18 @@ docker-compose up --build
 - Frontend (Vite dev server): `http://localhost:5173`
 - API (Django): `http://localhost:8000/api/`
 
-### Deploy en Render (unificado, sin dependencias externas)
+### Deploy en Producción (Railway + Netlify)
 
-1. Crea una cuenta en https://render.com (conecta GitHub)
-2. **New Blueprint** → conecta `Medalcode/Matrixcalc`
-3. Render lee `render.yaml` y crea el web service con Docker
-4. Usa SQLite por defecto — sin base de datos externa necesaria
-5. Obtienes una URL como `https://matrixcalc.onrender.com`
+1. **Backend (Railway):**
+   - Crea un proyecto en [Railway](https://railway.app) y conéctalo al repositorio.
+   - Railway detectará automáticamente el archivo `railway.json` y `Dockerfile.railway`.
+   - Configura las variables: `SECRET_KEY`, `ALLOWED_HOSTS=*`.
+   - Usa SQLite (por defecto) o añade un plugin de PostgreSQL definiendo `DATABASE_URL`.
 
-Para agregar PostgreSQL persistente más adelante, solo define `DATABASE_URL` en las env vars de Render apuntando a Neon o Supabase.
+2. **Frontend (Netlify):**
+   - Conecta el repo a [Netlify](https://netlify.com).
+   - Configura el _build command_: `npm run build` y el _publish directory_: `frontend/dist`.
+   - Agrega la variable de entorno `VITE_API_URL` apuntando a la URL pública generada por Railway (ej. `https://tu-proyecto.up.railway.app/api`).
 
 *_💡 Tip para Desarrolladores:_* Existe un `Makefile` preconfigurado en la raíz del proyecto para tareas recurrentes. Simplemente ejecuta `make help` para ver comandos ágiles como `make test`, `make down` o `make setup`.
 
@@ -138,7 +142,7 @@ Matrixcalc/
 ├── backups/              # 📥 Almacén de dumps de base de datos intermedios en caso de reinicios masivos.
 ├── docker-compose.yml    # 🚢 Orquestador maestro que interconecta todos los servicios (Django + Node/Vue + DBs).
 ├── Makefile              # 🪄 Archivo mágico para la automatización local de tareas en consola (Developer Experience).
-└── cloudbuild.yaml       # ☁️ CI/CD Pipelines: Reglas y stages automatizados de Google Cloud.
+└── railway.json          # 🚂 CI/CD Pipelines: Reglas y stages de despliegue para Railway.
 ```
 
 ---
