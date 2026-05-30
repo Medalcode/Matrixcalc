@@ -22,7 +22,11 @@ export function useMatrixAPI() {
   const handleError = (err: unknown): string => {
     if (axios.isAxiosError(err)) {
       const axiosError = err as AxiosError<APIError>
-      return axiosError.response?.data?.error || axiosError.message
+      // Sin respuesta del servidor → backend no disponible
+      if (!axiosError.response) {
+        return 'No se puede conectar con el servidor. Asegúrate de que el backend está en ejecución.'
+      }
+      return axiosError.response.data?.error || axiosError.message
     }
     return String(err)
   }

@@ -5,19 +5,8 @@
       <p class="text-sm text-gray-500">Visualización de métricas del sistema</p>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="text-center py-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-      <p class="mt-2 text-sm text-gray-500">{{ t('stats.loading') }}</p>
-    </div>
-
-    <!-- Error State -->
-    <div v-else-if="error" class="p-4 bg-red-50 border border-red-200 rounded-md">
-      <p class="text-sm text-red-800">{{ error }}</p>
-    </div>
-
     <!-- Charts -->
-    <div v-else-if="stats" class="space-y-6">
+    <div v-if="stats" class="space-y-6">
       <!-- Operations by Type - Pie Chart -->
       <div>
         <h4 class="text-sm font-medium text-gray-900 mb-4">{{ t('stats.charts.distribution') }}</h4>
@@ -49,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import { useStatsStore } from '@/stores/statsStore'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
@@ -85,9 +74,6 @@ ChartJS.register(
 const { t } = useI18n()
 const statsStore = useStatsStore()
 const { stats } = storeToRefs(statsStore)
-
-const loading = ref(false)
-const error = ref<string | null>(null)
 
 const getOperationName = (type: OperationType): string => {
   return t(`stats.operationTypes.${type}`)
@@ -240,14 +226,4 @@ const barChartOptions: ChartOptions<'bar'> = {
   }
 }
 
-onMounted(async () => {
-  loading.value = true
-  try {
-    await statsStore.fetchStats()
-  } catch (err) {
-    error.value = String(err)
-  } finally {
-    loading.value = false
-  }
-})
 </script>
