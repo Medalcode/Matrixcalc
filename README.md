@@ -106,8 +106,8 @@ docker-compose up --build
 
 2. **Frontend (Netlify):**
    - Conecta el repo a [Netlify](https://netlify.com).
-   - Configura el _build command_: `npm run build` y el _publish directory_: `frontend/dist`.
-   - Agrega la variable de entorno `VITE_API_URL` apuntando a la URL pública generada por Railway (ej. `https://tu-proyecto.up.railway.app/api`).
+   - El proyecto incluye un archivo `netlify.toml` que automatiza el comando de build (`npm run build-only`) y la carpeta a publicar (`frontend/dist`).
+   - Agrega la variable de entorno `VITE_API_URL` apuntando a la URL pública generada por Railway (ej. `https://tu-proyecto.up.railway.app/api`) **antes** de realizar el primer despliegue.
 
 *_💡 Tip para Desarrolladores:_* Existe un `Makefile` preconfigurado en la raíz del proyecto para tareas recurrentes. Simplemente ejecuta `make help` para ver comandos ágiles como `make test`, `make down` o `make setup`.
 
