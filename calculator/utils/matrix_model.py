@@ -359,9 +359,10 @@ def safe_lu(A: Any) -> dict:
             P[[k, max_idx]] = P[[max_idx, k]]
             L[[k, max_idx], :k] = L[[max_idx, k], :k]
 
-        for i in range(k + 1, n):
-            factor = U[i, k] / U[k, k]
-            L[i, k] = factor
-            U[i, k:] -= factor * U[k, k:]
+        if k < n - 1:
+            # Vectorized operations instead of inner loop
+            factors = U[k + 1:, k] / U[k, k]
+            L[k + 1:, k] = factors
+            U[k + 1:, k:] -= np.outer(factors, U[k, k:])
 
     return {"P": P.tolist(), "L": L.tolist(), "U": U.tolist()}

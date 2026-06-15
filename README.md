@@ -39,6 +39,12 @@ El ecosistema actual de herramientas matemáticas obliga a los usuarios a elegir
 - **🌐 Exportación e Importación Dinámica:** Soporte para carga de datasets vía CSV y exportación del historial de operaciones de un proyecto.
 - **🖥️ Renderizado Matemático Nivel Académico:** Representación visual elegante tanto de las matrices entrantes como de los resultados mediante integración con LaTeX.
 
+### 🆕 Novedades Recientes
+- **Optimización Algorítmica:** La descomposición LU ahora utiliza operaciones 100% vectorizadas con NumPy, garantizando mayor rendimiento para matrices grandes.
+- **Rate Limiting Restricto:** Ajuste de peticiones de la API a 100/h en operaciones intensivas, alineado a las especificaciones de producción.
+- **Arquitectura Simplificada:** Entorno de producción unificado en un solo `Dockerfile` multi-stage que gestiona de manera eficiente el backend y frontend.
+- **Robustez en el Frontend:** Corrección profunda del entorno de tests (Vitest), fortaleciendo la aserción y el ciclo de vida de los componentes Vue mediante mock de Pinia y Axios.
+
 ---
 
 ## 🛠️ Stack tecnológico con justificación breve

@@ -99,7 +99,7 @@ describe('ResultViewer', () => {
             updated_at: '2025-12-21T00:00:00Z'
           },
           result_matrix: 1,
-          execution_time: 0.03,
+          execution_time_ms: 0.03,
           created_at: '2025-12-21T00:00:00Z'
         }
       }
@@ -149,7 +149,7 @@ describe('ResultViewer', () => {
             updated_at: '2025-12-21T00:00:00Z'
           },
           result_matrix: 1,
-          execution_time: 0.125,
+          execution_time_ms: 0.125,
           created_at: '2025-12-21T00:00:00Z'
         }
       }
@@ -235,7 +235,7 @@ describe('ResultViewer', () => {
             updated_at: '2025-12-21T00:00:00Z'
           },
           result_matrix: 1,
-          execution_time: 0.5,
+          execution_time_ms: 0.5,
           created_at: '2025-12-21T00:00:00Z'
         }
       }

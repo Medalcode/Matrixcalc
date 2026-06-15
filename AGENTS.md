@@ -18,11 +18,11 @@ cd frontend && npx vitest run   # 5 Vitest tests
 ## Critical Quirks
 
 - **This is a LARGE codebase** — 182 files, Django + Celery + Redis + Vue 3 + TypeScript + Tailwind. The entry points are:
-  - `manage.py` (Django — 3 Dockerfiles, 2 for production)
+  - `manage.py` (Django)
   - `matrixcalc_web/settings.py` (Django settings — 273 lines)
   - `calculator/views.py` (REST API — 429 lines)
   - `frontend/src/main.ts` (Vue 3 SPA)
-- **Three Dockerfiles**: `Dockerfile` (legacy/single), `Dockerfile.backend` (current, multi-stage), `Dockerfile.frontend` (Vue → nginx). Use `Dockerfile.backend` for production, not the root `Dockerfile`.
+- **Single Dockerfile**: The project uses a single multi-stage `Dockerfile` in the root directory for production, which handles both backend and frontend.
 - **Celery+Redis required** for async tasks (backup export, data cleanup). The `worker` service in docker-compose runs `celery -A matrixcalc_web worker -l info --concurrency=2`.
 - **pytest.ini** configures: `DJANGO_SETTINGS_MODULE`, `--no-migrations`, `--reuse-db`, `--cov=calculator` with HTML/XML/terminal coverage reports. **158 tests** with 99% coverage.
 - **Google Cloud Build** (`cloudbuild.yaml`) is the production deployment pipeline — not GitHub Actions. CI (`.github/workflows/ci.yml`) uses flake8 + pytest but does NOT deploy.

@@ -2,7 +2,7 @@
  * Tests for MatrixEditor component
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import MatrixEditor from '../MatrixEditor.vue'
 import { createI18n } from 'vue-i18n'
@@ -27,6 +27,10 @@ const i18n = createI18n({
             random: 'Valores Aleatorios'
           },
           actions: {
+            fillZeros: 'Llenar con Ceros',
+            fillOnes: 'Llenar con Unos',
+            fillIdentity: 'Matriz Identidad',
+            fillRandom: 'Valores Aleatorios',
             save: 'Guardar Matriz',
             cancel: 'Cancelar',
             clear: 'Limpiar'
@@ -136,11 +140,19 @@ describe('MatrixEditor', () => {
     await wrapper.find('input[placeholder="Matriz A"]').setValue('Test Matrix')
     await wrapper.findAll('input[type="number"]')[0].setValue('2')
     await wrapper.findAll('input[type="number"]')[1].setValue('2')
+    await wrapper.vm.$nextTick()
+
+    // Fill with zeros so isValid becomes true
+    const fillZerosButton = wrapper.findAll('button').find(btn => btn.text().includes('Llenar con Ceros'))
+    if (fillZerosButton) {
+      await fillZerosButton.trigger('click')
+    }
 
     const buttons = wrapper.findAll('button')
     const saveButton = buttons.find(btn => btn.text().includes('Guardar'))
     if (saveButton) {
       await saveButton.trigger('click')
+      await flushPromises()
     }
 
     expect(wrapper.emitted('save')).toBeTruthy()

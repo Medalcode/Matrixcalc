@@ -283,7 +283,7 @@ class OperationViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 @api_view(["POST"])
-@ratelimit(key="ip", rate="50/m", method="POST")
+@ratelimit(key="ip", rate="100/h", method="POST")
 def sum_matrices(request):
     """Suma dos matrices."""
     return _perform_matrix_operation(
@@ -292,7 +292,7 @@ def sum_matrices(request):
 
 
 @api_view(["POST"])
-@ratelimit(key="ip", rate="50/m", method="POST")
+@ratelimit(key="ip", rate="100/h", method="POST")
 def subtract_matrices(request):
     """Resta dos matrices."""
     return _perform_matrix_operation(
@@ -301,7 +301,7 @@ def subtract_matrices(request):
 
 
 @api_view(["POST"])
-@ratelimit(key="ip", rate="50/m", method="POST")
+@ratelimit(key="ip", rate="100/h", method="POST")
 def multiply_matrices(request):
     """Multiplica dos matrices."""
     return _perform_matrix_operation(
@@ -310,14 +310,14 @@ def multiply_matrices(request):
 
 
 @api_view(["POST"])
-@ratelimit(key="ip", rate="50/m", method="POST")
+@ratelimit(key="ip", rate="100/h", method="POST")
 def inverse_matrix(request):
     """Calcula la inversa de una matriz."""
     return _perform_matrix_operation("INVERSE", request.data.get("matrix_id"))
 
 
 @api_view(["POST"])
-@ratelimit(key="ip", rate="50/m", method="POST")
+@ratelimit(key="ip", rate="100/h", method="POST")
 def determinant_matrix(request):
     """Calcula el determinante de una matriz."""
     # El helper ya guarda el resultado como 1x1, podemos añadir lógica extra si es necesario
@@ -325,7 +325,7 @@ def determinant_matrix(request):
 
 
 @api_view(["POST"])
-@ratelimit(key="ip", rate="50/m", method="POST")
+@ratelimit(key="ip", rate="100/h", method="POST")
 def transpose_matrix(request):
     """Calcula la transpuesta de una matriz."""
     return _perform_matrix_operation("TRANSPOSE", request.data.get("matrix_id"))
@@ -396,35 +396,35 @@ def stats_view(request):
 
 
 @api_view(["POST"])
-@ratelimit(key="ip", rate="30/m", method="POST")
+@ratelimit(key="ip", rate="100/h", method="POST")
 def calculate_rank(request):
     """Calcula el rango de una matriz."""
     return _perform_matrix_operation("RANK", request.data.get("matrix_id"))
 
 
 @api_view(["POST"])
-@ratelimit(key="ip", rate="20/m", method="POST")
+@ratelimit(key="ip", rate="100/h", method="POST")
 def calculate_eigenvalues(request):
     """Calcula valores y vectores propios."""
     return _perform_matrix_operation("EIGEN", request.data.get("matrix_id"))
 
 
 @api_view(["POST"])
-@ratelimit(key="ip", rate="20/m", method="POST")
+@ratelimit(key="ip", rate="100/h", method="POST")
 def calculate_svd(request):
     """Calcula descomposición SVD (U, S, Vh)."""
     return _perform_matrix_operation("SVD", request.data.get("matrix_id"))
 
 
 @api_view(["POST"])
-@ratelimit(key="ip", rate="20/m", method="POST")
+@ratelimit(key="ip", rate="100/h", method="POST")
 def calculate_qr(request):
     """Calcula descomposición QR."""
     return _perform_matrix_operation("QR", request.data.get("matrix_id"))
 
 
 @api_view(["POST"])
-@ratelimit(key="ip", rate="20/m", method="POST")
+@ratelimit(key="ip", rate="100/h", method="POST")
 def calculate_cholesky(request):
     """Calcula descomposición Cholesky."""
     return _perform_matrix_operation("CHOLESKY", request.data.get("matrix_id"))

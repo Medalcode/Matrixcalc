@@ -413,11 +413,11 @@ const loading = ref(false);
 const availableMatrices = computed(() => matrices.value);
 
 const selectedMatrixA = computed(
-  () => matrices.value.find((m) => m.id === selectedMatrixAId.value) || null,
+  () => matrices.value.find((m) => m.id == selectedMatrixAId.value) || null,
 );
 
 const selectedMatrixB = computed(
-  () => matrices.value.find((m) => m.id === selectedMatrixBId.value) || null,
+  () => matrices.value.find((m) => m.id == selectedMatrixBId.value) || null,
 );
 
 const requiresTwoMatrices = computed(

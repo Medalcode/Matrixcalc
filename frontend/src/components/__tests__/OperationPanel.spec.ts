@@ -2,7 +2,7 @@
  * Tests for OperationPanel component
  */
 import { describe, it, expect, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import OperationPanel from '../OperationPanel.vue'
 import { useMatrixStore } from '@/stores/matrixStore'
@@ -16,6 +16,7 @@ const i18n = createI18n({
       calculator: {
         operations: {
           title: 'Operaciones',
+          selectMatrix: 'Seleccionar matriz',
           selectMatrixA: 'Seleccionar Matriz A',
           selectMatrixB: 'Seleccionar Matriz B',
           binaryOperations: 'Operaciones Binarias',
@@ -117,10 +118,10 @@ describe('OperationPanel', () => {
     })
 
     const store = useMatrixStore()
-    store.matrices = [
+    store.matrices.push(
       { id: 1, name: 'Matrix A', rows: 2, cols: 2, data: [[1, 2], [3, 4]], created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
       { id: 2, name: 'Matrix B', rows: 2, cols: 2, data: [[5, 6], [7, 8]], created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
-    ]
+    )
 
     await wrapper.vm.$nextTick()
 
@@ -137,6 +138,7 @@ describe('OperationPanel', () => {
       await sumButton.trigger('click')
     }
 
+    await flushPromises()
     await wrapper.vm.$nextTick()
 
     const executeButton = wrapper.findAll('button').find(btn => 
@@ -144,6 +146,10 @@ describe('OperationPanel', () => {
     )
 
     if (executeButton) {
+      if (executeButton.attributes('disabled') !== undefined) {
+         console.error('EXECUTE BUTTON IS DISABLED in test 1! HTML:');
+         console.error(wrapper.html());
+      }
       // Button should now be enabled (no disabled attribute)
       expect(executeButton.attributes('disabled')).toBeUndefined()
     }
@@ -157,9 +163,9 @@ describe('OperationPanel', () => {
     })
 
     const store = useMatrixStore()
-    store.matrices = [
+    store.matrices.push(
       { id: 1, name: 'Matrix A', rows: 2, cols: 2, data: [[1, 2], [3, 4]], created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
-    ]
+    )
 
     await wrapper.vm.$nextTick()
 
@@ -186,7 +192,8 @@ describe('OperationPanel', () => {
 
     if (executeButton && !executeButton.attributes('disabled')) {
       await executeButton.trigger('click')
-      expect(wrapper.emitted('operation-execute')).toBeTruthy()
+      await flushPromises()
+      expect(wrapper.emitted('result')).toBeTruthy()
     }
   })
 })

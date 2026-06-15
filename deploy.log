@@ -1,0 +1,17 @@
+
+Deploying to Netlify
+────────────────────────────────────────────────────────────────
+
+Deploy path:        /mnt/Externo_Portatil/Github/Matrixcalc/frontend/dist
+Configuration path: /mnt/Externo_Portatil/Github/Matrixcalc/netlify.toml
+
+
+🚀 Deploy complete
+────────────────────────────────────────────────────────────────
+
+Production URL: <https://jovial-mooncake-7e59af.netlify.app>
+Unique deploy URL: <https://6a1afee617acbb9f5b22852d--jovial-mooncake-7e59af.netlify.app>
+
+Build logs: <https://app.netlify.com/projects/jovial-mooncake-7e59af/deploys/6a1afee617acbb9f5b22852d>
+Function logs: <https://app.netlify.com/projects/jovial-mooncake-7e59af/logs/functions>
+Edge function logs: <https://app.netlify.com/projects/jovial-mooncake-7e59af/logs/edge-functions>
