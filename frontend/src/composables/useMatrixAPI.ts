@@ -31,143 +31,65 @@ export function useMatrixAPI() {
     return String(err)
   }
 
+  const withLoading = async <T>(fn: () => Promise<T>): Promise<T> => {
+    loading.value = true
+    error.value = null
+    try {
+      return await fn()
+    } catch (err) {
+      error.value = handleError(err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   // ---------- Matrices CRUD ----------
 
-  const getMatrices = async (): Promise<PaginatedResponse<Matrix>> => {
-    loading.value = true
-    error.value = null
-    try {
-      const response = await axios.get<PaginatedResponse<Matrix>>(`${API_BASE_URL}/matrices/`)
-      return response.data
-    } catch (err) {
-      error.value = handleError(err)
-      throw err
-    } finally {
-      loading.value = false
-    }
-  }
+  const getMatrices = () => withLoading(() => 
+    axios.get<PaginatedResponse<Matrix>>(`${API_BASE_URL}/matrices/`).then(res => res.data)
+  )
 
-  const getMatrix = async (id: number): Promise<Matrix> => {
-    loading.value = true
-    error.value = null
-    try {
-      const response = await axios.get<Matrix>(`${API_BASE_URL}/matrices/${id}/`)
-      return response.data
-    } catch (err) {
-      error.value = handleError(err)
-      throw err
-    } finally {
-      loading.value = false
-    }
-  }
+  const getMatrix = (id: number) => withLoading(() => 
+    axios.get<Matrix>(`${API_BASE_URL}/matrices/${id}/`).then(res => res.data)
+  )
 
-  const createMatrix = async (matrix: MatrixCreateDTO): Promise<Matrix> => {
-    loading.value = true
-    error.value = null
-    try {
-      const response = await axios.post<Matrix>(`${API_BASE_URL}/matrices/`, matrix)
-      return response.data
-    } catch (err) {
-      error.value = handleError(err)
-      throw err
-    } finally {
-      loading.value = false
-    }
-  }
+  const createMatrix = (matrix: MatrixCreateDTO) => withLoading(() => 
+    axios.post<Matrix>(`${API_BASE_URL}/matrices/`, matrix).then(res => res.data)
+  )
 
-  const updateMatrix = async (id: number, matrix: Partial<MatrixCreateDTO>): Promise<Matrix> => {
-    loading.value = true
-    error.value = null
-    try {
-      const response = await axios.patch<Matrix>(`${API_BASE_URL}/matrices/${id}/`, matrix)
-      return response.data
-    } catch (err) {
-      error.value = handleError(err)
-      throw err
-    } finally {
-      loading.value = false
-    }
-  }
+  const updateMatrix = (id: number, matrix: Partial<MatrixCreateDTO>) => withLoading(() => 
+    axios.patch<Matrix>(`${API_BASE_URL}/matrices/${id}/`, matrix).then(res => res.data)
+  )
 
-  const deleteMatrix = async (id: number): Promise<void> => {
-    loading.value = true
-    error.value = null
-    try {
-      await axios.delete(`${API_BASE_URL}/matrices/${id}/`)
-    } catch (err) {
-      error.value = handleError(err)
-      throw err
-    } finally {
-      loading.value = false
-    }
-  }
+  const deleteMatrix = (id: number) => withLoading(() => 
+    axios.delete(`${API_BASE_URL}/matrices/${id}/`).then(() => undefined)
+  )
 
-  const exportMatrixCSV = async (id: number): Promise<Blob> => {
-    loading.value = true
-    error.value = null
-    try {
-      const response = await axios.get(`${API_BASE_URL}/matrices/${id}/export_csv/`, {
-        responseType: 'blob'
-      })
-      return response.data
-    } catch (err) {
-      error.value = handleError(err)
-      throw err
-    } finally {
-      loading.value = false
-    }
-  }
+  const exportMatrixCSV = (id: number) => withLoading(() => 
+    axios.get(`${API_BASE_URL}/matrices/${id}/export_csv/`, { responseType: 'blob' }).then(res => res.data)
+  )
 
-  const importMatrixCSV = async (file: File, name: string): Promise<Matrix> => {
-    loading.value = true
-    error.value = null
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('name', name)
-      const response = await axios.post<Matrix>(
-        `${API_BASE_URL}/matrices/import_csv/`,
-        formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
-      )
-      return response.data
-    } catch (err) {
-      error.value = handleError(err)
-      throw err
-    } finally {
-      loading.value = false
-    }
-  }
+  const importMatrixCSV = (file: File, name: string) => withLoading(() => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('name', name)
+    return axios.post<Matrix>(
+      `${API_BASE_URL}/matrices/import_csv/`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    ).then(res => res.data)
+  })
 
   // ---------- Operations ----------
 
-  const _operate = async (endpoint: string, request: OperationRequest): Promise<Operation> => {
-    loading.value = true
-    error.value = null
-    try {
-      const response = await axios.post<Operation>(`${API_BASE_URL}/operations/${endpoint}/`, request)
-      return response.data
-    } catch (err) {
-      error.value = handleError(err)
-      throw err
-    } finally {
-      loading.value = false
-    }
-  }
+  const _operate = (endpoint: string, request: OperationRequest) => withLoading(() => 
+    axios.post<Operation>(`${API_BASE_URL}/operations/${endpoint}/`, request).then(res => res.data)
+  )
 
-  const getOperations = async (): Promise<PaginatedResponse<Operation>> => {
-    loading.value = true
-    error.value = null
-    try {
-      const response = await axios.get<PaginatedResponse<Operation>>(`${API_BASE_URL}/operations-history/`)
-      return response.data
-    } catch (err) {
-      error.value = handleError(err)
-      throw err
-    } finally {
-      loading.value = false
-    }
-  }
+  const getOperations = () => withLoading(() => 
+    axios.get<PaginatedResponse<Operation>>(`${API_BASE_URL}/operations-history/`).then(res => res.data)
+  )
 
   const sumMatrices = (request: OperationRequest) => _operate('sum', request)
   const subtractMatrices = (request: OperationRequest) => _operate('subtract', request)
@@ -183,19 +105,9 @@ export function useMatrixAPI() {
 
   // ---------- Stats ----------
 
-  const getStats = async (): Promise<Stats> => {
-    loading.value = true
-    error.value = null
-    try {
-      const response = await axios.get<Stats>(`${API_BASE_URL}/stats/`)
-      return response.data
-    } catch (err) {
-      error.value = handleError(err)
-      throw err
-    } finally {
-      loading.value = false
-    }
-  }
+  const getStats = () => withLoading(() => 
+    axios.get<Stats>(`${API_BASE_URL}/stats/`).then(res => res.data)
+  )
 
   return {
     loading,

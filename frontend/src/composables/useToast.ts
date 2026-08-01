@@ -10,6 +10,7 @@ export interface Toast {
 }
 
 const toasts = ref<Toast[]>([])
+const toastTimeouts = new Map<number, ReturnType<typeof setTimeout>>()
 let toastIdCounter = 0
 
 export function useToast() {
@@ -20,9 +21,10 @@ export function useToast() {
     toasts.value.push(toast)
     
     if (duration > 0) {
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         remove(id)
       }, duration)
+      toastTimeouts.set(id, timeoutId)
     }
     
     return id
@@ -32,6 +34,11 @@ export function useToast() {
     const index = toasts.value.findIndex(t => t.id === id)
     if (index > -1) {
       toasts.value.splice(index, 1)
+    }
+    const timeoutId = toastTimeouts.get(id)
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+      toastTimeouts.delete(id)
     }
   }
   

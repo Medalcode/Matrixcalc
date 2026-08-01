@@ -27,9 +27,13 @@ load_dotenv(BASE_DIR / ".env")
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
-    "SECRET_KEY", "django-insecure--fofyb23zfr4yz&6w+lxj3wc=-@+td%r=_om)el**&r8yctzv%"
-)
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    if os.environ.get("DEBUG", "True") == "True":
+        SECRET_KEY = "django-insecure--fofyb23zfr4yz&6w+lxj3wc=-@+td%r=_om)el**&r8yctzv%"
+    else:
+        from django.core.exceptions import ImproperlyConfigured
+        raise ImproperlyConfigured("SECRET_KEY environment variable is required in production (DEBUG=False).")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "True") == "True"
@@ -215,7 +219,9 @@ if not CORS_ALLOW_ALL_ORIGINS:
         "CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
     )
     if cors_origins:
-        CORS_ALLOWED_ORIGINS.extend(cors_origins.split(","))
+        # Use set logic to avoid duplicates
+        new_origins = [o for o in cors_origins.split(",") if o not in CORS_ALLOWED_ORIGINS]
+        CORS_ALLOWED_ORIGINS.extend(new_origins)
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
@@ -282,8 +288,19 @@ MATRIX_CONFIG = {
     "CONDITION_THRESHOLD": float(os.environ.get("CONDITION_THRESHOLD", 1e12)),
 }
 
-# Scheduler Configuration
-RUN_SCHEDULER = os.environ.get("RUN_SCHEDULER", "false").lower() == "true"
+# Celery Beat Configuration
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    "cleanup-old-data-daily": {
+        "task": "calculator.cleanup_old_data",
+        "schedule": crontab(hour=2, minute=0),
+    },
+    "auto-backup-weekly": {
+        "task": "calculator.export_backup",
+        "schedule": crontab(hour=3, minute=0, day_of_week=0),
+    }
+}
 
 # Backup Directory
 BACKUP_DIR = BASE_DIR / "backups"

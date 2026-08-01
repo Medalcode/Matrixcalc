@@ -11,6 +11,7 @@ from datetime import timedelta
 import numpy as np
 from django.conf import settings
 from django.db.models import Avg, Count
+from django.db.models.functions import TruncDate
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -44,6 +45,11 @@ def _perform_matrix_operation(operation_type, matrix_a_id, matrix_b_id=None, ext
     """
     Helper centralizado para ejecutar operaciones, medir tiempo y persistir resultados.
     """
+    if not isinstance(matrix_a_id, (int, str)) or not str(matrix_a_id).isdigit():
+        return Response({"error": "ID de matriz A inválido"}, status=status.HTTP_400_BAD_REQUEST)
+    if matrix_b_id is not None and (not isinstance(matrix_b_id, (int, str)) or not str(matrix_b_id).isdigit()):
+        return Response({"error": "ID de matriz B inválido"}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
         matrix_a = Matrix.objects.get(id=matrix_a_id)
         matrix_b = Matrix.objects.get(id=matrix_b_id) if matrix_b_id else None
@@ -241,9 +247,13 @@ class MatrixViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(matrix)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+        except (UnicodeDecodeError, ValueError) as e:
+            return Response(
+                {"error": f"Error de formato al leer CSV: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
             return Response(
-                {"error": f"Error al importar CSV: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": f"Error inesperado al importar CSV: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -361,7 +371,7 @@ def stats_view(request):
     thirty_days_ago = timezone.now() - timedelta(days=30)
     operations_timeline = (
         Operation.objects.filter(created_at__gte=thirty_days_ago)
-        .extra(select={"date": "DATE(created_at)"})
+        .annotate(date=TruncDate("created_at"))
         .values("date")
         .annotate(count=Count("id"))
         .order_by("date")

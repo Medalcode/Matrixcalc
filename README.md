@@ -44,6 +44,8 @@ El ecosistema actual de herramientas matemáticas obliga a los usuarios a elegir
 - **Rate Limiting Restricto:** Ajuste de peticiones de la API a 100/h en operaciones intensivas, alineado a las especificaciones de producción.
 - **Arquitectura Simplificada:** Entorno de producción unificado en un solo `Dockerfile` multi-stage que gestiona de manera eficiente el backend y frontend.
 - **Robustez en el Frontend:** Corrección profunda del entorno de tests (Vitest), fortaleciendo la aserción y el ciclo de vida de los componentes Vue mediante mock de Pinia y Axios.
+- **DevOps y Seguridad:** Implementación estricta de variables de entorno, eliminación de hardcoded secrets, anclaje de dependencias para reproducibilidad y optimización de caché en capas de Docker.
+- **CI/CD Integrado:** El pipeline de GitHub Actions ahora ejecuta de manera integral pruebas unitarias tanto de Backend (Pytest) como de Frontend (Vitest).
 
 ---
 

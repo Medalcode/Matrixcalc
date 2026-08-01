@@ -64,14 +64,12 @@ class Command(BaseCommand):
 
                 # Deserializar matrices
                 self.stdout.write("Importando matrices...")
-                matrices_json = json.dumps(matrices_data)
-                for obj in serializers.deserialize("json", matrices_json):
+                for obj in serializers.deserialize("python", matrices_data):
                     obj.save()
 
                 # Deserializar operaciones
                 self.stdout.write("Importando operaciones...")
-                operations_json = json.dumps(operations_data)
-                for obj in serializers.deserialize("json", operations_json):
+                for obj in serializers.deserialize("python", operations_data):
                     obj.save()
 
                 self.stdout.write(

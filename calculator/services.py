@@ -5,14 +5,15 @@ Este módulo contiene lógica de alto nivel que orquestra componentes
 del sistema, como backups, limpiezas y orquestación de tareas largas.
 """
 
+import logging
 import os
 from datetime import UTC, datetime
 from typing import Any
 
 from django.conf import settings
+from django.core.management import call_command
 
-from calculator.management.commands.cleanup_old_data import Command as CleanupCommand
-from calculator.management.commands.export_backup import Command as ExportCommand
+logger = logging.getLogger(__name__)
 
 
 def export_backup_service(output_path: str | None = None) -> dict[str, Any]:
@@ -24,10 +25,10 @@ def export_backup_service(output_path: str | None = None) -> dict[str, Any]:
         output_path = os.path.join(settings.BASE_DIR, "backups", f"backup_{timestamp}.json")
 
     try:
-        cmd = ExportCommand()
-        cmd.handle(output=output_path)
+        call_command("export_backup", output=output_path)
         return {"status": "ok", "path": output_path}
     except Exception as e:
+        logger.exception("Error in export_backup_service")
         return {"status": "error", "message": str(e)}
 
 
@@ -36,14 +37,14 @@ def cleanup_data_service(days: int | None = None, dry_run: bool = False) -> dict
     Limpia operaciones y matrices antiguas según la política de retención.
     """
     try:
-        cmd = CleanupCommand()
         options = {"dry_run": dry_run}
         if days is not None:
             options["days"] = days
 
-        cmd.handle(**options)
+        call_command("cleanup_old_data", **options)
         return {"status": "ok"}
     except Exception as e:
+        logger.exception("Error in cleanup_data_service")
         return {"status": "error", "message": str(e)}
 
 

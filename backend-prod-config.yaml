@@ -1,8 +1,3 @@
-DATABASE_URL: "postgresql://postgres:Muneca1213%23%23@db.dppqzgdbkzsvrpqvvorh.supabase.co:5432/postgres"
-SECRET_KEY: "prod-secret-key-matrixcalc-2025"
-DEBUG: "True"
-ALLOWED_HOSTS: "*"
-CORS_ALLOW_ALL_ORIGINS: "True"
-CORS_ALLOW_CREDENTIALS: "True"
-CORS_ALLOW_HEADERS: "accept, accept-encoding, authorization, content-type, dnt, origin, user-agent, x-csrftoken, x-requested-with"
-CORS_ALLOW_METHODS: "DELETE, GET, OPTIONS, PATCH, POST, PUT"
+# Este archivo ha sido saneado por razones de seguridad.
+# Los secretos (como DATABASE_URL o ALLOWED_HOSTS) no deben ser almacenados en texto plano en el repositorio.
+# Utiliza variables de entorno o un gestor de secretos (ej. AWS Secrets Manager, Google Secret Manager).

@@ -162,7 +162,7 @@ def safe_inv(A: Any) -> np.ndarray:
     try:
         inv = np.linalg.inv(A_np)
         return inv
-    except np.linalg.LinAlgError as exc:
+    except (np.linalg.LinAlgError, ValueError, FloatingPointError) as exc:
         raise NumericError("La matriz es singular y no tiene inversa.") from exc
 
 
@@ -204,7 +204,7 @@ def safe_dot(A: Any, B: Any) -> np.ndarray:
 
     try:
         return np.matmul(A_np, B_np)
-    except Exception as exc:
+    except (np.linalg.LinAlgError, ValueError) as exc:
         raise NumericError("Error al multiplicar las matrices.") from exc
 
 
@@ -268,7 +268,7 @@ def safe_rank(A: Any) -> int:
     A_np = np.ascontiguousarray(A, dtype=np.float64)
     try:
         return int(np.linalg.matrix_rank(A_np))
-    except Exception as exc:
+    except (np.linalg.LinAlgError, ValueError) as exc:
         raise NumericError("Error al calcular el rango de la matriz.") from exc
 
 

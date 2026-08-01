@@ -40,7 +40,6 @@ class Matrix(models.Model):
         indexes = [
             models.Index(fields=["created_at"]),
             models.Index(fields=["name"]),
-            models.Index(fields=["-created_at"]),
         ]
 
     def __str__(self):
@@ -120,7 +119,6 @@ class Operation(models.Model):
         indexes = [
             models.Index(fields=["operation_type"]),
             models.Index(fields=["created_at"]),
-            models.Index(fields=["-created_at"]),
         ]
 
     def __str__(self):

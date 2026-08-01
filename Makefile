@@ -54,7 +54,7 @@ cleanup: ## Limpiar datos antiguos (30 días)
 	docker-compose exec backend python manage.py cleanup_old_data --days 30
 
 test: ## Ejecutar tests
-	docker-compose exec backend python manage.py test
+	docker-compose exec backend python -m pytest -q
 
 restart: ## Reiniciar todos los servicios
 	docker-compose restart

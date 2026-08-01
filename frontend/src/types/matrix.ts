@@ -25,7 +25,7 @@ export interface Operation {
   matrix_a: Matrix
   matrix_b?: Matrix | null
   result: Matrix
-  extra_data?: any
+  extra_data?: Record<string, unknown> | null
   execution_time_ms: number
   created_at: string
 }
