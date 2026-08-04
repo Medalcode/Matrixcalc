@@ -386,7 +386,9 @@ class TestOperationViewSet:
         self._create_operation(matrix, days_ago=10)
 
         past = timezone.now() - timedelta(days=15)
-        url = f"/api/operations-history/?date_from={past.strftime('%Y-%m-%d')}&date_to={(timezone.now() - timedelta(days=5)).strftime('%Y-%m-%d')}"
+        date_from = past.strftime('%Y-%m-%d')
+        date_to = (timezone.now() - timedelta(days=5)).strftime('%Y-%m-%d')
+        url = f"/api/operations-history/?date_from={date_from}&date_to={date_to}"
         response = api_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK

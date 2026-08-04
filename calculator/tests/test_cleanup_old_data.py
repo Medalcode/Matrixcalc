@@ -119,8 +119,8 @@ class TestCleanupOldDataCommand:
     def test_deletes_multiple_old_operations(self):
         m1 = self._old_matrix("A")
         m2 = self._old_matrix("B")
-        op1 = self._old_operation(m1)
-        op2 = self._old_operation(m2)
+        _ = self._old_operation(m1)
+        _ = self._old_operation(m2)
         call_command("cleanup_old_data", days=30, dry_run=False)
 
         assert Operation.objects.count() == 0

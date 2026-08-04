@@ -122,16 +122,17 @@ class TestOperationModel:
         )
         assert operation.is_binary_operation is True
 
-    def test_cascade_delete_matrix(self, matrix):
-        """Test that deleting matrix cascades to operations"""
+    def test_set_null_delete_matrix(self, matrix):
+        """Test that deleting matrix sets matrix_a to None on operations instead of destroying history"""
         result = Matrix.objects.create(
             name="Result", rows=3, cols=3, data=[[1, 4, 7], [2, 5, 8], [3, 6, 9]]
         )
-        Operation.objects.create(
+        op = Operation.objects.create(
             operation_type="TRANSPOSE", matrix_a=matrix, result=result, execution_time_ms=10
         )
         matrix_id = matrix.id
         matrix.delete()
-        # Operation should be deleted due to CASCADE
         assert not Matrix.objects.filter(id=matrix_id).exists()
-        assert Operation.objects.count() == 0
+        op.refresh_from_db()
+        assert op.matrix_a is None
+        assert Operation.objects.count() == 1

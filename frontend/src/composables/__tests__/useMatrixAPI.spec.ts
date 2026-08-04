@@ -169,7 +169,7 @@ describe('useMatrixAPI', () => {
 
       const { sumMatrices, loading, error } = useMatrixAPI()
       
-      const response = await sumMatrices(1, 2)
+      const response = await sumMatrices({ matrix_a_id: 1, matrix_b_id: 2 })
 
       expect(loading.value).toBe(false)
       expect(error.value).toBeNull()
@@ -184,7 +184,7 @@ describe('useMatrixAPI', () => {
       const { sumMatrices, error } = useMatrixAPI()
       
       try {
-        await sumMatrices(1, 2)
+        await sumMatrices({ matrix_a_id: 1, matrix_b_id: 2 })
       } catch (e) {
         // Expected to throw
       }
@@ -227,7 +227,7 @@ describe('useMatrixAPI', () => {
 
       const { exportMatrixCSV } = useMatrixAPI()
       
-      await exportMatrixCSV()
+      await exportMatrixCSV(1)
 
       expect(axios.get).toHaveBeenCalled()
     })
@@ -242,7 +242,7 @@ describe('useMatrixAPI', () => {
 
       const { importMatrixCSV } = useMatrixAPI()
       
-      const result = await importMatrixCSV(mockFile)
+      const result = await importMatrixCSV(mockFile, 'test.csv')
 
       expect(result).toEqual(response)
       expect(axios.post).toHaveBeenCalled()

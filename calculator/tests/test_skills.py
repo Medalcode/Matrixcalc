@@ -15,7 +15,7 @@ def test_export_backup_skill_creates_file(tmp_path):
     # Crear datos mínimos
     m1 = Matrix.objects.create(name="A", rows=2, cols=2, data=[[1, 2], [3, 4]])
     m2 = Matrix.objects.create(name="B", rows=2, cols=2, data=[[5, 6], [7, 8]])
-    op = Operation.objects.create(
+    _ = Operation.objects.create(
         operation_type="SUM", matrix_a=m1, matrix_b=m2, result=m1, execution_time_ms=10
     )
 
@@ -51,7 +51,7 @@ def test_cleanup_old_data_skill_dry_run():
 @pytest.mark.django_db
 def test_export_backup_default_path():
     """Export with default output_path should succeed and return a path."""
-    m = Matrix.objects.create(name="X", rows=1, cols=1, data=[[42]])
+    _ = Matrix.objects.create(name="X", rows=1, cols=1, data=[[42]])
     result = export_backup_service()
     assert result.get("status") == "ok"
     assert result.get("path") is not None
@@ -99,7 +99,7 @@ def test_cleanup_data_error():
 @pytest.mark.django_db
 def test_maintenance_super_skill_backup(tmp_path):
     """Dispatcher with action='backup' delegates to export_backup_service."""
-    m = Matrix.objects.create(name="M", rows=1, cols=1, data=[[1]])
+    _ = Matrix.objects.create(name="M", rows=1, cols=1, data=[[1]])
     out = tmp_path / "skill_backup.json"
     result = maintenance_super_skill("backup", output_path=str(out))
     assert result.get("status") == "ok"

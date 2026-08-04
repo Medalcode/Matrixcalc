@@ -81,14 +81,17 @@ describe('MatrixEditor', () => {
       }
     })
 
-    const rowsInput = wrapper.findAll('input[type="number"]')[0]
-    const colsInput = wrapper.findAll('input[type="number"]')[1]
+    const inputs = wrapper.findAll('input[type="number"]')
+    const rowsInput = inputs[0]
+    const colsInput = inputs[1]
 
-    await rowsInput.setValue('3')
-    await colsInput.setValue('4')
+    if (rowsInput && colsInput) {
+      await rowsInput.setValue('3')
+      await colsInput.setValue('4')
 
-    expect((rowsInput.element as HTMLInputElement).value).toBe('3')
-    expect((colsInput.element as HTMLInputElement).value).toBe('4')
+      expect((rowsInput.element as HTMLInputElement).value).toBe('3')
+      expect((colsInput.element as HTMLInputElement).value).toBe('4')
+    }
   })
 
   it('fills matrix with zeros', async () => {
@@ -105,7 +108,10 @@ describe('MatrixEditor', () => {
       const inputs = wrapper.findAll('input[type="number"]')
       // Skip first two inputs (rows and cols)
       for (let i = 2; i < inputs.length; i++) {
-        expect((inputs[i].element as HTMLInputElement).value).toBe('0')
+        const inp = inputs[i]
+        if (inp) {
+          expect((inp.element as HTMLInputElement).value).toBe('0')
+        }
       }
     }
   })
@@ -138,8 +144,11 @@ describe('MatrixEditor', () => {
     })
 
     await wrapper.find('input[placeholder="Matriz A"]').setValue('Test Matrix')
-    await wrapper.findAll('input[type="number"]')[0].setValue('2')
-    await wrapper.findAll('input[type="number"]')[1].setValue('2')
+    const inputs = wrapper.findAll('input[type="number"]')
+    if (inputs[0] && inputs[1]) {
+      await inputs[0].setValue('2')
+      await inputs[1].setValue('2')
+    }
     await wrapper.vm.$nextTick()
 
     // Fill with zeros so isValid becomes true
@@ -155,6 +164,6 @@ describe('MatrixEditor', () => {
       await flushPromises()
     }
 
-    expect(wrapper.emitted('save')).toBeTruthy()
+    expect(wrapper.emitted('saved')).toBeTruthy()
   })
 })

@@ -98,7 +98,15 @@ describe('ResultViewer', () => {
             created_at: '2025-12-21T00:00:00Z',
             updated_at: '2025-12-21T00:00:00Z'
           },
-          result_matrix: 1,
+          result: {
+            id: 1,
+            name: 'Result Matrix',
+            rows: 1,
+            cols: 1,
+            data: [[42]],
+            created_at: '2025-12-21T00:00:00Z',
+            updated_at: '2025-12-21T00:00:00Z'
+          },
           execution_time_ms: 0.03,
           created_at: '2025-12-21T00:00:00Z'
         }
@@ -148,7 +156,15 @@ describe('ResultViewer', () => {
             created_at: '2025-12-21T00:00:00Z',
             updated_at: '2025-12-21T00:00:00Z'
           },
-          result_matrix: 1,
+          result: {
+            id: 1,
+            name: 'Sum Result',
+            rows: 2,
+            cols: 2,
+            data: [[1, 2], [3, 4]],
+            created_at: '2025-12-21T00:00:00Z',
+            updated_at: '2025-12-21T00:00:00Z'
+          },
           execution_time_ms: 0.125,
           created_at: '2025-12-21T00:00:00Z'
         }
@@ -234,7 +250,15 @@ describe('ResultViewer', () => {
             created_at: '2025-12-21T00:00:00Z',
             updated_at: '2025-12-21T00:00:00Z'
           },
-          result_matrix: 1,
+          result: {
+            id: 1,
+            name: 'Large Matrix Result',
+            rows: 10,
+            cols: 10,
+            data: [],
+            created_at: '2025-12-21T00:00:00Z',
+            updated_at: '2025-12-21T00:00:00Z'
+          },
           execution_time_ms: 0.5,
           created_at: '2025-12-21T00:00:00Z'
         }

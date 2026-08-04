@@ -125,17 +125,14 @@ describe('OperationPanel', () => {
 
     await wrapper.vm.$nextTick()
 
-    // Select matrices
-    const selects = wrapper.findAll('select')
-    if (selects.length >= 2) {
-      await selects[0].setValue('1')
-      await selects[1].setValue('2')
-    }
+    // Select Matrix A
+    const selectA = wrapper.find('select')
+    await selectA.setValue('1')
 
-    // Click an operation button
-    const sumButton = wrapper.findAll('button').find(btn => btn.text().includes('Suma'))
-    if (sumButton) {
-      await sumButton.trigger('click')
+    // Click unary operation button (Transpuesta)
+    const transposeButton = wrapper.findAll('button').find(btn => btn.text().includes('Transpuesta'))
+    if (transposeButton) {
+      await transposeButton.trigger('click')
     }
 
     await flushPromises()
@@ -146,11 +143,6 @@ describe('OperationPanel', () => {
     )
 
     if (executeButton) {
-      if (executeButton.attributes('disabled') !== undefined) {
-         console.error('EXECUTE BUTTON IS DISABLED in test 1! HTML:');
-         console.error(wrapper.html());
-      }
-      // Button should now be enabled (no disabled attribute)
       expect(executeButton.attributes('disabled')).toBeUndefined()
     }
   })
@@ -169,10 +161,10 @@ describe('OperationPanel', () => {
 
     await wrapper.vm.$nextTick()
 
-    // Select matrix
     const selects = wrapper.findAll('select')
-    if (selects.length > 0) {
-      await selects[0].setValue('1')
+    const firstSelect = selects[0]
+    if (firstSelect) {
+      await firstSelect.setValue('1')
     }
 
     // Select transpose operation (unary)

@@ -98,8 +98,9 @@ describe('MatrixList', () => {
       btn.text().includes('Editar') || btn.html().includes('edit')
     )
 
-    if (editButtons.length > 0) {
-      await editButtons[0].trigger('click')
+    const firstEdit = editButtons[0]
+    if (firstEdit) {
+      await firstEdit.trigger('click')
       expect(wrapper.emitted('edit')).toBeTruthy()
     }
   })
@@ -122,8 +123,9 @@ describe('MatrixList', () => {
       btn.text().includes('Eliminar') || btn.html().includes('delete') || btn.html().includes('trash')
     )
 
-    if (deleteButtons.length > 0) {
-      await deleteButtons[0].trigger('click')
+    const firstDelete = deleteButtons[0]
+    if (firstDelete) {
+      await firstDelete.trigger('click')
       expect(wrapper.emitted('delete')).toBeTruthy()
     }
   })
