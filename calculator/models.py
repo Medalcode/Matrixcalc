@@ -86,13 +86,15 @@ class Operation(models.Model):
     )
     matrix_a = models.ForeignKey(
         Matrix,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="operations_as_a",
+        null=True,
+        blank=True,
         help_text="Primera matriz operando",
     )
     matrix_b = models.ForeignKey(
         Matrix,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="operations_as_b",
         null=True,
         blank=True,
@@ -100,8 +102,10 @@ class Operation(models.Model):
     )
     result = models.ForeignKey(
         Matrix,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="operations_as_result",
+        null=True,
+        blank=True,
         help_text="Matriz resultado principal",
     )
     extra_data = models.JSONField(
