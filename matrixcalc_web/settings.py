@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 
 import dj_database_url
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -289,8 +290,6 @@ MATRIX_CONFIG = {
 }
 
 # Celery Beat Configuration
-from celery.schedules import crontab
-
 CELERY_BEAT_SCHEDULE = {
     "cleanup-old-data-daily": {
         "task": "calculator.cleanup_old_data",

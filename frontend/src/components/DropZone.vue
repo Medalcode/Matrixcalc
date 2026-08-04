@@ -128,7 +128,9 @@ const { isDragging } = useDragDrop(dropZoneRef, {
 
 async function handleFileDrop(files: File[]) {
   const file = files[0];
-  await processFile(file);
+  if (file) {
+    await processFile(file);
+  }
 }
 
 function openFilePicker() {
@@ -138,9 +140,10 @@ function openFilePicker() {
 async function handleFileSelect(event: Event) {
   const input = event.target as HTMLInputElement;
   const files = Array.from(input.files || []);
+  const firstFile = files[0];
   
-  if (files.length > 0) {
-    await processFile(files[0]);
+  if (firstFile) {
+    await processFile(firstFile);
   }
   
   // Reset input

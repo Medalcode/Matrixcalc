@@ -85,7 +85,12 @@ const operationColors: Record<OperationType, string> = {
   'MULTIPLY': '#10b981',
   'INVERSE': '#f59e0b',
   'DETERMINANT': '#8b5cf6',
-  'TRANSPOSE': '#ec4899'
+  'TRANSPOSE': '#ec4899',
+  'RANK': '#6366f1',
+  'EIGEN': '#14b8a6',
+  'SVD': '#a855f7',
+  'QR': '#f97316',
+  'CHOLESKY': '#06b6d4'
 }
 
 // Pie Chart Data

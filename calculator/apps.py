@@ -2,8 +2,6 @@
 Configuración de la app calculator.
 """
 
-import os
-
 from django.apps import AppConfig
 
 

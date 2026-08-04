@@ -83,7 +83,12 @@ function getOperationName(type: OperationType): string {
     'MULTIPLY': 'Multiplicación',
     'INVERSE': 'Inversa',
     'DETERMINANT': 'Determinante',
-    'TRANSPOSE': 'Transpuesta'
+    'TRANSPOSE': 'Transpuesta',
+    'RANK': 'Rango',
+    'EIGEN': 'Autovalores/Autovectores',
+    'SVD': 'Descomposición SVD',
+    'QR': 'Descomposición QR',
+    'CHOLESKY': 'Descomposición Cholesky'
   }
   return names[type] || type
 }

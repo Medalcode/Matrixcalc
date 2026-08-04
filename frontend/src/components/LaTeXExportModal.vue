@@ -146,11 +146,6 @@
                   <code class="bg-blue-100 dark:bg-blue-800 px-1 rounded"
                     >$$ ... $$</code
                   >
-                </li>
-                <li v-if="selectedFormat === 'document'">
-                  • Este formato incluye un documento completo listo para
-                  compilar
-                </li>
               </ul>
             </div>
           </div>

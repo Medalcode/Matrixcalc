@@ -147,6 +147,8 @@ export const useMatrixStore = defineStore('matrix', () => {
     selectedMatrixA,
     selectedMatrixB,
     totalCount,
+    loading: api.loading,
+    error: api.error,
     // Getters
     sortedMatrices,
     getMatrixById,
