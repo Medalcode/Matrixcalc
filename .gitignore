@@ -42,3 +42,9 @@ calculator/migrations/*.py
 # Media
 media/
 staticfiles/
+
+# Test Coverage & Analysis
+.coverage
+coverage.xml
+htmlcov/
+graphify-out/

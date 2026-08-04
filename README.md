@@ -3,7 +3,7 @@
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.14-blue)
 ![Coverage](https://img.shields.io/badge/coverage-99%25-brightgreen)
-![Tests](https://img.shields.io/badge/tests-158%20passed-green)
+![Tests](https://img.shields.io/badge/tests-159%20passed-green)
 [![CI](https://github.com/Medalcode/Matrixcalc/actions/workflows/ci.yml/badge.svg)](https://github.com/Medalcode/Matrixcalc/actions/workflows/ci.yml)
 ![Vue](https://img.shields.io/badge/vue-3.5-green)
 ![TypeScript](https://img.shields.io/badge/typescript-5.9-blue)
@@ -11,7 +11,7 @@
 [![Deploy Backend](https://img.shields.io/badge/backend-Railway-0B0D0E)](https://railway.app)
 [![Deploy Frontend](https://img.shields.io/badge/frontend-Netlify-00C7B7)](https://netlify.com)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Version](https://img.shields.io/badge/version-3.1.0-orange)
+![Version](https://img.shields.io/badge/version-3.2.0-orange)
 ![Decoupled Architecture](https://img.shields.io/badge/architecture-decoupled-success)
 
 **The Cloud-Native Linear Algebra Workspace.**
