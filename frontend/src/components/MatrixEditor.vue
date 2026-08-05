@@ -226,14 +226,14 @@ const isValidMatrix = computed(() => {
     rows.value > 0 &&
     cols.value > 0 &&
     flatMatrix.value.length === rows.value * cols.value &&
-    flatMatrix.value.every((v) => !isNaN(v))
+    flatMatrix.value.every((v) => typeof v === "number" && !isNaN(v) && isFinite(v))
   );
 });
 
 // Initialize matrix
 function initializeMatrix() {
   if (props.matrix) {
-    flatMatrix.value = props.matrix.data.flat();
+    flatMatrix.value = props.matrix.data.flat().map((v) => (typeof v === "number" && !isNaN(v) && isFinite(v) ? v : 0));
   } else {
     flatMatrix.value = Array(rows.value * cols.value).fill(0);
   }
@@ -257,8 +257,10 @@ function resizeMatrix() {
 }
 
 function updateMatrix() {
-  // Ensure all values are numbers
-  flatMatrix.value = flatMatrix.value.map((v) => (isNaN(v) ? 0 : v));
+  // Ensure all values are valid finite numbers
+  flatMatrix.value = flatMatrix.value.map((v) =>
+    typeof v === "number" && !isNaN(v) && isFinite(v) ? v : 0
+  );
 }
 
 // Quick fill functions
@@ -322,12 +324,20 @@ function clearMatrix() {
 function get2DMatrix(): number[][] {
   const matrix: number[][] = [];
   for (let i = 0; i < rows.value; i++) {
-    matrix.push(flatMatrix.value.slice(i * cols.value, (i + 1) * cols.value));
+    const rowValues = flatMatrix.value
+      .slice(i * cols.value, (i + 1) * cols.value)
+      .map((v) => (typeof v === "number" && !isNaN(v) && isFinite(v) ? v : 0));
+    matrix.push(rowValues);
   }
   return matrix;
 }
 
 async function saveMatrix() {
+  if (!matrixName.value.trim()) {
+    matrixName.value = `Matriz ${rows.value}x${cols.value}`;
+  }
+  updateMatrix();
+
   if (!isValidMatrix.value) return;
 
   loading.value = true;

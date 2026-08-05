@@ -66,12 +66,21 @@ class MatrixSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError(
                         f"Se esperaban {cols} columnas en la fila {i}, pero se recibieron {len(row)}."
                     )
-                # Validar que todos los valores sean numéricos
+                # Validar y convertir todos los valores a flotantes
                 for j, val in enumerate(row):
-                    if not isinstance(val, (int, float)):
+                    if val is None or isinstance(val, bool):
                         raise serializers.ValidationError(
-                            f"El valor en posición ({i},{j}) no es numérico: {val}"
+                            f"El valor en posición ({i},{j}) no es un número válido."
                         )
+                    if isinstance(val, (int, float)):
+                        row[j] = float(val)
+                    else:
+                        try:
+                            row[j] = float(val)
+                        except (ValueError, TypeError):
+                            raise serializers.ValidationError(
+                                f"El valor en posición ({i},{j}) no es numérico: {val}"
+                            )
 
         return attrs
 

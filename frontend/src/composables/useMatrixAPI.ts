@@ -21,12 +21,31 @@ export function useMatrixAPI() {
 
   const handleError = (err: unknown): string => {
     if (axios.isAxiosError(err)) {
-      const axiosError = err as AxiosError<APIError>
+      const axiosError = err as AxiosError<Record<string, unknown>>
       // Sin respuesta del servidor → backend no disponible
       if (!axiosError.response) {
         return 'No se puede conectar con el servidor. Asegúrate de que el backend está en ejecución.'
       }
-      return axiosError.response.data?.error || axiosError.message
+      const data = axiosError.response.data
+      if (!data) return axiosError.message
+
+      if (typeof data === 'string') return data
+      if (typeof data.error === 'string') return data.error
+      if (typeof data.detail === 'string') return data.detail
+
+      if (typeof data === 'object') {
+        const messages: string[] = []
+        for (const [key, val] of Object.entries(data)) {
+          if (Array.isArray(val)) {
+            messages.push(`${key}: ${val.join(', ')}`)
+          } else if (typeof val === 'string') {
+            messages.push(`${key}: ${val}`)
+          }
+        }
+        if (messages.length > 0) return messages.join(' | ')
+        return JSON.stringify(data)
+      }
+      return axiosError.message
     }
     return String(err)
   }
